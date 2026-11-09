@@ -58,9 +58,7 @@ Cada pack conta com arquivos reais e seguros (`.bat`, `.reg`, tutoriais):
 ## 🔑 Contas Pré-Configuradas
 
 | Tipo | E-mail | Senha |
-|---|---|---|
-| **Administrador** | `admin@apexboost.com` | `admin123` |
-| **Gamer (Cliente)** | `gamer@teste.com` | `123456` |
+
 
 *Você também pode criar quantas contas novas desejar pela página de cadastro.*
 

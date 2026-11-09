@@ -254,5 +254,33 @@ class StoreTestCase(unittest.TestCase):
         data_status = json.loads(res_status.data)
         self.assertTrue(data_status['claimed'])
 
+    def test_15_ajax_login_animation_support(self):
+        """Testa o suporte AJAX do endpoint de login para as animações de carregamento e autenticação"""
+        # 1. Missing credentials returns 400
+        res_empty = self.client.post('/login', headers={'X-Requested-With': 'XMLHttpRequest'}, data={})
+        self.assertEqual(res_empty.status_code, 400)
+        data_empty = json.loads(res_empty.data)
+        self.assertFalse(data_empty['success'])
+
+        # 2. Invalid credentials returns 401
+        res_invalid = self.client.post('/login', headers={'X-Requested-With': 'XMLHttpRequest'}, data={
+            'email': 'inexistente@apex.com',
+            'password': 'errada'
+        })
+        self.assertEqual(res_invalid.status_code, 401)
+        data_invalid = json.loads(res_invalid.data)
+        self.assertFalse(data_invalid['success'])
+        self.assertIn('incorretos', data_invalid['message'])
+
+        # 3. Valid credentials returns 200 with JSON redirect_url
+        res_valid = self.client.post('/login', headers={'X-Requested-With': 'XMLHttpRequest'}, data={
+            'email': 'admin@apexboost.com',
+            'password': 'admin123'
+        })
+        self.assertEqual(res_valid.status_code, 200)
+        data_valid = json.loads(res_valid.data)
+        self.assertTrue(data_valid['success'])
+        self.assertTrue(data_valid['redirect_url'])
+
 if __name__ == '__main__':
     unittest.main()

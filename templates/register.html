@@ -276,6 +276,303 @@
             gap: 6px;
         }
 
+                /* ============================================== */
+        /* ANIMAÇÃO 1: APEX PRELOADER (ENTRADA)           */
+        /* ============================================== */
+        .apex-preloader-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #090a0f;
+            background-image:
+                radial-gradient(circle at 50% 40%, rgba(0, 102, 255, 0.32) 0%, rgba(0, 210, 255, 0.08) 42%, #090a0f 78%),
+                linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 100% 100%, 38px 38px, 38px 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 99999;
+            opacity: 1;
+            transform: scale(1);
+            transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1), transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+            pointer-events: all;
+        }
+
+        .apex-preloader-screen.fade-out {
+            opacity: 0;
+            transform: scale(1.04);
+            pointer-events: none;
+        }
+
+        .preloader-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 24px;
+            max-width: 440px;
+            width: 100%;
+        }
+
+        .preloader-icon-wrap {
+            position: relative;
+            width: 88px;
+            height: 88px;
+            margin: 0 auto 16px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .preloader-pulse-ring-outer {
+            position: absolute;
+            inset: -14px;
+            border-radius: 28px;
+            border: 2px solid rgba(0, 210, 255, 0.5);
+            box-shadow: 0 0 35px rgba(0, 102, 255, 0.6);
+            animation: apexPulseRingOuter 2.2s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
+            pointer-events: none;
+        }
+
+        .preloader-pulse-ring-inner {
+            position: absolute;
+            inset: -6px;
+            border-radius: 24px;
+            border: 1.5px dashed rgba(0, 210, 255, 0.8);
+            animation: apexRingSpin 6s linear infinite;
+            pointer-events: none;
+        }
+
+        .preloader-icon-badge {
+            width: 76px;
+            height: 76px;
+            border-radius: 22px;
+            background: linear-gradient(135deg, #0052cc 0%, #0066ff 50%, #00d2ff 100%);
+            box-shadow:
+                0 0 35px rgba(0, 102, 255, 0.8),
+                0 0 70px rgba(0, 210, 255, 0.4),
+                inset 0 1px 1px rgba(255, 255, 255, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            font-size: 2.3rem;
+            position: relative;
+            z-index: 2;
+            animation: apexBadgeFloat 2.4s ease-in-out infinite alternate;
+            transition: all 0.35s ease;
+        }
+
+        .preloader-title-row {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 900;
+            font-size: 2.1rem;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: baseline;
+            justify-content: center;
+            gap: 6px;
+            margin-bottom: 2px;
+        }
+
+        .preloader-title-apex {
+            color: #ffffff !important;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+        }
+
+        .preloader-title-boost {
+            color: #00d2ff !important;
+            text-shadow: 0 0 25px rgba(0, 210, 255, 0.7);
+        }
+
+        .preloader-sub-title {
+            font-size: 0.82rem;
+            font-weight: 800;
+            color: #94a3b8 !important;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+        }
+
+        .preloader-bar-wrap {
+            width: 100%;
+            max-width: 280px;
+            margin: 26px auto 12px auto;
+        }
+
+        .preloader-bar-track {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(0, 102, 255, 0.35);
+            border-radius: 99px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
+        }
+
+        .preloader-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #0052cc 0%, #0066ff 50%, #00d2ff 100%);
+            border-radius: 99px;
+            box-shadow: 0 0 16px rgba(0, 210, 255, 0.9);
+            transition: width 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        .preloader-bar-fill::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.7), transparent);
+            animation: barSheen 1.4s infinite;
+        }
+
+        .preloader-percent {
+            font-family: 'Inter', monospace;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #00d2ff;
+            letter-spacing: 0.05em;
+            margin-top: 8px;
+            text-shadow: 0 0 10px rgba(0, 210, 255, 0.6);
+        }
+
+        .preloader-status-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #cbd5e1;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            background: rgba(13, 15, 23, 0.85);
+            border: 1px solid rgba(0, 102, 255, 0.3);
+            border-radius: 20px;
+            padding: 6px 14px;
+            margin-top: 8px;
+        }
+
+        .preloader-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #00d2ff;
+            box-shadow: 0 0 10px #00d2ff;
+            animation: dotPulse 1.2s infinite;
+        }
+
+        /* ============================================== */
+        /* ANIMAÇÃO 2: APEX AUTH OVERLAY                  */
+        /* ============================================== */
+        .apex-auth-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(9, 10, 15, 0.92);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.35s ease, visibility 0.35s ease;
+        }
+
+        .apex-auth-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .auth-overlay-card {
+            background: rgba(13, 15, 23, 0.96);
+            border: 1.5px solid rgba(0, 102, 255, 0.5);
+            border-radius: 26px;
+            padding: 40px 36px;
+            max-width: 420px;
+            width: 90%;
+            text-align: center;
+            box-shadow:
+                0 25px 60px rgba(0, 0, 0, 0.9),
+                0 0 50px rgba(0, 102, 255, 0.4);
+            transform: scale(0.92);
+            transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s, box-shadow 0.3s;
+        }
+
+        .apex-auth-overlay.active .auth-overlay-card {
+            transform: scale(1);
+        }
+
+        .auth-overlay-card.success-state {
+            border-color: #00ff88 !important;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.9), 0 0 60px rgba(0, 255, 136, 0.45) !important;
+        }
+
+        .auth-overlay-card.error-state {
+            border-color: #ff334b !important;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.9), 0 0 60px rgba(255, 51, 75, 0.45) !important;
+            animation: shakeCard 0.45s ease-in-out;
+        }
+
+        .auth-status-box {
+            font-size: 0.92rem;
+            letter-spacing: 0.02em;
+        }
+
+        /* Keyframes */
+        @keyframes apexPulseRingOuter {
+            0% { transform: scale(0.92); opacity: 0.3; }
+            50% { transform: scale(1.12); opacity: 0.85; box-shadow: 0 0 35px rgba(0, 210, 255, 0.8); }
+            100% { transform: scale(0.92); opacity: 0.3; }
+        }
+
+        @keyframes apexRingSpin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes apexBadgeFloat {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-5px); }
+        }
+
+        @keyframes barSheen {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        @keyframes dotPulse {
+            0%, 100% { opacity: 0.4; transform: scale(0.9); }
+            50% { opacity: 1; transform: scale(1.2); }
+        }
+
+        @keyframes shakeCard {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-8px); }
+            40%, 80% { transform: translateX(8px); }
+        }
+
+        /* Container Fade & Entrance */
+        .auth-container-animate {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .auth-container-animate.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
         @media (max-width: 575.98px) {
             body {
                 padding: 16px 12px !important;
@@ -321,12 +618,99 @@
                 gap: 8px !important;
                 flex-wrap: wrap;
             }
+
+            .preloader-icon-badge {
+                width: 64px;
+                height: 64px;
+                font-size: 1.85rem;
+                border-radius: 18px;
+            }
+
+            .preloader-title-row {
+                font-size: 1.7rem;
+            }
+
+            .preloader-bar-wrap {
+                max-width: 240px;
+            }
+
+            .auth-overlay-card {
+                padding: 28px 20px;
+            }
         }
     </style>
+    <noscript>
+        <style>
+            #apexPreloader { display: none !important; }
+            .auth-container-animate { opacity: 1 !important; transform: none !important; }
+        </style>
+    </noscript>
 </head>
 <body class="theme-dark">
 
-    <div class="auth-container">
+    <!-- Preloader -->
+    <div id="apexPreloader" class="apex-preloader-screen">
+        <div class="preloader-container">
+            <div class="preloader-brand-box">
+                <div class="preloader-icon-wrap">
+                    <div class="preloader-pulse-ring-outer"></div>
+                    <div class="preloader-pulse-ring-inner"></div>
+                    <div class="preloader-icon-badge">
+                        <i class="bi bi-lightning-charge-fill"></i>
+                    </div>
+                </div>
+                <div class="preloader-title-row">
+                    <span class="preloader-title-apex">APEX</span>
+                    <span class="preloader-title-boost">BOOST</span>
+                </div>
+                <div class="preloader-sub-title">PERFORMANCE LABS</div>
+            </div>
+
+            <div class="preloader-bar-wrap">
+                <div class="preloader-bar-track">
+                    <div class="preloader-bar-fill" id="preloaderFill"></div>
+                </div>
+                <div class="preloader-percent" id="preloaderPercent">0%</div>
+            </div>
+
+            <div class="preloader-status-tag" id="preloaderStatus">
+                <span class="preloader-dot"></span>
+                <span id="preloaderStatusText">Iniciando Apex Boost Labs...</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Auth Overlay -->
+    <div id="apexAuthOverlay" class="apex-auth-overlay">
+        <div class="auth-overlay-card">
+            <div class="preloader-icon-wrap auth-icon-wrap">
+                <div class="auth-pulse-ring-outer"></div>
+                <div class="auth-pulse-ring-inner"></div>
+                <div class="preloader-icon-badge" id="authIconBadge">
+                    <i class="bi bi-lightning-charge-fill" id="authCenterIcon"></i>
+                </div>
+            </div>
+
+            <div class="preloader-title-row mt-3">
+                <span class="preloader-title-apex">APEX</span>
+                <span class="preloader-title-boost">BOOST</span>
+            </div>
+            <div class="preloader-sub-title mb-4">PERFORMANCE LABS</div>
+
+            <div class="preloader-bar-wrap mb-2">
+                <div class="preloader-bar-track">
+                    <div class="preloader-bar-fill" id="authFill"></div>
+                </div>
+            </div>
+
+            <div class="auth-status-box mt-3" id="authStatusBox">
+                <span class="spinner-border spinner-border-sm text-cyan me-2" id="authSpinner" role="status"></span>
+                <span id="authStatusText" class="fw-semibold text-light">Registrando sua conta...</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="auth-container auth-container-animate">
         <div class="auth-box">
             <!-- Brand Logo -->
             <div class="text-center mb-4">
@@ -347,20 +731,22 @@
             </div>
 
             <!-- Flash Alerts -->
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show rounded-3 py-2 px-3 small mb-3 border-0" style="background: rgba(220, 53, 69, 0.25); color: #ff858d;" role="alert">
-                            <i class="bi bi-exclamation-triangle-fill me-1"></i>
-                            {{ message }}
-                            <button type="button" class="btn-close btn-close-white py-2 px-3" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
+            <div id="authAlertContainer">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show rounded-3 py-2 px-3 small mb-3 border-0" style="background: rgba(220, 53, 69, 0.25); color: #ff858d;" role="alert">
+                                <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                                {{ message }}
+                                <button type="button" class="btn-close btn-close-white py-2 px-3" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+            </div>
 
             <!-- Register Form -->
-            <form method="POST" action="{{ url_for('register', next=request.args.get('next')) }}">
+            <form id="registerForm" method="POST" action="{{ url_for('register', next=request.args.get('next')) }}">
                 <div class="form-group-custom">
                     <label for="name">Nome / Nickname</label>
                     <div class="input-wrapper">
@@ -396,7 +782,7 @@
                     </div>
                 </div>
 
-                <button type="submit" class="btn btn-enter w-100 mb-2">
+                <button type="submit" id="submitRegisterBtn" class="btn btn-enter w-100 mb-2">
                     <i class="bi bi-person-plus-fill me-2"></i> CRIAR CONTA E ACESSAR
                 </button>
             </form>
@@ -416,8 +802,9 @@
         </div>
     </div>
 
-    <!-- Script to Toggle Password -->
+    <!-- Scripts: Toggle Password & Cyber Animations -->
     <script>
+        // 1. Mostrar/Ocultar Senha
         const toggleBtn = document.getElementById('togglePasswordBtn');
         const passwordInput = document.getElementById('password');
         const passwordIcon = document.getElementById('togglePasswordIcon');
@@ -429,6 +816,240 @@
                 passwordIcon.className = isPassword ? 'bi bi-eye-slash-fill text-cyan' : 'bi bi-eye-fill';
             });
         }
+
+        // Sintetizador de Áudio Cyberpunk
+        function playAuthAudio(isSuccess) {
+            try {
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                if (!AudioCtx) return;
+                const ctx = new AudioCtx();
+                if (ctx.state === 'suspended') ctx.resume();
+                const now = ctx.currentTime;
+                if (isSuccess) {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(587.33, now);
+                    osc.frequency.exponentialRampToValueAtTime(880, now + 0.14);
+                    gain.gain.setValueAtTime(0.05, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.38);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.38);
+                } else {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(220, now);
+                    osc.frequency.setValueAtTime(146.83, now + 0.12);
+                    gain.gain.setValueAtTime(0.05, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.3);
+                }
+            } catch (e) {}
+        }
+
+        // 2. Animação 1: Entrada (Apex Preloader)
+        (function initPreloader() {
+            const preloader = document.getElementById('apexPreloader');
+            const fill = document.getElementById('preloaderFill');
+            const percent = document.getElementById('preloaderPercent');
+            const statusText = document.getElementById('preloaderStatusText');
+            const authContainer = document.querySelector('.auth-container-animate');
+
+            if (!preloader) return;
+
+            let progress = 0;
+            const startTime = Date.now();
+            const duration = 750;
+
+            function step() {
+                const elapsed = Date.now() - startTime;
+                progress = Math.min(Math.floor((elapsed / duration) * 100), 100);
+
+                if (fill) fill.style.width = progress + '%';
+                if (percent) percent.textContent = progress + '%';
+
+                if (statusText) {
+                    if (progress < 40) {
+                        statusText.textContent = 'Iniciando Apex Boost Labs...';
+                    } else if (progress < 85) {
+                        statusText.textContent = 'Carregando Módulos de Segurança...';
+                    } else {
+                        statusText.textContent = 'Inicializado com Sucesso!';
+                    }
+                }
+
+                if (progress < 100) {
+                    requestAnimationFrame(step);
+                } else {
+                    setTimeout(() => {
+                        preloader.classList.add('fade-out');
+                        if (authContainer) {
+                            authContainer.classList.add('visible');
+                        }
+                        setTimeout(() => {
+                            preloader.style.display = 'none';
+                            const nameEl = document.getElementById('name');
+                            if (nameEl && !nameEl.value) nameEl.focus();
+                        }, 450);
+                    }, 120);
+                }
+            }
+
+            requestAnimationFrame(step);
+        })();
+
+        // 3. Animação 2: Quando Cadastra (Apex Auth Overlay)
+        (function initRegisterSubmit() {
+            const form = document.getElementById('registerForm');
+            const overlay = document.getElementById('apexAuthOverlay');
+            const overlayCard = overlay ? overlay.querySelector('.auth-overlay-card') : null;
+            const authFill = document.getElementById('authFill');
+            const authStatusText = document.getElementById('authStatusText');
+            const authSpinner = document.getElementById('authSpinner');
+            const authCenterIcon = document.getElementById('authCenterIcon');
+            const authIconBadge = document.getElementById('authIconBadge');
+            const submitBtn = document.getElementById('submitRegisterBtn');
+            const alertContainer = document.getElementById('authAlertContainer');
+
+            if (!form || !overlay) return;
+
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+
+                const nameInput = document.getElementById('name');
+                const emailInput = document.getElementById('email');
+                const passwordInput = document.getElementById('password');
+                const confirmPasswordInput = document.getElementById('confirm_password');
+
+                const name = nameInput ? nameInput.value.trim() : '';
+                const email = emailInput ? emailInput.value.trim() : '';
+                const password = passwordInput ? passwordInput.value : '';
+                const confirmPassword = confirmPasswordInput ? confirmPasswordInput.value : '';
+
+                if (!name || !email || !password || !confirmPassword) {
+                    form.reportValidity();
+                    return;
+                }
+
+                if (password !== confirmPassword) {
+                    alert('As senhas não coincidem.');
+                    if (confirmPasswordInput) confirmPasswordInput.focus();
+                    return;
+                }
+
+                overlay.classList.add('active');
+                if (overlayCard) {
+                    overlayCard.classList.remove('success-state', 'error-state');
+                }
+                if (authFill) {
+                    authFill.style.width = '25%';
+                    authFill.style.background = 'linear-gradient(90deg, #0052cc 0%, #0066ff 50%, #00d2ff 100%)';
+                }
+                if (authStatusText) {
+                    authStatusText.textContent = 'Criando credenciais de acesso seguro...';
+                }
+                if (authSpinner) authSpinner.classList.remove('d-none');
+                if (authCenterIcon) authCenterIcon.className = 'bi bi-lightning-charge-fill';
+                if (authIconBadge) authIconBadge.style.background = '';
+                if (submitBtn) submitBtn.disabled = true;
+
+                const tickTimer = setTimeout(() => {
+                    if (authFill && overlay.classList.contains('active')) {
+                        authFill.style.width = '65%';
+                        if (authStatusText) {
+                            authStatusText.textContent = 'Configurando perfil e liberando Apex VIP...';
+                        }
+                    }
+                }, 220);
+
+                try {
+                    const formData = new FormData(form);
+                    const response = await fetch(form.action || window.location.href, {
+                        method: 'POST',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: formData
+                    });
+
+                    clearTimeout(tickTimer);
+                    const data = await response.json().catch(() => null);
+
+                    if (response.ok && data && data.success) {
+                        if (authFill) {
+                            authFill.style.width = '100%';
+                            authFill.style.background = 'linear-gradient(90deg, #00d2ff, #00ff88)';
+                        }
+                        if (overlayCard) overlayCard.classList.add('success-state');
+                        if (authSpinner) authSpinner.classList.add('d-none');
+                        if (authCenterIcon) authCenterIcon.className = 'bi bi-shield-check-fill text-white';
+                        if (authIconBadge) {
+                            authIconBadge.style.background = 'linear-gradient(135deg, #00aa66 0%, #00ff88 100%)';
+                            authIconBadge.style.boxShadow = '0 0 45px rgba(0, 255, 136, 0.8)';
+                        }
+                        if (authStatusText) {
+                            authStatusText.innerHTML = '<span class="text-success fw-bold">✓ Conta Criada com Sucesso! Acessando...</span>';
+                        }
+
+                        playAuthAudio(true);
+
+                        setTimeout(() => {
+                            window.location.href = data.redirect_url || '/';
+                        }, 500);
+
+                    } else {
+                        playAuthAudio(false);
+                        const errMsg = (data && data.message) ? data.message : 'Não foi possível criar a conta. Tente novamente.';
+
+                        if (authFill) {
+                            authFill.style.width = '100%';
+                            authFill.style.background = '#ff334b';
+                        }
+                        if (overlayCard) overlayCard.classList.add('error-state');
+                        if (authSpinner) authSpinner.classList.add('d-none');
+                        if (authCenterIcon) authCenterIcon.className = 'bi bi-shield-x-fill text-white';
+                        if (authIconBadge) {
+                            authIconBadge.style.background = 'linear-gradient(135deg, #cc2233 0%, #ff334b 100%)';
+                            authIconBadge.style.boxShadow = '0 0 45px rgba(255, 51, 75, 0.8)';
+                        }
+                        if (authStatusText) {
+                            authStatusText.innerHTML = `<span class="text-danger fw-bold">✕ ${errMsg}</span>`;
+                        }
+
+                        setTimeout(() => {
+                            overlay.classList.remove('active');
+                            if (submitBtn) submitBtn.disabled = false;
+
+                            if (alertContainer) {
+                                alertContainer.innerHTML = `
+                                    <div class="alert alert-danger alert-dismissible fade show rounded-3 py-2 px-3 small mb-3 border-0"
+                                        style="background: rgba(220, 53, 69, 0.25); color: #ff858d;" role="alert">
+                                        <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                                        ${errMsg}
+                                        <button type="button" class="btn-close btn-close-white py-2 px-3" data-bs-dismiss="alert" aria-label="Close"></button>
+                                    </div>
+                                `;
+                            }
+
+                            const authBox = document.querySelector('.auth-box');
+                            if (authBox) {
+                                authBox.style.animation = 'shakeCard 0.4s ease-in-out';
+                                setTimeout(() => authBox.style.animation = '', 450);
+                            }
+                        }, 750);
+                    }
+                } catch (err) {
+                    clearTimeout(tickTimer);
+                    form.submit();
+                }
+            });
+        })();
     </script>
 </body>
 </html>

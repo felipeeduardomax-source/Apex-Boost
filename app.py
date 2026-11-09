@@ -233,22 +233,36 @@ def product_detail(slug):
 def register():
     if 'user_id' in session:
         return redirect(url_for('index'))
-        
+
     if request.method == 'POST':
-        name = request.form.get('name', '').strip()
-        email = request.form.get('email', '').strip().lower()
-        password = request.form.get('password', '').strip()
-        confirm_password = request.form.get('confirm_password', '').strip()
+        is_ajax = request.is_json or request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        if request.is_json:
+            data = request.get_json() or {}
+            name = data.get('name', '').strip()
+            email = data.get('email', '').strip().lower()
+            password = data.get('password', '').strip()
+            confirm_password = data.get('confirm_password', '').strip()
+        else:
+            name = request.form.get('name', '').strip()
+            email = request.form.get('email', '').strip().lower()
+            password = request.form.get('password', '').strip()
+            confirm_password = request.form.get('confirm_password', '').strip()
 
         if not name or not email or not password:
+            if is_ajax:
+                return jsonify({'success': False, 'message': 'Por favor, preencha todos os campos obrigatórios.'}), 400
             flash('Por favor, preencha todos os campos obrigatórios.', 'danger')
             return render_template('register.html', name=name, email=email)
 
         if len(password) < 6:
+            if is_ajax:
+                return jsonify({'success': False, 'message': 'A senha deve ter pelo menos 6 caracteres.'}), 400
             flash('A senha deve ter pelo menos 6 caracteres.', 'danger')
             return render_template('register.html', name=name, email=email)
 
         if password != confirm_password:
+            if is_ajax:
+                return jsonify({'success': False, 'message': 'As senhas não coincidem.'}), 400
             flash('As senhas não coincidem.', 'danger')
             return render_template('register.html', name=name, email=email)
 
@@ -256,6 +270,8 @@ def register():
         existing = conn.execute("SELECT id FROM users WHERE email = ?", (email,)).fetchone()
         if existing:
             conn.close()
+            if is_ajax:
+                return jsonify({'success': False, 'message': 'Este e-mail já está cadastrado. Faça login para entrar!'}), 409
             flash('Este email já está cadastrado. Faça login para entrar!', 'warning')
             return redirect(url_for('login', next=request.args.get('next')))
 
@@ -278,11 +294,20 @@ def register():
         flash(f'Conta criada com sucesso! Bem-vindo(a) ao Apex Boost Labs, {name}! 🚀', 'success')
         
         next_url = request.args.get('next')
+        redirect_target = url_for('index')
         if is_safe_redirect(next_url):
-            return redirect(next_url)
-        if session.get('cart'):
-            return redirect(url_for('checkout'))
-        return redirect(url_for('index'))
+            redirect_target = next_url
+        elif session.get('cart'):
+            redirect_target = url_for('checkout')
+
+        if is_ajax:
+            return jsonify({
+                'success': True,
+                'message': f'Conta criada com sucesso, {name}!',
+                'redirect_url': redirect_target
+            })
+
+        return redirect(redirect_target)
 
     return render_template('register.html')
 
@@ -292,10 +317,18 @@ def login():
         return redirect(url_for('index'))
 
     if request.method == 'POST':
-        email = request.form.get('email', '').strip().lower()
-        password = request.form.get('password', '').strip()
+        is_ajax = request.is_json or request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        if request.is_json:
+            data = request.get_json() or {}
+            email = data.get('email', '').strip().lower()
+            password = data.get('password', '').strip()
+        else:
+            email = request.form.get('email', '').strip().lower()
+            password = request.form.get('password', '').strip()
 
         if not email or not password:
+            if is_ajax:
+                return jsonify({'success': False, 'message': 'Informe seu e-mail e sua senha para entrar.'}), 400
             flash('Informe seu e-mail e sua senha para entrar.', 'danger')
             return render_template('login.html', email=email)
 
@@ -311,12 +344,23 @@ def login():
 
             flash(f'Login realizado com sucesso! Bem-vindo(a), {user["name"]}! 🚀', 'success')
             next_url = request.args.get('next')
+            redirect_target = url_for('index')
             if is_safe_redirect(next_url):
-                return redirect(next_url)
-            if session.get('cart'):
-                return redirect(url_for('checkout'))
-            return redirect(url_for('index'))
+                redirect_target = next_url
+            elif session.get('cart'):
+                redirect_target = url_for('checkout')
+
+            if is_ajax:
+                return jsonify({
+                    'success': True,
+                    'message': f'Bem-vindo(a), {user["name"]}!',
+                    'redirect_url': redirect_target
+                })
+
+            return redirect(redirect_target)
         else:
+            if is_ajax:
+                return jsonify({'success': False, 'message': 'E-mail ou senha incorretos. Verifique suas credenciais.'}), 401
             flash('E-mail ou senha incorretos. Verifique suas credenciais.', 'danger')
             return render_template('login.html', email=email)
 

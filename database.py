@@ -372,13 +372,15 @@ def _init_db_sqlite():
     conn.close()
 
 def _seed_initial_data(cursor, conn, is_postgres=False):
-    # Seed Admin & Demo Gamer
-    admin = cursor.execute("SELECT id FROM users WHERE email = ?", ('admin@apexboost.com',)).fetchone()
+    # Seed Admin & Demo Gamer (Configuráveis via variáveis de ambiente)
+    admin_email = os.environ.get('ADMIN_EMAIL', 'admin@apexboost.com')
+    admin_pass = os.environ.get('ADMIN_PASSWORD', 'admin123')
+    admin = cursor.execute("SELECT id FROM users WHERE email = ?", (admin_email,)).fetchone()
     if not admin:
         cursor.execute('''
             INSERT INTO users (name, email, password_hash, is_admin)
             VALUES (?, ?, ?, 1)
-        ''', ('Administrador Apex', 'admin@apexboost.com', generate_password_hash('admin123')))
+        ''', ('Administrador Apex', admin_email, generate_password_hash(admin_pass)))
 
     demo_user = cursor.execute("SELECT id FROM users WHERE email = ?", ('gamer@teste.com',)).fetchone()
     if not demo_user:

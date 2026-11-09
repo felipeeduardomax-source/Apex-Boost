@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}{{ error_code or 'Erro' }} | Apex Boost Labs{% endblock %}
+
+{% block content %}
+<div class="container py-5 my-md-5">
+    <div class="glass-card p-4 p-md-5 mx-auto text-center" style="max-width: 650px;">
+        <div class="rounded-circle d-inline-flex p-3 text-white mb-3" style="background: rgba(220, 53, 69, 0.2); border: 2px solid rgba(220, 53, 69, 0.4); box-shadow: 0 0 25px rgba(220, 53, 69, 0.3);">
+            {% if error_code == 403 %}
+                <i class="bi bi-shield-lock-fill text-danger display-4"></i>
+            {% elif error_code == 404 %}
+                <i class="bi bi-compass text-warning display-4"></i>
+            {% else %}
+                <i class="bi bi-exclamation-triangle-fill text-danger display-4"></i>
+            {% endif %}
+        </div>
+        
+        <span class="badge-fire mb-2 d-inline-block">{{ error_badge or 'SEGURANÇA APEX' }}</span>
+        <h1 class="display-6 fw-black text-white mb-3">{{ error_title or 'Ocorreu um erro' }}</h1>
+        <p class="text-secondary mb-4 mx-auto" style="max-width: 500px;">
+            {{ error_message or 'Não foi possível completar sua solicitação. Se o problema persistir, entre em contato com nosso suporte.' }}
+        </p>
+
+        <div class="d-flex flex-column flex-sm-row justify-content-center gap-2">
+            <a href="{{ url_for('index') }}" class="btn btn-apex-primary py-2 px-4">
+                <i class="bi bi-house-door-fill me-1"></i> Voltar para a Loja
+            </a>
+            <a href="{{ url_for('index') }}#tab-faq" class="btn btn-apex-outline py-2 px-4" data-tab-target="tab-faq">
+                <i class="bi bi-headset me-1"></i> Suporte Técnico
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

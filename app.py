@@ -2,6 +2,8 @@ import os
 import json
 import uuid
 import datetime
+from urllib.parse import urlsplit
+from werkzeug.utils import secure_filename
 from flask import (
     Flask, render_template, request, redirect, url_for,
     flash, session, jsonify, send_from_directory, abort
@@ -10,11 +12,35 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from database import get_db, init_db, generate_license_key, is_using_postgres
 
 app = Flask(__name__)
-app.secret_key = os.environ.get('SECRET_KEY', 'apex_boost_secret_key_ultra_secure_2026_gamer')
-app.config['DOWNLOAD_FOLDER'] = os.path.join(os.path.dirname(__file__), 'static', 'downloads')
+
+# Security & Session Configuration
+is_production = bool(os.environ.get('VERCEL') or os.environ.get('PRODUCTION'))
+
+app.config.update(
+    SECRET_KEY=os.environ.get('SECRET_KEY', 'apex_boost_secret_key_ultra_secure_2026_gamer'),
+    SESSION_COOKIE_HTTPONLY=True,        # Previne leitura de cookies via JavaScript (Anti-XSS)
+    SESSION_COOKIE_SAMESITE='Lax',       # Proteção contra ataques CSRF
+    SESSION_COOKIE_SECURE=is_production, # Cookie apenas via HTTPS em produção
+    PERMANENT_SESSION_LIFETIME=datetime.timedelta(days=7),
+    MAX_CONTENT_LENGTH=2 * 1024 * 1024,  # Limite de 2MB por requisição (Anti-DoS / Payload)
+    DOWNLOAD_FOLDER=os.path.join(os.path.dirname(__file__), 'static', 'downloads')
+)
 
 # Ensure DB exists
 init_db()
+
+def is_safe_redirect(target):
+    """Garante que URLs de redirecionamento sejam estritamente relativas e seguras (Anti-Open-Redirect)"""
+    if not target:
+        return False
+    parts = urlsplit(target)
+    if parts.scheme or parts.netloc:
+        return False
+    if not target.startswith('/') or target.startswith('//') or target.startswith('/\\'):
+        return False
+    if target in ('/login', '/register', '/logout'):
+        return False
+    return True
 
 # Jinja template filters for robust date formatting across SQLite and Neon PostgreSQL
 @app.template_filter('format_datetime')
@@ -70,34 +96,83 @@ def inject_global_data():
         'current_year': datetime.datetime.now().year
     }
 
-# ----------------- ACCESS CONTROL MIDDLEWARE ----------------- #
+# ----------------- ACCESS CONTROL & FIREWALL MIDDLEWARE ----------------- #
+
+BLOCKED_EXTENSIONS = ('.db', '.sqlite', '.sqlite3', '.env', '.py', '.git', '.sh', '.bat', '.sql', '.bak', '.log')
+BLOCKED_FILES = {'/.env', '/store.db', '/vercel.json', '/requirements.txt', '/.gitignore', '/procfile'}
 
 @app.before_request
-def require_login():
-    """Requires user to be logged in before accessing the site"""
+def security_firewall():
+    """Firewall de aplicação: bloqueia vazamento de dados confidenciais e força login"""
+    path_lower = request.path.lower()
+
+    # 1. Bloquear acesso a arquivos confidenciais do sistema e banco de dados
+    if any(path_lower.endswith(ext) for ext in BLOCKED_EXTENSIONS) or path_lower in BLOCKED_FILES:
+        abort(403)
+
+    # 2. Bloquear download direto de zips pela pasta estática (deve passar por verificação em /download/)
+    if path_lower.startswith('/static/downloads/'):
+        abort(403)
+
+    # 3. Bloquear truques de Directory Traversal e injeção de caminho
+    if '..' in request.path or '//' in request.path or '\\' in request.path:
+        abort(400)
+
+    # 4. Endpoints públicos permitidos sem autenticação
     public_endpoints = {'login', 'register', 'static', 'favicon', 'api_ping'}
     if request.endpoint in public_endpoints or (request.endpoint and request.endpoint.startswith('static')):
         return
 
-    # Direct static file requests
+    # Arquivos estáticos normais permitidos (css, js, imagens)
     if request.path.startswith('/static/') or request.path in ('/favicon.ico', '/api/ping'):
         return
 
-    # If unauthenticated, redirect to login
+    # Se não estiver logado, redirecionar para login
     if 'user_id' not in session:
         if request.path in ('/login', '/register', '/favicon.ico', '/api/ping'):
             return
 
-        # If AJAX / JSON request
+        # Se for requisição AJAX / JSON
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.is_json:
             return jsonify({'error': 'unauthorized', 'message': 'Faça login para continuar.', 'redirect': url_for('login')}), 401
 
-        # Preserve query or path for redirect after login
+        # Preservar destino se for rota segura
         next_param = None
         if request.method == 'GET' and request.path not in ('/', '/login', '/register', '/logout'):
-            next_param = request.full_path.rstrip('?')
+            full_p = request.full_path.rstrip('?')
+            if is_safe_redirect(full_p):
+                next_param = full_p
 
         return redirect(url_for('login', next=next_param))
+
+@app.after_request
+def set_security_headers(response):
+    """Aplica cabeçalhos HTTP de segurança e impede cache de dados sensíveis"""
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+    response.headers['X-XSS-Protection'] = '1; mode=block'
+    response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+    response.headers['Permissions-Policy'] = 'camera=(), microphone=(), geolocation=()'
+    
+    # Content-Security-Policy compatível com CDN Bootstrap e Google Fonts
+    response.headers['Content-Security-Policy'] = (
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
+        "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; "
+        "font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net data:; "
+        "img-src 'self' data: https:; "
+        "connect-src 'self';"
+    )
+
+    # Nunca permitir cache em páginas com dados de pedidos, senhas ou dados do usuário
+    sensitive_prefixes = ('/order/', '/admin/')
+    if (request.path in ('/profile', '/admin', '/checkout', '/cart') 
+        or any(request.path.startswith(p) for p in sensitive_prefixes)):
+        response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+        response.headers['Pragma'] = 'no-cache'
+        response.headers['Expires'] = '0'
+
+    return response
 
 # ----------------- HOME & CATALOG ROUTES ----------------- #
 
@@ -203,7 +278,7 @@ def register():
         flash(f'Conta criada com sucesso! Bem-vindo(a) ao Apex Boost Labs, {name}! 🚀', 'success')
         
         next_url = request.args.get('next')
-        if next_url and next_url.startswith('/') and next_url not in ('/login', '/register'):
+        if is_safe_redirect(next_url):
             return redirect(next_url)
         if session.get('cart'):
             return redirect(url_for('checkout'))
@@ -236,7 +311,7 @@ def login():
 
             flash(f'Login realizado com sucesso! Bem-vindo(a), {user["name"]}! 🚀', 'success')
             next_url = request.args.get('next')
-            if next_url and next_url.startswith('/') and next_url not in ('/login', '/register'):
+            if is_safe_redirect(next_url):
                 return redirect(next_url)
             if session.get('cart'):
                 return redirect(url_for('checkout'))
@@ -249,10 +324,9 @@ def login():
 
 @app.route('/logout')
 def logout():
-    session.pop('user_id', None)
-    session.pop('user_name', None)
-    session.pop('user_email', None)
-    session.pop('is_admin', None)
+    session.clear()
+    flash('Você saiu da sua conta com sucesso. Faça login novamente para acessar o site.', 'info')
+    return redirect(url_for('login'))
     flash('Você saiu da sua conta com sucesso. Faça login novamente para acessar o site.', 'info')
     return redirect(url_for('login'))
 
@@ -461,11 +535,11 @@ def checkout():
     if request.method == 'POST':
         # Process order
         user_id = session.get('user_id')
-        name = request.form.get('name', '').strip()
-        email = request.form.get('email', '').strip().lower()
+        name = request.form.get('name', '').strip() or session.get('user_name', 'Gamer')
+        email = request.form.get('email', '').strip().lower() or session.get('user_email', '')
         payment_method = request.form.get('payment_method', 'PIX')
 
-        # If user not logged in, auto-create or attach account
+        # If user not logged in, auto-create or attach account safely
         if not user_id:
             if not name or not email:
                 flash('Informe seu nome e e-mail para receber as chaves e downloads.', 'danger')
@@ -475,13 +549,16 @@ def checkout():
 
             existing_user = conn.execute("SELECT id FROM users WHERE email = ?", (email,)).fetchone()
             if existing_user:
-                user_id = existing_user['id']
+                # Seguranca: NUNCA logar em conta existente sem senha!
+                conn.close()
+                flash('Este e-mail já possui cadastro. Faça login com sua senha para finalizar sua compra com segurança.', 'warning')
+                return redirect(url_for('login', next=url_for('checkout')))
             else:
-                # Create an account with a default password and email notice
-                temp_pass = 'Apex' + uuid.uuid4().hex[:6]
+                # Criar nova conta com senha aleatória segura
+                temp_pass = 'Apex' + uuid.uuid4().hex[:8]
                 cur = conn.cursor()
                 cur.execute(
-                    "INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?)",
+                    "INSERT INTO users (name, email, password_hash, is_admin) VALUES (?, ?, ?, 0)",
                     (name, email, generate_password_hash(temp_pass))
                 )
                 user_id = cur.lastrowid
@@ -490,6 +567,7 @@ def checkout():
             session['user_id'] = user_id
             session['user_name'] = name
             session['user_email'] = email
+            session['is_admin'] = 0
 
         # Generate unique order code (e.g. APX-94821)
         order_code = f"APX-{datetime.datetime.now().strftime('%m%d')}-{uuid.uuid4().hex[:5].upper()}"
@@ -539,6 +617,14 @@ def order_success(order_code):
         conn.close()
         abort(404)
 
+    # Proteção IDOR: Apenas o dono do pedido ou administrador pode visualizar recibo e chaves
+    logged_user_id = session.get('user_id')
+    is_admin = session.get('is_admin', False)
+    if not is_admin and (not logged_user_id or order['user_id'] != logged_user_id):
+        conn.close()
+        flash('Acesso não autorizado a este pedido.', 'danger')
+        return redirect(url_for('index'))
+
     o_dict = dict(order)
     o_dict['total'] = float(o_dict.get('total') or 0.0)
     if o_dict.get('discount') is not None:
@@ -560,25 +646,51 @@ def order_success(order_code):
 
     return render_template('order_success.html', order=o_dict, items=items)
 
-# ----------------- DOWNLOAD HANDLER ----------------- #
+# ----------------- DOWNLOAD HANDLER (PROTEGIDO) ----------------- #
 
 @app.route('/download/<filename>')
 def download_file(filename):
-    # Only allow files from safe list
-    safe_files = ['starter_pack.zip', 'ultra_fps_pack.zip', 'network_pro_pack.zip', 'ultimate_extreme_suite.zip']
-    if filename not in safe_files:
+    if 'user_id' not in session:
+        flash('Faça login para baixar seus pacotes.', 'warning')
+        return redirect(url_for('login', next=request.path))
+
+    safe_name = os.path.basename(filename)
+    safe_files = {
+        'starter_pack.zip',
+        'ultra_fps_pack.zip',
+        'network_pro_pack.zip',
+        'ultimate_extreme_suite.zip'
+    }
+    if safe_name not in safe_files:
         abort(404)
 
-    # If user is logged in or has an active order, allow download
-    filepath = os.path.join(app.config['DOWNLOAD_FOLDER'], filename)
+    user_id = session['user_id']
+    is_admin = session.get('is_admin', False)
+
+    # Validação de compra: Apenas admin ou comprador com pedido PAGO pode baixar
+    if not is_admin:
+        conn = get_db()
+        purchased = conn.execute("""
+            SELECT 1 FROM order_items oi
+            JOIN orders o ON oi.order_id = o.id
+            JOIN products p ON oi.product_id = p.id
+            WHERE o.user_id = ? AND o.status = 'PAGO' AND p.download_file = ?
+        """, (user_id, safe_name)).fetchone()
+        conn.close()
+
+        if not purchased:
+            flash('Você precisa adquirir este pacote para realizar o download.', 'danger')
+            return redirect(url_for('index') + '#tab-packs')
+
+    filepath = os.path.join(app.config['DOWNLOAD_FOLDER'], safe_name)
     if not os.path.exists(filepath):
         abort(404)
 
     return send_from_directory(
         app.config['DOWNLOAD_FOLDER'],
-        filename,
+        safe_name,
         as_attachment=True,
-        download_name=filename
+        download_name=safe_name
     )
 
 @app.route('/favicon.ico')
@@ -602,7 +714,7 @@ def api_ping():
 def admin_dashboard():
     if not session.get('is_admin'):
         flash('Acesso restrito para administradores.', 'danger')
-        return redirect(url_for('login', next=request.path))
+        return redirect(url_for('index'))
 
     conn = get_db()
     try:
@@ -646,7 +758,7 @@ def admin_dashboard():
         db_backend=db_backend
     )
 
-@app.route('/admin/toggle-product/<int:product_id>')
+@app.route('/admin/toggle-product/<int:product_id>', methods=['GET', 'POST'])
 def admin_toggle_product(product_id):
     if not session.get('is_admin'):
         abort(403)
@@ -662,16 +774,23 @@ def admin_add_coupon():
     if not session.get('is_admin'):
         abort(403)
     code = request.form.get('code', '').strip().upper()
-    discount = request.form.get('discount', 10)
+    try:
+        discount = int(request.form.get('discount', 10))
+        if discount < 1 or discount > 100:
+            discount = 10
+    except (ValueError, TypeError):
+        discount = 10
+
     if code:
         conn = get_db()
         try:
-            conn.execute("INSERT INTO coupons (code, discount_percent) VALUES (?, ?)", (code, int(discount)))
+            conn.execute("INSERT INTO coupons (code, discount_percent) VALUES (?, ?)", (code, discount))
             conn.commit()
             flash(f'Cupom {code} criado com sucesso!', 'success')
         except Exception:
             flash('Erro: cupom já existente.', 'danger')
-        conn.close()
+        finally:
+            conn.close()
     return redirect(url_for('admin_dashboard'))
 
 @app.route('/admin/clear-orders', methods=['POST'])
@@ -701,14 +820,57 @@ def live_sales():
     ]
     return jsonify(notifications)
 
+# ----------------- CUSTOM ERROR HANDLERS (ANTI-LEAK) ----------------- #
+
+@app.errorhandler(400)
+def bad_request_error(e):
+    return render_template(
+        'error.html',
+        error_code=400,
+        error_badge="REQUISIÇÃO INVÁLIDA",
+        error_title="400 - Parâmetros Incorretos",
+        error_message="A requisição enviada contém caracteres ou parâmetros inválidos."
+    ), 400
+
+@app.errorhandler(403)
+def forbidden_error(e):
+    return render_template(
+        'error.html',
+        error_code=403,
+        error_badge="ACESSO BLOQUEADO",
+        error_title="403 - Acesso Negado",
+        error_message="Você não possui permissão para acessar este recurso ou baixar este arquivo diretamente."
+    ), 403
+
+@app.errorhandler(404)
+def not_found_error(e):
+    return render_template(
+        'error.html',
+        error_code=404,
+        error_badge="NÃO ENCONTRADO",
+        error_title="404 - Página Não Encontrada",
+        error_message="O endereço solicitado não existe, foi movido ou está temporariamente indisponível."
+    ), 404
+
+@app.errorhandler(500)
+def internal_server_error(e):
+    app.logger.error(f"[SECURITY] Erro 500 interceptado: {e}")
+    return render_template(
+        'error.html',
+        error_code=500,
+        error_badge="INSTABILIDADE TEMPORÁRIA",
+        error_title="500 - Instabilidade nos Servidores",
+        error_message="Nossos sistemas de segurança já isolaram o incidente. Nenhum dado foi afetado. Tente novamente em instantes."
+    ), 500
+
 # ----------------- RUN SCRIPT ----------------- #
 
 if __name__ == '__main__':
     print("==================================================")
     print("      🚀 APEX BOOST LABS - LOJA ONLINE ATIVA      ")
     print("  Acesse no navegador: http://127.0.0.1:5000       ")
-    print("  Conta Admin: admin@apexboost.com / admin123    ")
-    print("  Conta Gamer: gamer@teste.com / 123456          ")
+    print("  Servidor seguro com proteções ativas.           ")
     print("==================================================")
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    debug_mode = os.environ.get('FLASK_DEBUG', '0') == '1'
+    app.run(debug=debug_mode, host='0.0.0.0', port=5000)
 

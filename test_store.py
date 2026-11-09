@@ -59,7 +59,7 @@ class StoreTestCase(unittest.TestCase):
         # Logout redirects to login
         res_logout = self.client.get('/logout', follow_redirects=True)
         self.assertEqual(res_logout.status_code, 200)
-        self.assertIn(b'Acesse sua Conta', res_logout.data)
+        self.assertIn(b'ENTRAR NA CONTA', res_logout.data)
 
         # Login redirects to home page / site
         res_login = self.client.post('/login', data={

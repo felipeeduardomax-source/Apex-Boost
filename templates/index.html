@@ -681,12 +681,55 @@
         </div>
 
         <div class="scanner-card mx-auto" style="max-width: 1000px;">
+            <!-- Live Real-Time Hardware Detection Header -->
+            <div class="p-3 rounded-4 mb-4 border border-secondary border-opacity-50" style="background: rgba(0, 102, 255, 0.06);">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="scanner-live-pulse-dot"></span>
+                        <span class="text-uppercase fw-bold text-white small" style="letter-spacing: 0.04em;">
+                            Sondagem de Hardware & Telemetria em Tempo Real
+                        </span>
+                        <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-50" style="font-size: 0.68rem;">100% EM TEMPO REAL</span>
+                    </div>
+                    <small class="text-cyan small fw-semibold" id="scannerLiveClock"><i class="bi bi-broadcast me-1"></i> Monitorando subsistemas</small>
+                </div>
+
+                <!-- 4 Live Hardware Mini Cards -->
+                <div class="row g-2 text-start" id="scannerLiveHardwareRow">
+                    <div class="col-6 col-md-3">
+                        <div class="p-2 rounded-3 border border-secondary border-opacity-25" style="background: var(--bg-surface-2);">
+                            <small class="text-muted d-block" style="font-size: 0.68rem;">PLACA DE VÍDEO (GPU)</small>
+                            <strong class="text-white small text-truncate d-block" id="liveGpuName" title="Detectando...">Detectando GPU...</strong>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="p-2 rounded-3 border border-secondary border-opacity-25" style="background: var(--bg-surface-2);">
+                            <small class="text-muted d-block" style="font-size: 0.68rem;">CPU THREADS</small>
+                            <strong class="text-cyan small d-block" id="liveCpuCores">Identificando...</strong>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="p-2 rounded-3 border border-secondary border-opacity-25" style="background: var(--bg-surface-2);">
+                            <small class="text-muted d-block" style="font-size: 0.68rem;">TAXA DA TELA (HZ)</small>
+                            <strong class="text-warning small d-block" id="liveDisplayHz">Medindo ciclos...</strong>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="p-2 rounded-3 border border-secondary border-opacity-25" style="background: var(--bg-surface-2);">
+                            <small class="text-muted d-block" style="font-size: 0.68rem;">PING / LATÊNCIA</small>
+                            <strong class="text-success small d-block" id="livePingMs">Testando RTT...</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="row g-4">
                 <!-- Left: Configuration & Symptoms -->
                 <div class="col-lg-6">
                     <div class="d-flex align-items-center gap-2 mb-3">
                         <span class="scanner-step-badge">1</span>
                         <h6 class="text-white fw-bold mb-0">Informações do seu Setup</h6>
+                        <span class="badge bg-primary bg-opacity-25 text-cyan border border-primary border-opacity-50 ms-auto" style="font-size: 0.65rem;">Auto-Sincronizado</span>
                     </div>
 
                     <div class="row g-2 mb-3">
@@ -732,7 +775,7 @@
                     </div>
 
                     <button type="button" class="btn btn-apex-primary w-100 py-3" id="btnStartScan">
-                        <i class="bi bi-cpu-fill me-2"></i> EXECUTAR VARREDURA DE GARGALOS
+                        <i class="bi bi-cpu-fill me-2"></i> EXECUTAR VARREDURA EM TEMPO REAL
                     </button>
                 </div>
 
@@ -743,14 +786,18 @@
                         <div class="rounded-circle p-4 mb-3" style="background: rgba(0, 102, 255, 0.08); border: 1px dashed var(--color-blue);">
                             <i class="bi bi-radar text-blue fs-1"></i>
                         </div>
-                        <h5 class="text-white fw-bold mb-1">Aguardando Parâmetros</h5>
-                        <p class="text-secondary small mb-0">Selecione o seu setup e clique no botão para testar os 4 subsistemas do Windows.</p>
+                        <h5 class="text-white fw-bold mb-1">Aguardando Início do Diagnóstico</h5>
+                        <p class="text-secondary small mb-3">Clique no botão para medir ao vivo a GPU, taxa de atualização do monitor, jitter do timer de alta precisão e latência de rede.</p>
+                        <div class="d-flex align-items-center gap-2 text-success small">
+                            <span class="scanner-live-pulse-dot"></span>
+                            <span>Sondas de telemetria prontas para execução instantânea</span>
+                        </div>
                     </div>
 
                     <!-- State 2: Running Progress Console -->
                     <div id="scanRunningState" class="d-none h-100 flex-column justify-content-center">
                         <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="text-cyan small fw-bold"><i class="bi bi-gear-wide-connected me-1"></i> ESCANEANDO SUBSISTEMAS...</span>
+                            <span class="text-cyan small fw-bold"><i class="bi bi-gear-wide-connected me-1"></i> MEDINDO TELEMETRIA AO VIVO...</span>
                             <span id="scanPercentText" class="text-white fw-bold small">0%</span>
                         </div>
                         <div class="progress mb-3" style="height: 8px; background: #090a0f;">
@@ -758,7 +805,7 @@
                         </div>
 
                         <div class="scanner-log-terminal" id="scanTerminalLogs">
-                            <div class="scanner-log-line active"><i class="bi bi-chevron-right text-blue"></i> Inicializando telemetria de kernel...</div>
+                            <div class="scanner-log-line active"><i class="bi bi-chevron-right text-blue"></i> Inicializando telemetria de hardware...</div>
                         </div>
                     </div>
 
@@ -769,6 +816,32 @@
                             <span class="text-secondary small">ID: #DX-{{ (range(1000, 9999) | random) }}</span>
                         </div>
 
+                        <!-- Real Hardware Measured Box -->
+                        <div class="p-3 rounded-3 mb-3 border border-secondary border-opacity-50" style="background: rgba(0, 0, 0, 0.45);">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <small class="text-uppercase fw-bold text-cyan" style="font-size: 0.72rem;"><i class="bi bi-cpu-fill me-1"></i> Telemetria Real Medida na sua Máquina:</small>
+                                <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-50" style="font-size: 0.65rem;">100% REAL</span>
+                            </div>
+                            <div class="row g-2 text-start">
+                                <div class="col-12 col-sm-6">
+                                    <small class="text-muted d-block" style="font-size: 0.68rem;">GPU Detectada:</small>
+                                    <span class="text-white small fw-bold text-truncate d-block" id="diagGpuName">Detectando...</span>
+                                </div>
+                                <div class="col-6 col-sm-6">
+                                    <small class="text-muted d-block" style="font-size: 0.68rem;">Processador:</small>
+                                    <span class="text-white small fw-bold d-block" id="diagCpuThreads">-</span>
+                                </div>
+                                <div class="col-6 col-sm-6">
+                                    <small class="text-muted d-block" style="font-size: 0.68rem;">Taxa do Monitor:</small>
+                                    <span class="text-warning small fw-bold d-block" id="diagDisplayHz">-</span>
+                                </div>
+                                <div class="col-12 col-sm-6">
+                                    <small class="text-muted d-block" style="font-size: 0.68rem;">Timer Jitter & Ping:</small>
+                                    <span class="text-info small fw-bold d-block" id="diagLatencyStats">-</span>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="scanner-score-box mb-3">
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <div>
@@ -776,12 +849,12 @@
                                     <div class="display-6 fw-black text-danger" id="scanScoreText">54%</div>
                                 </div>
                                 <div class="text-end">
-                                    <small class="text-muted text-uppercase" style="font-size: 0.7rem;">Ganho Potencial</small>
+                                    <small class="text-muted text-uppercase" style="font-size: 0.7rem;">Ganho Potencial Estimado</small>
                                     <div class="fs-4 fw-black text-cyan" id="scanGainText">+80% FPS</div>
                                 </div>
                             </div>
                             <div class="progress" style="height: 6px; background: rgba(255,255,255,0.1);">
-                                <div class="progress-bar bg-danger" style="width: 54%;"></div>
+                                <div class="progress-bar bg-danger" id="scanScoreBar" style="width: 54%;"></div>
                             </div>
                         </div>
 
@@ -808,6 +881,9 @@
                             </a>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
                 </div>
             </div>
         </div>

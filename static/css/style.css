@@ -2004,6 +2004,28 @@ body.theme-dark .metric-bar-bg {
   font-weight: 800;
 }
 
+.scanner-live-pulse-dot {
+  width: 9px;
+  height: 9px;
+  background-color: #10b981;
+  border-radius: 50%;
+  display: inline-block;
+  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  animation: pulse-dot-green 1.8s infinite;
+}
+
+@keyframes pulse-dot-green {
+  0% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
 .scanner-log-terminal {
   background: #090a0f;
   border: 1px solid #1e2330;

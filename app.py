@@ -59,17 +59,17 @@ def inject_global_data():
 @app.before_request
 def require_login():
     """Requires user to be logged in before accessing the site"""
-    public_endpoints = {'login', 'register', 'static', 'favicon'}
+    public_endpoints = {'login', 'register', 'static', 'favicon', 'api_ping'}
     if request.endpoint in public_endpoints or (request.endpoint and request.endpoint.startswith('static')):
         return
 
     # Direct static file requests
-    if request.path.startswith('/static/') or request.path == '/favicon.ico':
+    if request.path.startswith('/static/') or request.path in ('/favicon.ico', '/api/ping'):
         return
 
     # If unauthenticated, redirect to login
     if 'user_id' not in session:
-        if request.path in ('/login', '/register', '/favicon.ico'):
+        if request.path in ('/login', '/register', '/favicon.ico', '/api/ping'):
             return
 
         # If AJAX / JSON request
@@ -533,6 +533,13 @@ def favicon():
         'favicon.ico',
         mimetype='image/vnd.microsoft.icon'
     )
+
+@app.route('/api/ping')
+def api_ping():
+    return jsonify({
+        'status': 'ok',
+        'server_time': datetime.datetime.now().isoformat()
+    })
 
 # ----------------- ADMIN DASHBOARD ----------------- #
 

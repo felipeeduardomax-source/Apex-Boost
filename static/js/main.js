@@ -248,7 +248,7 @@ function initThemeToggle() {
 }
 
 // ==========================================================================
-// Unified Landing Page Smooth Scrolling & ScrollSpy
+// Dynamic Sidebar Tab Switching (Shows ONLY selected tab)
 // ==========================================================================
 function initSidebarTabs() {
     const tabTriggers = document.querySelectorAll('[data-tab-target]');
@@ -256,46 +256,49 @@ function initSidebarTabs() {
     const sidebarNavItems = document.querySelectorAll('.sidebar-nav-item[data-tab-target]');
     const mobileBottomItems = document.querySelectorAll('.mobile-bottom-item[data-tab-target]');
 
-    function updateActiveNav(targetId) {
-        if (!targetId) targetId = 'tab-home';
-        const clean = targetId.replace(/^#/, '');
-        const idWithTab = clean.startsWith('tab-') ? clean : 'tab-' + clean;
+    function activateTab(tabId) {
+        if (!tabId) tabId = 'tab-home';
+        const clean = tabId.replace(/^#/, '');
+        const targetWithTab = clean.startsWith('tab-') ? clean : 'tab-' + clean;
 
-        sidebarNavItems.forEach(item => {
-            const t = item.getAttribute('data-tab-target') || '';
-            const tClean = t.replace(/^#/, '');
-            const tWithTab = tClean.startsWith('tab-') ? tClean : 'tab-' + tClean;
-            if (tWithTab === idWithTab) {
-                item.classList.add('active');
-            } else {
-                item.classList.remove('active');
+        if (tabPanes.length > 0) {
+            let found = false;
+            tabPanes.forEach(pane => {
+                if (pane.id === targetWithTab || pane.id === clean) {
+                    pane.classList.add('active');
+                    found = true;
+                } else {
+                    pane.classList.remove('active');
+                }
+            });
+
+            if (!found && tabPanes[0]) {
+                tabPanes[0].classList.add('active');
             }
-        });
 
-        mobileBottomItems.forEach(item => {
-            const t = item.getAttribute('data-tab-target') || '';
-            const tClean = t.replace(/^#/, '');
-            const tWithTab = tClean.startsWith('tab-') ? tClean : 'tab-' + tClean;
-            if (tWithTab === idWithTab) {
-                item.classList.add('active');
-            } else {
-                item.classList.remove('active');
-            }
-        });
-    }
+            // Update active state in sidebar
+            sidebarNavItems.forEach(item => {
+                const t = (item.getAttribute('data-tab-target') || '').replace(/^#/, '');
+                const tWithTab = t.startsWith('tab-') ? t : 'tab-' + t;
+                if (tWithTab === targetWithTab || t === clean) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
 
-    function scrollToSection(targetId) {
-        if (!targetId) return;
-        const clean = targetId.replace(/^#/, '');
-        const targetEl = document.getElementById(clean) 
-                      || document.getElementById('tab-' + clean)
-                      || document.getElementById(clean.replace(/^tab-/, ''));
+            // Update active state in mobile bottom dock
+            mobileBottomItems.forEach(item => {
+                const t = (item.getAttribute('data-tab-target') || '').replace(/^#/, '');
+                const tWithTab = t.startsWith('tab-') ? t : 'tab-' + t;
+                if (tWithTab === targetWithTab || t === clean) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
 
-        if (targetEl) {
-            const yOffset = -75;
-            const y = targetEl.getBoundingClientRect().top + window.pageYOffset + yOffset;
-            window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
-            updateActiveNav(clean);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     }
 
@@ -310,7 +313,7 @@ function initSidebarTabs() {
 
                 if (targetEl) {
                     e.preventDefault();
-                    scrollToSection(targetId);
+                    activateTab(targetId);
                     try {
                         const newHash = clean.startsWith('tab-') ? clean : 'tab-' + clean;
                         window.history.pushState(null, '', '#' + newHash);
@@ -326,34 +329,12 @@ function initSidebarTabs() {
         });
     });
 
-    // ScrollSpy to track user position and highlight corresponding menu item
     if (tabPanes.length > 0) {
-        let isScrollingTimeout = null;
-        window.addEventListener('scroll', () => {
-            if (isScrollingTimeout) return;
-            isScrollingTimeout = setTimeout(() => {
-                isScrollingTimeout = null;
-                const scrollPos = window.scrollY + 140;
-                let currentId = 'tab-home';
-
-                tabPanes.forEach(pane => {
-                    const top = pane.offsetTop;
-                    const height = pane.offsetHeight;
-                    if (scrollPos >= top && scrollPos < top + height) {
-                        currentId = pane.id;
-                    }
-                });
-
-                updateActiveNav(currentId);
-            }, 60);
-        }, { passive: true });
-
-        // Smooth scroll on direct link with hash
         const hash = window.location.hash.replace('#', '');
         if (hash) {
-            setTimeout(() => {
-                scrollToSection(hash);
-            }, 120);
+            activateTab(hash);
+        } else {
+            activateTab('tab-home');
         }
     }
 }

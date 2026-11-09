@@ -730,27 +730,20 @@ body.sidebar-hidden .floating-sidebar-toggle,
   background: var(--bg-deep);
 }
 
-/* All Store Sections Flowing Landing Page */
+/* Tab Pane Views - Strict single-tab isolation as requested */
 .store-tab-pane {
-  display: block !important;
-  opacity: 1 !important;
-  transform: none !important;
-  margin-bottom: 3.5rem;
-  scroll-margin-top: 85px;
-  position: relative;
-}
-
-.store-tab-pane:not(:last-child)::after {
-  content: '';
-  display: block;
-  width: 100%;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(0, 102, 255, 0.22), rgba(0, 210, 255, 0.22), transparent);
-  margin-top: 3.5rem;
+  display: none !important;
+  animation: fadeInTabPane 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  min-height: 70vh;
 }
 
 .store-tab-pane.active {
-  display: block;
+  display: block !important;
+}
+
+@keyframes fadeInTabPane {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* Mobile Header (< 992px) */

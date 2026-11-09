@@ -626,7 +626,7 @@ body.theme-dark .border-secondary {
 }
 
 /* Sidebar in dark mode */
-body.theme-dark .sidebar-section-title {
+body.theme-dark .sidebar-section-title:not([class*="section-"]) {
   color: #94a3b8 !important;
 }
 
@@ -857,14 +857,103 @@ body.sidebar-hidden .floating-sidebar-toggle,
   background: rgba(9, 10, 15, 0.9);
 }
 
-/* Sidebar Navigation Items */
+/* Sidebar Navigation Items - Destacados & Estilizados */
 .sidebar-section-title {
-  font-size: 0.7rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.76rem;
   font-weight: 800;
-  color: #64748b;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  padding: 14px 12px 6px 12px;
+  letter-spacing: 0.12em;
+  padding: 16px 12px 6px 12px;
+  position: relative;
+  transition: all 0.25s ease;
+}
+
+.sidebar-section-title i {
+  font-size: 0.95rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebar-section-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  margin-left: 8px;
+  opacity: 0.65;
+}
+
+/* Categoria: Navegação Principal */
+.sidebar-section-title.section-main {
+  color: #60a5fa !important;
+}
+.sidebar-section-title.section-main i {
+  color: #3b82f6 !important;
+  filter: drop-shadow(0 0 6px rgba(59, 130, 246, 0.7));
+}
+.sidebar-section-title.section-main::after {
+  background: linear-gradient(90deg, rgba(59, 130, 246, 0.65) 0%, transparent 100%);
+}
+
+/* Categoria: Compras & Carrinho */
+.sidebar-section-title.section-cart {
+  color: #38bdf8 !important;
+}
+.sidebar-section-title.section-cart i {
+  color: #00d2ff !important;
+  filter: drop-shadow(0 0 6px rgba(0, 210, 255, 0.7));
+}
+.sidebar-section-title.section-cart::after {
+  background: linear-gradient(90deg, rgba(0, 210, 255, 0.65) 0%, transparent 100%);
+}
+
+/* Categoria: Administração */
+.sidebar-section-title.section-admin {
+  color: #fbbf24 !important;
+}
+.sidebar-section-title.section-admin i {
+  color: #f59e0b !important;
+  filter: drop-shadow(0 0 6px rgba(245, 158, 11, 0.7));
+}
+.sidebar-section-title.section-admin::after {
+  background: linear-gradient(90deg, rgba(245, 158, 11, 0.65) 0%, transparent 100%);
+}
+
+/* Suporte de Alto Contraste no Modo Claro */
+body.theme-light .sidebar-section-title.section-main {
+  color: #1d4ed8 !important;
+}
+body.theme-light .sidebar-section-title.section-main i {
+  color: #1d4ed8 !important;
+  filter: none;
+}
+body.theme-light .sidebar-section-title.section-main::after {
+  background: linear-gradient(90deg, rgba(29, 78, 216, 0.4) 0%, transparent 100%);
+}
+
+body.theme-light .sidebar-section-title.section-cart {
+  color: #0284c7 !important;
+}
+body.theme-light .sidebar-section-title.section-cart i {
+  color: #0284c7 !important;
+  filter: none;
+}
+body.theme-light .sidebar-section-title.section-cart::after {
+  background: linear-gradient(90deg, rgba(2, 132, 199, 0.4) 0%, transparent 100%);
+}
+
+body.theme-light .sidebar-section-title.section-admin {
+  color: #b45309 !important;
+}
+body.theme-light .sidebar-section-title.section-admin i {
+  color: #b45309 !important;
+  filter: none;
+}
+body.theme-light .sidebar-section-title.section-admin::after {
+  background: linear-gradient(90deg, rgba(180, 83, 9, 0.4) 0%, transparent 100%);
 }
 
 .sidebar-nav-item {

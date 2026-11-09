@@ -317,9 +317,6 @@
                         <button type="button" class="btn btn-apex-outline btn-add-cart-ajax w-100 py-2" data-product-id="{{ prod.id }}">
                             <i class="bi bi-cart-plus me-1"></i> Adicionar ao Carrinho
                         </button>
-                        <button type="button" class="btn btn-link text-secondary small text-decoration-none text-center py-0" data-bs-toggle="modal" data-bs-target="#modalPackPeek{{ prod.id }}">
-                            <i class="bi bi-eye text-blue me-1"></i> Espiar Conteúdo do .ZIP
-                        </button>
                         <a href="{{ url_for('product_detail', slug=prod.slug) }}" class="btn btn-link text-secondary small text-decoration-none text-center py-0">
                             Ver detalhes do pacote <i class="bi bi-chevron-right"></i>
                         </a>
@@ -328,94 +325,6 @@
             </div>
             {% endfor %}
         </div>
-
-        <!-- Quick Peek Modals -->
-        {% for prod in products %}
-        <div class="modal fade" id="modalPackPeek{{ prod.id }}" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered modal-lg">
-                <div class="modal-content glass-card border-2" style="border-color: var(--color-blue); background: var(--bg-card);">
-                    <div class="modal-header border-bottom border-secondary border-opacity-25 pb-3">
-                        <div class="d-flex align-items-center gap-2">
-                            <i class="bi {{ prod.icon }} text-blue fs-4"></i>
-                            <div>
-                                <h5 class="modal-title text-white fw-bold mb-0">{{ prod.name }}</h5>
-                                <small class="text-secondary">{{ prod.download_file }} &bull; Licença Vitalícia</small>
-                            </div>
-                        </div>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
-                    </div>
-                    <div class="modal-body p-4">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <span class="badge-cyan"><i class="bi bi-folder-check me-1"></i> ARQUIVOS & SCRIPTS INCLUSOS NO .ZIP</span>
-                            <span class="text-blue fw-black fs-5">R$ {{ "%.2f"|format(prod.price)|replace('.', ',') }}</span>
-                        </div>
-                        <p class="text-secondary small mb-3">Todos os scripts possuem código aberto e documentado, executando automaticamente com 1 clique:</p>
-                        
-                        <div class="p-3 rounded-3 mb-3 border border-secondary border-opacity-25" style="background: var(--color-black); color: #fff; font-family: 'SF Mono', Consolas, monospace; font-size: 0.85rem;">
-                            <div class="text-success small fw-bold mb-2"><i class="bi bi-terminal"></i> Conteúdo descompactado:</div>
-                            <ul class="list-unstyled mb-0 d-flex flex-column gap-1">
-                                {% if prod.slug == 'ultimate_extreme_suite' %}
-                                    <li class="text-warning"><i class="bi bi-file-earmark-play-fill text-warning me-1"></i> 00_APEX_OTIMIZADOR_MASTER_PRO.bat (Painel Interativo c/ 9 Menus)</li>
-                                    <li><i class="bi bi-file-earmark-code text-blue me-1"></i> 01_CRIAR_PONTO_RESTAURACAO.bat</li>
-                                    <li><i class="bi bi-file-earmark-code text-blue me-1"></i> 02_BACKUP_REGISTRO_WINDOWS.bat</li>
-                                    <li><i class="bi bi-file-earmark-code text-blue me-1"></i> 03_CPU_CORE_UNPARK_MAX_THREADS.bat</li>
-                                    <li><i class="bi bi-file-earmark-code text-blue me-1"></i> 04_TIMER_RESOLUTION_05MS_HPET_OFF.bat</li>
-                                    <li><i class="bi bi-file-earmark-code text-blue me-1"></i> 05_GPU_HAGS_SCHEDULING_DIRECTX.bat</li>
-                                    <li><i class="bi bi-file-earmark-code text-blue me-1"></i> 06_INPUT_LAG_MOUSE_RAW_KEYBOARD.bat</li>
-                                    <li><i class="bi bi-file-earmark-code text-blue me-1"></i> 07_TCPIP_AUTOTUNING_OFFLOAD.bat</li>
-                                    <li><i class="bi bi-file-earmark-code text-blue me-1"></i> 08_DESATIVAR_NAGLE_ALGORITHM.bat</li>
-                                    <li><i class="bi bi-file-earmark-code text-blue me-1"></i> 09_CONFIGURAR_DNS_GAMER_CLOUDFLARE.bat</li>
-                                    <li><i class="bi bi-file-earmark-code text-blue me-1"></i> 10_NETWORK_THROTTLING_INDEX_OFF.bat</li>
-                                    <li><i class="bi bi-file-earmark-code text-blue me-1"></i> 11_LIMPEZA_PROFUNDA_TEMP_RAM.bat</li>
-                                    <li><i class="bi bi-file-earmark-code text-blue me-1"></i> 12_DESATIVAR_TELEMETRIA_BLOAT.bat</li>
-                                    <li><i class="bi bi-file-earmark-code text-blue me-1"></i> 13_PLANO_ENERGIA_ULTIMATE_PERF.bat</li>
-                                    <li><i class="bi bi-arrow-counterclockwise text-danger me-1"></i> 99_REVERTER_CONFIGURACOES.bat</li>
-                                    <li class="text-secondary"><i class="bi bi-file-earmark-text text-secondary me-1"></i> Manuais de CS2, Valorant, Warzone, Fortnite, GTA V e BIOS.txt</li>
-                                {% elif prod.slug == 'ultra_fps_pack' %}
-                                    <li class="text-warning"><i class="bi bi-file-earmark-play-fill text-warning me-1"></i> 00_APEX_OTIMIZADOR_AUTOMATICO.bat</li>
-                                    <li><i class="bi bi-file-earmark-code text-blue me-1"></i> 01_CRIAR_PONTO_RESTAURACAO.bat</li>
-                                    <li><i class="bi bi-file-earmark-code text-blue me-1"></i> 02_CPU_CORE_UNPARK_MAX_THREADS.bat</li>
-                                    <li><i class="bi bi-file-earmark-code text-blue me-1"></i> 03_TIMER_RESOLUTION_05MS_HPET_OFF.bat</li>
-                                    <li><i class="bi bi-file-earmark-code text-blue me-1"></i> 04_GPU_HAGS_SCHEDULING_DIRECTX.bat</li>
-                                    <li><i class="bi bi-file-earmark-code text-blue me-1"></i> 05_INPUT_LAG_MOUSE_RAW_KEYBOARD.bat</li>
-                                    <li><i class="bi bi-file-earmark-code text-blue me-1"></i> 06_LIMPEZA_PROFUNDA_TEMP_RAM.bat</li>
-                                    <li><i class="bi bi-file-earmark-code text-blue me-1"></i> 07_DESATIVAR_TELEMETRIA_BLOAT.bat</li>
-                                    <li><i class="bi bi-file-earmark-code text-blue me-1"></i> 08_PLANO_ENERGIA_ULTIMATE_PERF.bat</li>
-                                    <li><i class="bi bi-arrow-counterclockwise text-danger me-1"></i> 99_REVERTER_CONFIGURACOES.bat</li>
-                                    <li class="text-secondary"><i class="bi bi-file-earmark-text text-secondary me-1"></i> GUIA_CONFIGURACOES_JOGOS.txt & GUIA_BIOS_XMP.txt</li>
-                                {% elif prod.slug == 'network_pro_pack' %}
-                                    <li class="text-warning"><i class="bi bi-file-earmark-play-fill text-warning me-1"></i> 00_APEX_OTIMIZADOR_AUTOMATICO.bat</li>
-                                    <li><i class="bi bi-file-earmark-code text-blue me-1"></i> 01_CRIAR_PONTO_RESTAURACAO.bat</li>
-                                    <li><i class="bi bi-file-earmark-code text-blue me-1"></i> 02_TCPIP_AUTOTUNING_OFFLOAD.bat</li>
-                                    <li><i class="bi bi-file-earmark-code text-blue me-1"></i> 03_DESATIVAR_NAGLE_ALGORITHM.bat</li>
-                                    <li><i class="bi bi-file-earmark-code text-blue me-1"></i> 04_CONFIGURAR_DNS_GAMER_CLOUDFLARE.bat</li>
-                                    <li><i class="bi bi-file-earmark-code text-blue me-1"></i> 05_NETWORK_THROTTLING_INDEX_OFF.bat</li>
-                                    <li><i class="bi bi-file-earmark-code text-blue me-1"></i> 06_LIMPEZA_PROFUNDA_TEMP_RAM.bat</li>
-                                    <li><i class="bi bi-file-earmark-code text-blue me-1"></i> 07_PLANO_ENERGIA_ULTIMATE_PERF.bat</li>
-                                    <li><i class="bi bi-arrow-counterclockwise text-danger me-1"></i> 99_REVERTER_CONFIGURACOES.bat</li>
-                                    <li class="text-secondary"><i class="bi bi-file-earmark-text text-secondary me-1"></i> LEIA-ME_PRIMEIROS_PASSOS.txt</li>
-                                {% else %}
-                                    <li class="text-warning"><i class="bi bi-file-earmark-play-fill text-warning me-1"></i> 00_APEX_INICIAR_AQUI.bat</li>
-                                    <li><i class="bi bi-file-earmark-code text-blue me-1"></i> 01_CRIAR_PONTO_RESTAURACAO.bat</li>
-                                    <li><i class="bi bi-file-earmark-code text-blue me-1"></i> 02_LIMPEZA_PROFUNDA_TEMP_RAM.bat</li>
-                                    <li><i class="bi bi-file-earmark-code text-blue me-1"></i> 03_DESATIVAR_TELEMETRIA_BLOAT.bat</li>
-                                    <li><i class="bi bi-file-earmark-code text-blue me-1"></i> 04_PLANO_ENERGIA_ULTIMATE_PERF.bat</li>
-                                    <li><i class="bi bi-arrow-counterclockwise text-danger me-1"></i> 99_REVERTER_CONFIGURACOES.bat</li>
-                                    <li class="text-secondary"><i class="bi bi-file-earmark-text text-secondary me-1"></i> LEIA-ME_PRIMEIROS_PASSOS.txt</li>
-                                {% endif %}
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="modal-footer border-top border-secondary border-opacity-25">
-                        <button type="button" class="btn btn-apex-outline" data-bs-dismiss="modal">Fechar</button>
-                        <a href="{{ url_for('add_to_cart', product_id=prod.id) }}" class="btn btn-apex-primary">
-                            <i class="bi bi-cart-plus-fill me-1"></i> Adicionar Pack ao Carrinho
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-        {% endfor %}
 
         <!-- DETALHAMENTO DE TWEAKS E OTIMIZAÇÕES INCLUSAS -->
         <div class="mt-5 pt-4 border-top border-secondary border-opacity-25">

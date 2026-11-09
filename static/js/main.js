@@ -99,7 +99,6 @@ document.addEventListener('DOMContentLoaded', () => {
     initSoundToggle();
     initSidebarDrawer();
     initSidebarTabs();
-    initTelemetryComparator();
     initPackSearchAndFilters();
     initBottleneckScanner();
     initMysteryDropModal();
@@ -329,90 +328,6 @@ function initSidebarTabs() {
             activateTab('tab-home');
         }
     }
-}
-
-// ==========================================================================
-// Interactive Before / After Telemetry Comparator
-// ==========================================================================
-function initTelemetryComparator() {
-    const btnStandard = document.getElementById('btnModeStandard');
-    const btnOptimized = document.getElementById('btnModeOptimized');
-
-    if (!btnStandard || !btnOptimized) return;
-
-    const val1Low = document.getElementById('val1PercentLow');
-    const bar1Low = document.getElementById('bar1PercentLow');
-    const valInput = document.getElementById('valInputLag');
-    const barInput = document.getElementById('barInputLag');
-    const valTimer = document.getElementById('valTimerRes');
-    const barTimer = document.getElementById('barTimerRes');
-    const valProc = document.getElementById('valProcesses');
-    const barProc = document.getElementById('barProcesses');
-
-    const statusEl = document.getElementById('boxCompareStatus');
-    const mainMetricEl = document.getElementById('boxCompareMainMetric');
-    const descEl = document.getElementById('boxCompareDesc');
-    const metricSmoothEl = document.getElementById('metricSmooth');
-    const metricDpcEl = document.getElementById('metricDpc');
-    const metricRamEl = document.getElementById('metricRam');
-
-    function setStandardMode() {
-        btnStandard.classList.add('active');
-        btnOptimized.classList.remove('active');
-
-        if (val1Low) { val1Low.textContent = '48 FPS (Quedas Bruscas)'; val1Low.className = 'fw-black text-danger'; }
-        if (bar1Low) { bar1Low.style.width = '25%'; bar1Low.className = 'metric-bar-fill bg-danger'; }
-
-        if (valInput) { valInput.textContent = '16.8 ms (Atraso Alto)'; valInput.className = 'fw-black text-danger'; }
-        if (barInput) { barInput.style.width = '85%'; barInput.className = 'metric-bar-fill bg-danger'; }
-
-        if (valTimer) { valTimer.textContent = '15.6 ms (Desperdiçando Clock)'; valTimer.className = 'fw-black text-secondary'; }
-        if (barTimer) { barTimer.style.width = '80%'; barTimer.className = 'metric-bar-fill bg-warning'; }
-
-        if (valProc) { valProc.textContent = '192 Processos Ativos'; valProc.className = 'fw-black text-danger'; }
-        if (barProc) { barProc.style.width = '90%'; barProc.className = 'metric-bar-fill bg-danger'; }
-
-        if (statusEl) statusEl.textContent = 'Status: Computador com Configuração Padrão do Windows';
-        if (mainMetricEl) { mainMetricEl.textContent = '115 FPS Médio'; mainMetricEl.style.color = '#ef4444'; }
-        if (descEl) descEl.textContent = 'O processador tem núcleos adormecidos (Core Parking), o timer oscila em 15ms e serviços do Windows disputam ciclos com a sua GPU.';
-        if (metricSmoothEl) { metricSmoothEl.textContent = 'Irregular'; metricSmoothEl.style.color = '#ef4444'; }
-        if (metricDpcEl) { metricDpcEl.textContent = '850 µs'; metricDpcEl.className = 'fs-6 text-warning'; }
-        if (metricRamEl) { metricRamEl.textContent = '3.2 GB'; }
-    }
-
-    function setOptimizedMode() {
-        btnOptimized.classList.add('active');
-        btnStandard.classList.remove('active');
-
-        if (val1Low) { val1Low.textContent = '135 FPS (Cravado & Liso!)'; val1Low.className = 'fw-black text-success'; }
-        if (bar1Low) { bar1Low.style.width = '95%'; bar1Low.className = 'metric-bar-fill bg-success'; }
-
-        if (valInput) { valInput.textContent = '2.4 ms (Instantâneo ⚡)'; valInput.className = 'fw-black text-info'; }
-        if (barInput) { barInput.style.width = '12%'; barInput.className = 'metric-bar-fill bg-info'; }
-
-        if (valTimer) { valTimer.textContent = '0.500 ms (Precisão Máxima HPET)'; valTimer.className = 'fw-black text-primary'; }
-        if (barTimer) { barTimer.style.width = '100%'; barTimer.className = 'metric-bar-fill bg-primary'; }
-
-        if (valProc) { valProc.textContent = '68 Processos Enxutos'; valProc.className = 'fw-black text-success'; }
-        if (barProc) { barProc.style.width = '28%'; barProc.className = 'metric-bar-fill bg-success'; }
-
-        if (statusEl) statusEl.textContent = 'Status: Máquina Tunada com Apex Boost Master Pro';
-        if (mainMetricEl) { mainMetricEl.textContent = '240+ FPS Estáveis'; mainMetricEl.style.color = '#00d2ff'; }
-        if (descEl) descEl.textContent = 'Todos os núcleos destravados (Unpark CPU), latência de DPC abaixo de 50µs e fila de renderização prioritária para o jogo.';
-        if (metricSmoothEl) { metricSmoothEl.textContent = 'Ultra Fluido 144/240Hz'; metricSmoothEl.style.color = '#10b981'; }
-        if (metricDpcEl) { metricDpcEl.textContent = '38 µs'; metricDpcEl.className = 'fs-6 text-success'; }
-        if (metricRamEl) { metricRamEl.textContent = '6.8 GB Livres'; }
-    }
-
-    btnStandard.addEventListener('click', () => {
-        ApexSound.playClick();
-        setStandardMode();
-    });
-
-    btnOptimized.addEventListener('click', () => {
-        ApexSound.playSuccess();
-        setOptimizedMode();
-    });
 }
 
 // ==========================================================================

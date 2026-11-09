@@ -3,15 +3,22 @@
 {% block title %}Painel Administrativo | Apex Boost Labs{% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4" style="max-width: 1300px;">
-    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+<div class="container-fluid py-4" style="max-width: 1350px;">
+    <!-- Top Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
         <div>
-            <span class="badge bg-warning text-dark fw-bold mb-1" style="font-size: 0.72rem;">PAINEL DO PROPRIETÁRIO</span>
+            <span class="badge bg-warning text-dark fw-bold mb-1" style="font-size: 0.72rem;">
+                <i class="bi bi-shield-lock-fill me-1"></i> PAINEL DO PROPRIETÁRIO
+            </span>
             <h1 class="display-6 fw-black text-white mb-0">ADMIN DASHBOARD</h1>
         </div>
         <div class="d-flex gap-2">
-            <a href="{{ url_for('profile') }}" class="btn btn-sm btn-apex-outline"><i class="bi bi-person me-1"></i> Meu Perfil</a>
-            <a href="{{ url_for('index') }}" class="btn btn-sm btn-apex-primary"><i class="bi bi-shop me-1"></i> Ver Loja</a>
+            <a href="{{ url_for('profile') }}" class="btn btn-sm btn-apex-outline py-2 px-3">
+                <i class="bi bi-person-fill me-1"></i> Meu Perfil
+            </a>
+            <a href="{{ url_for('index') }}" class="btn btn-sm btn-apex-primary py-2 px-3">
+                <i class="bi bi-shop me-1"></i> Ver Loja
+            </a>
         </div>
     </div>
 
@@ -19,49 +26,53 @@
     <div class="row g-3 mb-4">
         <div class="col-6 col-lg-3">
             <div class="glass-card p-3 p-md-4">
-                <small class="text-secondary d-block mb-1 text-uppercase" style="font-size: 0.72rem;">FATURAMENTO TOTAL</small>
+                <small class="text-secondary d-block mb-1 text-uppercase fw-bold" style="font-size: 0.72rem;">FATURAMENTO TOTAL</small>
                 <div class="fs-3 fw-black text-heading glow-blue">R$ {{ "%.2f"|format(total_sales or 0)|replace('.', ',') }}</div>
-                <small class="text-blue"><i class="bi bi-cash-stack"></i> Vendas aprovadas</small>
+                <small class="text-blue fw-semibold"><i class="bi bi-cash-stack"></i> Vendas aprovadas</small>
             </div>
         </div>
         <div class="col-6 col-lg-3">
             <div class="glass-card p-3 p-md-4">
-                <small class="text-secondary d-block mb-1 text-uppercase" style="font-size: 0.72rem;">PEDIDOS REALIZADOS</small>
-                <div class="fs-3 fw-black text-heading">{{ total_orders }}</div>
-                <small class="text-blue"><i class="bi bi-receipt"></i> Histórico total</small>
+                <small class="text-secondary d-block mb-1 text-uppercase fw-bold" style="font-size: 0.72rem;">TICKET MÉDIO</small>
+                <div class="fs-3 fw-black text-heading text-cyan">R$ {{ "%.2f"|format(ticket_medio or 0)|replace('.', ',') }}</div>
+                <small class="text-cyan fw-semibold"><i class="bi bi-calculator"></i> Por compra</small>
             </div>
         </div>
         <div class="col-6 col-lg-3">
             <div class="glass-card p-3 p-md-4">
-                <small class="text-secondary d-block mb-1 text-uppercase" style="font-size: 0.72rem;">USUÁRIOS CADASTRADOS</small>
-                <div class="fs-3 fw-black text-heading">{{ total_users }}</div>
-                <small class="text-warning"><i class="bi bi-people-fill"></i> Contas criadas</small>
+                <small class="text-secondary d-block mb-1 text-uppercase fw-bold" style="font-size: 0.72rem;">PEDIDOS APROVADOS</small>
+                <div class="fs-3 fw-black text-heading">{{ paid_orders }} <span class="fs-6 text-secondary fw-normal">/ {{ total_orders }}</span></div>
+                <small class="text-warning fw-semibold"><i class="bi bi-percent"></i> {{ "%.1f"|format(taxa_conversao) }}% conversão</small>
             </div>
         </div>
         <div class="col-6 col-lg-3">
             <div class="glass-card p-3 p-md-4">
-                <small class="text-secondary d-block mb-1 text-uppercase" style="font-size: 0.72rem;">PACKS ATIVOS</small>
-                <div class="fs-3 fw-black text-blue">{{ total_products }}</div>
-                <small class="text-blue"><i class="bi bi-box-seam-fill"></i> No catálogo</small>
+                <small class="text-secondary d-block mb-1 text-uppercase fw-bold" style="font-size: 0.72rem;">PACK MAIS VENDIDO</small>
+                <div class="fs-5 fw-black text-heading text-truncate" title="{{ top_product_name }}">{{ top_product_name }}</div>
+                <small class="text-blue fw-semibold"><i class="bi bi-trophy-fill"></i> Campeão da loja</small>
             </div>
         </div>
     </div>
 
-    <!-- Admin Workspace with Dedicated Sidebar for Tabs -->
+    <!-- Admin Workspace with Dedicated Sidebar Tabs -->
     <div class="row g-4">
         <!-- Admin Dedicated Sidebar -->
         <div class="col-lg-3">
             <div class="inner-page-sidebar">
                 <div class="sidebar-section-title px-2 pt-1 pb-2">Controles Administrativos</div>
                 <div class="nav flex-column nav-pills" id="adminSidebarTabs" role="tablist">
-                    <button class="inner-sidebar-btn active" data-bs-toggle="pill" data-bs-target="#adminOrders" type="button" role="tab">
+                    <button class="inner-sidebar-btn active" data-bs-toggle="pill" data-bs-target="#adminMetrics" type="button" role="tab">
+                        <i class="bi bi-graph-up-arrow text-cyan"></i>
+                        <span>Desempenho & Vendas</span>
+                    </button>
+                    <button class="inner-sidebar-btn" data-bs-toggle="pill" data-bs-target="#adminOrders" type="button" role="tab">
                         <i class="bi bi-cart-check-fill text-blue"></i>
                         <span>Pedidos Recentes</span>
                         <span class="badge rounded-pill badge-counter ms-auto">{{ recent_orders|length }}</span>
                     </button>
                     <button class="inner-sidebar-btn" data-bs-toggle="pill" data-bs-target="#adminProducts" type="button" role="tab">
                         <i class="bi bi-boxes text-blue"></i>
-                        <span>Gerenciar Packs</span>
+                        <span>Gerenciar Packs & Serviços</span>
                         <span class="badge rounded-pill badge-counter ms-auto">{{ products|length }}</span>
                     </button>
                     <button class="inner-sidebar-btn" data-bs-toggle="pill" data-bs-target="#adminCoupons" type="button" role="tab">
@@ -81,6 +92,7 @@
                 <div class="p-3 rounded-3" style="background: var(--bg-surface-2); border: 1px solid var(--border-subtle);">
                     <small class="text-secondary d-block" style="font-size: 0.75rem;">Status do Banco de Dados:</small>
                     <div class="text-success small fw-bold mt-1"><i class="bi bi-database-check me-1"></i> {{ db_backend }} Conectado</div>
+                    <small class="text-secondary d-block mt-2" style="font-size: 0.72rem;">Segurança Ativa: HSTS, Anti-Leak & CSP</small>
                 </div>
             </div>
         </div>
@@ -88,8 +100,69 @@
         <!-- Admin Content Area -->
         <div class="col-lg-9">
             <div class="tab-content">
-                <!-- 1. Orders -->
-                <div class="tab-pane fade show active" id="adminOrders">
+                <!-- 1. Desempenho & Vendas (Gráficos) -->
+                <div class="tab-pane fade show active" id="adminMetrics">
+                    <div class="glass-card p-4 mb-4">
+                        <h5 class="text-white fw-bold mb-3 border-bottom border-secondary border-opacity-50 pb-2">
+                            <i class="bi bi-bar-chart-line-fill text-cyan me-2"></i> Receita Gerada por Pack / Serviço
+                        </h5>
+                        <p class="text-secondary small mb-4">Acompanhe quais produtos estão gerando mais faturamento na sua loja.</p>
+
+                        {% if sales_by_product %}
+                            {% set max_revenue = sales_by_product[0].total_revenue if sales_by_product[0].total_revenue > 0 else 1 %}
+                            <div class="d-flex flex-column gap-3">
+                                {% for item in sales_by_product %}
+                                    {% set percent = (item.total_revenue / max_revenue * 100)|round|int %}
+                                    <div>
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <span class="fw-bold text-heading">
+                                                {{ item.name }}
+                                                <small class="text-secondary ms-1 fw-normal">({{ item.sales_count }} venda{{ 's' if item.sales_count != 1 else '' }})</small>
+                                            </span>
+                                            <span class="fw-bold text-blue">R$ {{ "%.2f"|format(item.total_revenue)|replace('.', ',') }}</span>
+                                        </div>
+                                        <div class="progress rounded-pill" style="height: 10px; background: rgba(255, 255, 255, 0.08);">
+                                            <div class="progress-bar rounded-pill" role="progressbar" 
+                                                style="width: {{ percent if percent > 3 else 3 }}%; background: linear-gradient(90deg, #0052cc 0%, #0066ff 50%, #00d2ff 100%); box-shadow: 0 0 10px rgba(0, 102, 255, 0.5);" 
+                                                aria-valuenow="{{ percent }}" aria-valuemin="0" aria-valuemax="100">
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <p class="text-secondary small">Nenhuma venda registrada ainda para exibir o gráfico.</p>
+                        {% endif %}
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="glass-card p-4 h-100">
+                                <h6 class="text-white fw-bold mb-3"><i class="bi bi-lightning-charge-fill text-warning me-2"></i>Ações Rápidas de Vendas</h6>
+                                <p class="text-secondary small mb-3">Dicas práticas para impulsionar suas conversões hoje:</p>
+                                <ul class="text-secondary small ps-3 mb-0 d-flex flex-column gap-2">
+                                    <li>Crie um cupom exclusivo de 20% para sua live ou canal (ex: <code>CANAL20</code>).</li>
+                                    <li>Ative e divulgue a <strong>Otimização Remota VIP</strong> no WhatsApp com valor mais alto.</li>
+                                    <li>Envie o link do site direto para seus amigos do Discord testarem a Calculadora de FPS.</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="glass-card p-4 h-100">
+                                <h6 class="text-white fw-bold mb-3"><i class="bi bi-shield-check text-cyan me-2"></i>Status de Segurança do Servidor</h6>
+                                <div class="d-flex flex-column gap-2 text-secondary small">
+                                    <div><i class="bi bi-check-circle-fill text-success me-2"></i> Proteção contra senhas vazadas: <strong>Ativa</strong></div>
+                                    <div><i class="bi bi-check-circle-fill text-success me-2"></i> Criptografia SSL/TLS (HSTS): <strong>Ativa</strong></div>
+                                    <div><i class="bi bi-check-circle-fill text-success me-2"></i> Firewall anti-download não autorizado: <strong>Ativo</strong></div>
+                                    <div><i class="bi bi-check-circle-fill text-success me-2"></i> Drop VIP único por usuário: <strong>Ativo</strong></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Orders -->
+                <div class="tab-pane fade" id="adminOrders">
                     <div class="glass-card p-4">
                         <div class="d-flex justify-content-between align-items-center mb-3 border-bottom border-secondary border-opacity-50 pb-2 flex-wrap gap-2">
                             <h5 class="text-white fw-bold mb-0">
@@ -117,6 +190,7 @@
                                             <th>Pagamento</th>
                                             <th>Data</th>
                                             <th>Status</th>
+                                            <th>Ação</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -128,7 +202,20 @@
                                             <td><strong class="text-heading fs-6">R$ {{ "%.2f"|format(o.total or 0)|replace('.', ',') }}</strong></td>
                                             <td><span class="badge bg-secondary" style="font-size: 0.72rem;">{{ o.payment_method }}</span></td>
                                             <td class="text-secondary small">{{ o.created_at | format_datetime }}</td>
-                                            <td><span class="badge-fire">{{ o.status }}</span></td>
+                                            <td>
+                                                {% if o.status == 'PAGO' %}
+                                                    <span class="badge bg-success" style="font-size: 0.72rem;"><i class="bi bi-check-lg me-1"></i>PAGO</span>
+                                                {% else %}
+                                                    <span class="badge bg-warning text-dark" style="font-size: 0.72rem;">PENDENTE</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <form action="{{ url_for('admin_toggle_order_status', order_id=o.id) }}" method="POST" class="d-inline">
+                                                    <button type="submit" class="btn btn-sm {{ 'btn-outline-warning' if o.status == 'PAGO' else 'btn-outline-success' }} py-0 px-2" style="font-size: 0.72rem;" title="Alternar status do pedido">
+                                                        {{ 'Mudar p/ Pendente' if o.status == 'PAGO' else 'Aprovar Pedido' }}
+                                                    </button>
+                                                </form>
+                                            </td>
                                         </tr>
                                         {% endfor %}
                                     </tbody>
@@ -138,12 +225,103 @@
                     </div>
                 </div>
 
-                <!-- 2. Products -->
+                <!-- 3. Products & Services (Cadastrar e Gerenciar) -->
                 <div class="tab-pane fade" id="adminProducts">
-                    <div class="glass-card p-4">
-                        <h5 class="text-white fw-bold mb-3 border-bottom border-secondary border-opacity-50 pb-2">
-                            <i class="bi bi-boxes text-blue me-2"></i> Catálogo de Packs
+                    <!-- Collapse / Botão para Cadastrar Novo Produto -->
+                    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                        <h5 class="text-white fw-bold mb-0">
+                            <i class="bi bi-boxes text-blue me-2"></i> Catálogo de Packs & Serviços
                         </h5>
+                        <button class="btn btn-apex-primary btn-sm py-2 px-3" type="button" data-bs-toggle="collapse" data-bs-target="#formNovoProduto" aria-expanded="false" aria-controls="formNovoProduto">
+                            <i class="bi bi-plus-circle me-1"></i> Cadastrar Novo Pack / Serviço
+                        </button>
+                    </div>
+
+                    <!-- Formulário de Cadastro de Novo Produto (Colapsável) -->
+                    <div class="collapse mb-4" id="formNovoProduto">
+                        <div class="glass-card p-4 border border-blue">
+                            <div class="d-flex justify-content-between align-items-center mb-3 border-bottom border-secondary border-opacity-50 pb-2">
+                                <h6 class="text-white fw-bold mb-0">
+                                    <i class="bi bi-sparkles text-cyan me-2"></i> Novo Produto ou Serviço no Catálogo
+                                </h6>
+                                <span class="badge bg-blue text-white" style="font-size: 0.72rem;">Publicação Imediata</span>
+                            </div>
+
+                            <form action="{{ url_for('admin_add_product') }}" method="POST">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label small text-secondary fw-bold">Nome do Pack / Serviço *</label>
+                                        <input type="text" name="name" class="form-control" placeholder="Ex: Otimização Remota VIP AnyDesk" required>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label small text-secondary fw-bold">Preço de Venda (R$) *</label>
+                                        <input type="number" step="0.01" name="price" class="form-control" placeholder="Ex: 79.90" required>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label small text-secondary fw-bold">Preço Antigo / De (R$)</label>
+                                        <input type="number" step="0.01" name="old_price" class="form-control" placeholder="Ex: 149.90">
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label class="form-label small text-secondary fw-bold">Tag / Subtítulo</label>
+                                        <input type="text" name="tag" class="form-control" placeholder="Ex: Atendimento Individual 1-a-1">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label small text-secondary fw-bold">Badge em Destaque</label>
+                                        <input type="text" name="badge" class="form-control" placeholder="Ex: MAIS VENDIDO ⭐ ou VIP 👑">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label small text-secondary fw-bold">Ícone do Produto</label>
+                                        <select name="icon" class="form-select">
+                                            <option value="bi-headset">🎧 Fone / Headset (Suporte VIP)</option>
+                                            <option value="bi-lightning-charge-fill" selected>⚡ Raio (Velocidade / FPS)</option>
+                                            <option value="bi-cpu-fill">💻 CPU / Processador</option>
+                                            <option value="bi-wifi">📶 Rede / Ping Baixo</option>
+                                            <option value="bi-gem">💎 Diamante / VIP Suite</option>
+                                            <option value="bi-shield-check">🛡️ Escudo / Segurança</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label class="form-label small text-secondary fw-bold">Ganho Estimado de FPS</label>
+                                        <input type="text" name="fps_gain" class="form-control" placeholder="Ex: +85% FPS">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label small text-secondary fw-bold">Redução de Latência / Ping</label>
+                                        <input type="text" name="latency_drop" class="form-control" placeholder="Ex: -55ms Delay">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label small text-secondary fw-bold">Arquivo ZIP p/ Download</label>
+                                        <select name="download_file" class="form-select">
+                                            <option value="ultra_fps_pack.zip" selected>ultra_fps_pack.zip (Ultra Pack)</option>
+                                            <option value="starter_pack.zip">starter_pack.zip (Starter Pack)</option>
+                                            <option value="network_pro_pack.zip">network_pro_pack.zip (Network Pro)</option>
+                                            <option value="ultimate_suite.zip">ultimate_suite.zip (Extreme Suite)</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-12">
+                                        <label class="form-label small text-secondary fw-bold">Descrição Curta</label>
+                                        <input type="text" name="short_desc" class="form-control" placeholder="Resumo de 1 frase para o card do produto...">
+                                    </div>
+
+                                    <div class="col-12">
+                                        <label class="form-label small text-secondary fw-bold">Benefícios Inclusos (1 por linha)</label>
+                                        <textarea name="features" rows="4" class="form-control" placeholder="Atendimento 1-a-1 pelo Discord ou AnyDesk&#10;Desbloqueio de núcleos do processador&#10;Calibragem de placa de vídeo sem riscos&#10;Backup de segurança e garantia de FPS"></textarea>
+                                        <small class="text-secondary" style="font-size: 0.72rem;">Cada linha virará um item com check azul na página do pack.</small>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex justify-content-end gap-2 mt-3">
+                                    <button type="button" class="btn btn-sm btn-secondary" data-bs-toggle="collapse" data-bs-target="#formNovoProduto">Cancelar</button>
+                                    <button type="submit" class="btn btn-sm btn-apex-primary px-4"><i class="bi bi-check-circle me-1"></i> Salvar e Publicar Pack</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Tabela de Produtos Cadastrados -->
+                    <div class="glass-card p-4">
                         <div class="table-responsive">
                             <table class="table custom-gamer-table align-middle mb-0">
                                 <thead>
@@ -153,15 +331,20 @@
                                         <th>Preço Antigo</th>
                                         <th>Arquivo</th>
                                         <th>Status</th>
-                                        <th>Ação</th>
+                                        <th>Ações</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {% for p in products %}
                                     <tr class="border-bottom border-secondary border-opacity-25">
                                         <td>
-                                            <strong class="text-heading">{{ p.name }}</strong>
-                                            <small class="text-blue d-block fw-semibold">{{ p.tag }}</small>
+                                            <div class="d-flex align-items-center gap-2">
+                                                <i class="bi {{ p.icon or 'bi-box-seam' }} text-blue fs-5"></i>
+                                                <div>
+                                                    <strong class="text-heading">{{ p.name }}</strong>
+                                                    <small class="text-blue d-block fw-semibold">{{ p.tag }}</small>
+                                                </div>
+                                            </div>
                                         </td>
                                         <td class="text-heading fw-bold">R$ {{ "%.2f"|format(p.price or 0)|replace('.', ',') }}</td>
                                         <td class="text-secondary">
@@ -174,15 +357,25 @@
                                         <td><code>{{ p.download_file }}</code></td>
                                         <td>
                                             {% if p.active %}
-                                                <span class="badge-cyan">Ativo</span>
+                                                <span class="badge bg-success" style="font-size: 0.72rem;">Ativo no Site</span>
                                             {% else %}
-                                                <span class="badge bg-danger">Oculto</span>
+                                                <span class="badge bg-danger" style="font-size: 0.72rem;">Oculto</span>
                                             {% endif %}
                                         </td>
                                         <td>
-                                            <a href="{{ url_for('admin_toggle_product', product_id=p.id) }}" class="btn btn-sm btn-apex-outline py-1">
-                                                Alternar Status
-                                            </a>
+                                            <div class="d-flex gap-1 flex-wrap">
+                                                <a href="{{ url_for('product_detail', slug=p.slug) }}" target="_blank" class="btn btn-sm btn-outline-info py-0 px-2" style="font-size: 0.72rem;" title="Ver como o cliente vê">
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
+                                                <a href="{{ url_for('admin_toggle_product', product_id=p.id) }}" class="btn btn-sm btn-apex-outline py-0 px-2" style="font-size: 0.72rem;">
+                                                    {{ 'Ocultar' if p.active else 'Ativar' }}
+                                                </a>
+                                                <form action="{{ url_for('admin_delete_product', product_id=p.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Tem certeza que deseja excluir o pack \'{{ p.name }}\'?');">
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2" style="font-size: 0.72rem;" title="Excluir produto">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
                                         </td>
                                     </tr>
                                     {% endfor %}
@@ -192,7 +385,7 @@
                     </div>
                 </div>
 
-                <!-- 3. Coupons -->
+                <!-- 4. Coupons -->
                 <div class="tab-pane fade" id="adminCoupons">
                     <div class="row g-4">
                         <div class="col-lg-5">
@@ -200,21 +393,35 @@
                                 <h5 class="text-white fw-bold mb-3"><i class="bi bi-plus-circle text-cyan me-2"></i>Criar Novo Cupom</h5>
                                 <form method="POST" action="{{ url_for('admin_add_coupon') }}">
                                     <div class="mb-3">
-                                        <label class="form-label">Código do Cupom</label>
-                                        <input type="text" name="code" class="form-control text-uppercase" placeholder="EX: MEUGAMER30" required>
+                                        <label class="form-label small text-secondary fw-bold">Código do Cupom</label>
+                                        <input type="text" id="couponCodeInput" name="code" class="form-control text-uppercase" placeholder="EX: MEUGAMER30" required>
                                     </div>
                                     <div class="mb-3">
-                                        <label class="form-label">Porcentagem (%)</label>
-                                        <input type="number" name="discount" class="form-control" placeholder="Ex: 20" min="1" max="90" required>
+                                        <label class="form-label small text-secondary fw-bold">Porcentagem (%) de Desconto</label>
+                                        <input type="number" id="couponDiscountInput" name="discount" class="form-control" placeholder="Ex: 20" min="1" max="90" required>
                                     </div>
-                                    <button type="submit" class="btn btn-apex-primary w-100 py-2">Salvar Cupom</button>
+
+                                    <!-- Sugestões Rápidas de 1 Clique -->
+                                    <div class="mb-3">
+                                        <small class="text-secondary d-block mb-2" style="font-size: 0.72rem;">Atalhos rápidos para campanhas:</small>
+                                        <div class="d-flex flex-wrap gap-1">
+                                            <button type="button" class="btn btn-xs btn-outline-secondary py-1 px-2" style="font-size: 0.72rem;" onclick="setCoupon('YOUTUBE15', 15)">+ YOUTUBE15</button>
+                                            <button type="button" class="btn btn-xs btn-outline-secondary py-1 px-2" style="font-size: 0.72rem;" onclick="setCoupon('LIVE25', 25)">+ LIVE25</button>
+                                            <button type="button" class="btn btn-xs btn-outline-secondary py-1 px-2" style="font-size: 0.72rem;" onclick="setCoupon('VIP50', 50)">+ VIP50</button>
+                                            <button type="button" class="btn btn-xs btn-outline-secondary py-1 px-2" style="font-size: 0.72rem;" onclick="setCoupon('STREAMER10', 10)">+ STREAMER10</button>
+                                        </div>
+                                    </div>
+
+                                    <button type="submit" class="btn btn-apex-primary w-100 py-2">
+                                        <i class="bi bi-check-lg me-1"></i> Salvar Cupom
+                                    </button>
                                 </form>
                             </div>
                         </div>
 
                         <div class="col-lg-7">
                             <div class="glass-card p-4">
-                                <h5 class="text-white fw-bold mb-3"><i class="bi bi-ticket-perforated text-blue me-2"></i>Cupons Ativos</h5>
+                                <h5 class="text-white fw-bold mb-3"><i class="bi bi-ticket-perforated text-blue me-2"></i>Cupons Ativos no Sistema</h5>
                                 <div class="table-responsive">
                                     <table class="table custom-gamer-table align-middle mb-0">
                                         <thead>
@@ -222,14 +429,22 @@
                                                 <th>Código</th>
                                                 <th>Desconto</th>
                                                 <th>Status</th>
+                                                <th>Ação</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             {% for c in coupons %}
                                             <tr class="border-bottom border-secondary border-opacity-25">
-                                                <td><strong class="text-warning">{{ c.code }}</strong></td>
+                                                <td><strong class="text-warning fs-6">{{ c.code }}</strong></td>
                                                 <td><span class="text-blue fw-bold">{{ c.discount_percent }}% OFF</span></td>
-                                                <td><span class="badge-cyan">Ativo</span></td>
+                                                <td><span class="badge bg-success" style="font-size: 0.72rem;">Ativo</span></td>
+                                                <td>
+                                                    <form action="{{ url_for('admin_delete_coupon', coupon_id=c.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Tem certeza que deseja excluir o cupom {{ c.code }}?');">
+                                                        <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2" style="font-size: 0.72rem;" title="Excluir cupom">
+                                                            <i class="bi bi-trash"></i>
+                                                        </button>
+                                                    </form>
+                                                </td>
                                             </tr>
                                             {% endfor %}
                                         </tbody>
@@ -240,7 +455,7 @@
                     </div>
                 </div>
 
-                <!-- 4. Users -->
+                <!-- 5. Users -->
                 <div class="tab-pane fade" id="adminUsers">
                     <div class="glass-card p-4">
                         <h5 class="text-white fw-bold mb-3 border-bottom border-secondary border-opacity-50 pb-2">
@@ -267,7 +482,7 @@
                                             {% if u.is_admin %}
                                                 <span class="badge bg-warning text-dark">Admin</span>
                                             {% else %}
-                                                <span class="badge-gamer">Gamer</span>
+                                                <span class="badge bg-secondary" style="font-size: 0.72rem;">Gamer</span>
                                             {% endif %}
                                         </td>
                                         <td class="text-secondary small">{{ u.created_at | format_datetime }}</td>
@@ -282,4 +497,16 @@
         </div>
     </div>
 </div>
+
+<script>
+    function setCoupon(code, discount) {
+        const codeInput = document.getElementById('couponCodeInput');
+        const discountInput = document.getElementById('couponDiscountInput');
+        if (codeInput && discountInput) {
+            codeInput.value = code;
+            discountInput.value = discount;
+            codeInput.focus();
+        }
+    }
+</script>
 {% endblock %}

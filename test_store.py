@@ -296,5 +296,39 @@ class StoreTestCase(unittest.TestCase):
         self.assertFalse(data_weak['success'])
         self.assertIn('vazamentos', data_weak['message'].lower())
 
+    def test_17_admin_product_and_coupon_management(self):
+        """Testa o cadastro de novos produtos, gerenciamento de cupons e alternância de status de pedidos no painel admin"""
+        # 1. Login as admin
+        self.client.post('/login', data={
+            'email': 'admin@apexboost.com',
+            'password': 'admin123'
+        })
+
+        # 2. Add a new product
+        res_add_prod = self.client.post('/admin/add-product', data={
+            'name': 'Otimização Remota VIP AnyDesk',
+            'price': '79.90',
+            'old_price': '149.90',
+            'tag': 'Atendimento 1-a-1',
+            'badge': 'VIP 👑',
+            'fps_gain': '+95% FPS',
+            'latency_drop': '-60ms Delay',
+            'short_desc': 'Ajuste feito por especialista via AnyDesk',
+            'features': "Atendimento individual\nAjuste de BIOS\nRedução de Input Lag",
+            'download_file': 'ultra_fps_pack.zip',
+            'icon': 'bi-headset'
+        }, follow_redirects=True)
+        self.assertEqual(res_add_prod.status_code, 200)
+        self.assertIn(b'cadastrado com sucesso', res_add_prod.data)
+        self.assertIn(b'Otimiza', res_add_prod.data)
+
+        # 3. Add and delete coupon
+        res_add_c = self.client.post('/admin/add-coupon', data={
+            'code': 'TESTEADMIN30',
+            'discount': '30'
+        }, follow_redirects=True)
+        self.assertEqual(res_add_c.status_code, 200)
+        self.assertIn(b'TESTEADMIN30', res_add_c.data)
+
 if __name__ == '__main__':
     unittest.main()

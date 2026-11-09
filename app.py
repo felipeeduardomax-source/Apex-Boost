@@ -1,6 +1,9 @@
 import os
+import re
 import json
 import uuid
+import random
+import secrets
 import datetime
 from urllib.parse import urlsplit
 from werkzeug.utils import secure_filename
@@ -770,7 +773,7 @@ def api_ping():
         'server_time': datetime.datetime.now().isoformat()
     })
 
-# ----------------- ADMIN DASHBOARD ----------------- #
+# ----------------- ADMIN DASHBOARD & STORE MANAGEMENT ----------------- #
 
 @app.route('/admin')
 def admin_dashboard():
@@ -786,21 +789,55 @@ def admin_dashboard():
         total_orders_row = conn.execute("SELECT COUNT(*) as cnt FROM orders").fetchone()
         total_orders = total_orders_row['cnt'] if total_orders_row else 0
 
+        paid_orders_row = conn.execute("SELECT COUNT(*) as cnt FROM orders WHERE status = 'PAGO'").fetchone()
+        paid_orders = paid_orders_row['cnt'] if paid_orders_row else 0
+
         total_users_row = conn.execute("SELECT COUNT(*) as cnt FROM users").fetchone()
         total_users = total_users_row['cnt'] if total_users_row else 0
 
         total_products_row = conn.execute("SELECT COUNT(*) as cnt FROM products").fetchone()
         total_products = total_products_row['cnt'] if total_products_row else 0
 
+        # Estatísticas inteligentes
+        ticket_medio = (total_sales / paid_orders) if paid_orders > 0 else 0.0
+        taxa_conversao = (paid_orders / total_orders * 100) if total_orders > 0 else 0.0
+
+        # Produto campeão de vendas
+        top_prod_row = conn.execute("""
+            SELECT p.name, COUNT(oi.id) as sales_count
+            FROM order_items oi
+            JOIN products p ON oi.product_id = p.id
+            JOIN orders o ON oi.order_id = o.id
+            WHERE o.status = 'PAGO'
+            GROUP BY p.name
+            ORDER BY sales_count DESC LIMIT 1
+        """).fetchone()
+        top_product_name = top_prod_row['name'] if top_prod_row else "Aguardando Vendas"
+
+        # Vendas por produto (Gráfico de performance)
+        sales_by_product_raw = conn.execute("""
+            SELECT p.name, p.tag, COALESCE(SUM(oi.price), 0) as total_revenue, COUNT(oi.id) as sales_count
+            FROM products p
+            LEFT JOIN order_items oi ON p.id = oi.product_id
+            LEFT JOIN orders o ON oi.order_id = o.id AND o.status = 'PAGO'
+            GROUP BY p.id, p.name, p.tag
+            ORDER BY total_revenue DESC
+        """).fetchall()
+        sales_by_product = []
+        for s in sales_by_product_raw:
+            s_dict = dict(s)
+            s_dict['total_revenue'] = float(s_dict.get('total_revenue') or 0.0)
+            sales_by_product.append(s_dict)
+
         recent_orders = conn.execute("""
             SELECT o.*, u.name as user_name, u.email as user_email
             FROM orders o
             LEFT JOIN users u ON o.user_id = u.id
-            ORDER BY o.id DESC LIMIT 15
+            ORDER BY o.id DESC LIMIT 25
         """).fetchall()
 
         products = conn.execute("SELECT * FROM products ORDER BY id ASC").fetchall()
-        users = conn.execute("SELECT id, name, email, is_admin, created_at FROM users ORDER BY id DESC LIMIT 20").fetchall()
+        users = conn.execute("SELECT id, name, email, is_admin, created_at FROM users ORDER BY id DESC LIMIT 25").fetchall()
         coupons = conn.execute("SELECT * FROM coupons ORDER BY id DESC").fetchall()
     finally:
         conn.close()
@@ -811,6 +848,11 @@ def admin_dashboard():
         'admin.html',
         total_sales=total_sales,
         total_orders=total_orders,
+        paid_orders=paid_orders,
+        ticket_medio=ticket_medio,
+        taxa_conversao=taxa_conversao,
+        top_product_name=top_product_name,
+        sales_by_product=sales_by_product,
         total_users=total_users,
         total_products=total_products,
         recent_orders=recent_orders,
@@ -819,6 +861,94 @@ def admin_dashboard():
         coupons=coupons,
         db_backend=db_backend
     )
+
+@app.route('/admin/add-product', methods=['POST'])
+def admin_add_product():
+    if not session.get('is_admin'):
+        abort(403)
+
+    name = request.form.get('name', '').strip()
+    if not name:
+        flash('O nome do produto é obrigatório.', 'danger')
+        return redirect(url_for('admin_dashboard'))
+
+    tag = request.form.get('tag', '').strip() or 'Otimização Gamer'
+    badge = request.form.get('badge', '').strip() or 'NOVO'
+    short_desc = request.form.get('short_desc', '').strip() or 'Pack de otimização de alta performance.'
+    description = request.form.get('description', '').strip() or short_desc
+    fps_gain = request.form.get('fps_gain', '').strip() or '+50% FPS'
+    latency_drop = request.form.get('latency_drop', '').strip() or '-30ms Delay'
+    download_file = request.form.get('download_file', '').strip() or 'ultra_fps_pack.zip'
+    icon = request.form.get('icon', '').strip() or 'bi-lightning-charge-fill'
+
+    try:
+        price = float(request.form.get('price', 19.90))
+    except (ValueError, TypeError):
+        price = 19.90
+
+    try:
+        old_price_val = request.form.get('old_price', '').strip()
+        old_price = float(old_price_val) if old_price_val else None
+    except (ValueError, TypeError):
+        old_price = None
+
+    raw_features = request.form.get('features', '').strip()
+    if raw_features:
+        features_list = [f.strip() for f in raw_features.split('\n') if f.strip()]
+    else:
+        features_list = [
+            "Otimização completa em 1 clique",
+            "Script automático com backup seguro",
+            "Redução imediata de latência e input lag",
+            "Suporte vitalício e atualizações"
+        ]
+    features_json = json.dumps(features_list)
+
+    base_slug = re.sub(r'[^a-z0-9]+', '-', name.lower()).strip('-')
+    if not base_slug:
+        base_slug = f"pack-{random.randint(1000, 9999)}"
+    slug = base_slug
+
+    conn = get_db()
+    try:
+        existing = conn.execute("SELECT id FROM products WHERE slug = ?", (slug,)).fetchone()
+        if existing:
+            slug = f"{base_slug}-{random.randint(100, 999)}"
+
+        conn.execute("""
+            INSERT INTO products (
+                slug, name, tag, short_desc, description,
+                price, old_price, badge, fps_gain, latency_drop,
+                features, download_file, icon, popular, active
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 1)
+        """, (
+            slug, name, tag, short_desc, description,
+            price, old_price, badge, fps_gain, latency_drop,
+            features_json, download_file, icon
+        ))
+        conn.commit()
+        flash(f'Produto "{name}" cadastrado com sucesso no catálogo!', 'success')
+    except Exception as e:
+        flash(f'Erro ao cadastrar produto: {str(e)}', 'danger')
+    finally:
+        conn.close()
+
+    return redirect(url_for('admin_dashboard'))
+
+@app.route('/admin/delete-product/<int:product_id>', methods=['POST'])
+def admin_delete_product(product_id):
+    if not session.get('is_admin'):
+        abort(403)
+    conn = get_db()
+    try:
+        conn.execute("DELETE FROM products WHERE id = ?", (product_id,))
+        conn.commit()
+        flash('Produto excluído com sucesso do catálogo!', 'info')
+    except Exception as e:
+        flash(f'Erro ao excluir produto: {str(e)}', 'danger')
+    finally:
+        conn.close()
+    return redirect(url_for('admin_dashboard'))
 
 @app.route('/admin/toggle-product/<int:product_id>', methods=['GET', 'POST'])
 def admin_toggle_product(product_id):
@@ -853,6 +983,45 @@ def admin_add_coupon():
             flash('Erro: cupom já existente.', 'danger')
         finally:
             conn.close()
+    return redirect(url_for('admin_dashboard'))
+
+@app.route('/admin/delete-coupon/<int:coupon_id>', methods=['POST'])
+def admin_delete_coupon(coupon_id):
+    if not session.get('is_admin'):
+        abort(403)
+    conn = get_db()
+    try:
+        conn.execute("DELETE FROM coupons WHERE id = ?", (coupon_id,))
+        conn.commit()
+        flash('Cupom removido com sucesso!', 'info')
+    except Exception as e:
+        flash(f'Erro ao remover cupom: {str(e)}', 'danger')
+    finally:
+        conn.close()
+    return redirect(url_for('admin_dashboard'))
+
+@app.route('/admin/toggle-order-status/<int:order_id>', methods=['POST'])
+def admin_toggle_order_status(order_id):
+    if not session.get('is_admin'):
+        abort(403)
+    conn = get_db()
+    try:
+        order = conn.execute("SELECT * FROM orders WHERE id = ?", (order_id,)).fetchone()
+        if order:
+            new_status = 'PENDENTE' if order['status'] == 'PAGO' else 'PAGO'
+            conn.execute("UPDATE orders SET status = ? WHERE id = ?", (new_status, order_id))
+            if new_status == 'PAGO':
+                items = conn.execute("SELECT * FROM order_items WHERE order_id = ?", (order_id,)).fetchall()
+                for item in items:
+                    if not item['license_key']:
+                        new_key = generate_license_key()
+                        conn.execute("UPDATE order_items SET license_key = ? WHERE id = ?", (new_key, item['id']))
+            conn.commit()
+            flash(f'Status do pedido #{order["order_code"]} alterado para {new_status}!', 'success')
+    except Exception as e:
+        flash(f'Erro ao atualizar pedido: {str(e)}', 'danger')
+    finally:
+        conn.close()
     return redirect(url_for('admin_dashboard'))
 
 @app.route('/admin/clear-orders', methods=['POST'])

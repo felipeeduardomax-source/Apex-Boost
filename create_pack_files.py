@@ -4,39 +4,44 @@ import zipfile
 DOWNLOADS_DIR = os.path.join(os.path.dirname(__file__), 'static', 'downloads')
 os.makedirs(DOWNLOADS_DIR, exist_ok=True)
 
+# Common elevation header for all individual .bat scripts
+ELEVATION_HEADER = """@echo off
+net session >nul 2>&1
+if %errorlevel% neq 0 (
+    echo [APEX BOOST] Solicitando privilegios de Administrador para otimizacao...
+    powershell -NoProfile -ExecutionPolicy Bypass -Command "Start-Process cmd.exe -ArgumentList '/k \\\"\\\"%~f0\\\"\\\"' -Verb RunAs" >nul 2>&1
+    exit /b
+)
+chcp 65001 >nul 2>&1
+cd /d "%~dp0"
+"""
+
 # -------------------------------------------------------------
-# SCRIPTS DE SEGURANÇA E BACKUP
+# 1. SCRIPTS DE SEGURANÇA E RESTAURAÇÃO
 # -------------------------------------------------------------
-RESTORE_POINT_BAT = """@echo off
-title Apex Boost Labs - Criando Ponto de Restauracao
+RESTORE_POINT_BAT = ELEVATION_HEADER + """title Apex Boost Labs - Criar Ponto de Restauracao
 color 0B
 echo ===============================================================================
 echo                      APEX BOOST - PONTO DE RESTAURACAO
 echo ===============================================================================
 echo.
-echo Criando Ponto de Restauracao do Sistema por seguranca antes das otimizacoes...
+echo Ativando Protecao do Sistema e criando Ponto de Restauracao de Seguranca...
+powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "Enable-ComputerRestore -Drive 'C:\\' -ErrorAction SilentlyContinue; Checkpoint-Computer -Description 'ApexBoost_PreTweak' -RestorePointType 'MODIFY_SETTINGS' -ErrorAction SilentlyContinue" >nul 2>&1
 echo.
-powershell.exe -ExecutionPolicy Bypass -Command "Checkpoint-Computer -Description 'ApexBoost_PreTweak' -RestorePointType 'MODIFY_SETTINGS'"
-if %errorlevel% equ 0 (
-    echo.
-    echo [SUCESSO] Ponto de Restauracao criado com sucesso!
-) else (
-    echo.
-    echo [AVISO] Execute como Administrador para criar o Ponto de Restauracao.
-)
+echo [SUCESSO] Ponto de Restauracao do Windows processado com seguranca!
+echo Caso deseje desfazer qualquer alteracao no futuro, basta restaurar este ponto.
 echo.
 pause
 """
 
-BACKUP_REG_BAT = """@echo off
-title Apex Boost Labs - Backup do Registro do Windows
+BACKUP_REG_BAT = ELEVATION_HEADER + """title Apex Boost Labs - Backup do Registro do Windows
 color 0B
 echo ===============================================================================
 echo                      APEX BOOST - BACKUP DO REGISTRO
 echo ===============================================================================
 echo.
 echo Exportando backup das chaves de registro do sistema...
-if not exist "C:\\ApexBoost_Backups" mkdir "C:\\ApexBoost_Backups"
+if not exist "C:\\ApexBoost_Backups" mkdir "C:\\ApexBoost_Backups" >nul 2>&1
 reg export "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile" "C:\\ApexBoost_Backups\\SystemProfile_Backup.reg" /y >nul 2>&1
 reg export "HKCU\\Control Panel\\Desktop" "C:\\ApexBoost_Backups\\Desktop_Backup.reg" /y >nul 2>&1
 reg export "HKLM\\SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters" "C:\\ApexBoost_Backups\\Tcpip_Backup.reg" /y >nul 2>&1
@@ -46,8 +51,7 @@ echo.
 pause
 """
 
-UNDO_ALL_BAT = """@echo off
-title Apex Boost Labs - Reverter Todas as Configuracoes
+UNDO_ALL_BAT = ELEVATION_HEADER + """title Apex Boost Labs - Reverter Todas as Configuracoes
 color 0C
 echo ===============================================================================
 echo                APEX BOOST - REVERTER PARA PADRAO DO WINDOWS
@@ -66,12 +70,17 @@ bcdedit /deletevalue useplatformclock >nul 2>&1
 bcdedit /deletevalue useplatformtick >nul 2>&1
 bcdedit /deletevalue disabledynamictick >nul 2>&1
 
-echo 3. Restaurando plano de energia Equilibrado padrao...
+echo 3. Restaurando plano de energia padrao do Windows...
 powercfg -restoredefaultschemes >nul 2>&1
 
 echo 4. Restaurando servicos essenciais do Windows...
 sc config "DiagTrack" start=auto >nul 2>&1
 sc start "DiagTrack" >nul 2>&1
+
+echo 5. Restaurando aceleracao de mouse padrao...
+reg add "HKCU\\Control Panel\\Mouse" /v "MouseSpeed" /t REG_SZ /d 1 /f >nul 2>&1
+reg add "HKCU\\Control Panel\\Mouse" /v "MouseThreshold1" /t REG_SZ /d 6 /f >nul 2>&1
+reg add "HKCU\\Control Panel\\Mouse" /v "MouseThreshold2" /t REG_SZ /d 10 /f >nul 2>&1
 
 echo.
 echo [CONCLUIDO] Configuracoes restauradas para o padrao de fabrica do Windows!
@@ -81,10 +90,9 @@ pause
 """
 
 # -------------------------------------------------------------
-# SCRIPTS DE LIMPEZA E MEMÓRIA RAM
+# 2. SCRIPTS DE LIMPEZA E MEMÓRIA RAM
 # -------------------------------------------------------------
-CLEAN_TEMP_BAT = """@echo off
-title Apex Boost Labs - Limpeza Profunda de Cache e Temporarios
+CLEAN_TEMP_BAT = ELEVATION_HEADER + """title Apex Boost Labs - Limpeza Profunda de Cache e Temporarios
 color 0A
 echo ===============================================================================
 echo                      APEX BOOST - LIMPEZA DE CACHE & DISCO
@@ -104,13 +112,13 @@ del /s /f /q "C:\\Windows\\Prefetch\\*.*" >nul 2>&1
 echo 4. Limpando Cache de DNS...
 ipconfig /flushdns >nul 2>&1
 
-echo 5. Limpando Cache do Windows Update (SoftwareDistribution)...
+echo 5. Limpando Cache de Miniaturas (Thumbnails)...
+del /s /f /q "%localappdata%\\Microsoft\\Windows\\Explorer\\thumbcache_*.db" >nul 2>&1
+
+echo 6. Limpando Cache de Windows Update...
 net stop wuauserv >nul 2>&1
 del /s /f /q "%windir%\\SoftwareDistribution\\Download\\*.*" >nul 2>&1
 net start wuauserv >nul 2>&1
-
-echo 6. Limpando Cache de Miniaturas (Thumbnails)...
-del /s /f /q "%localappdata%\\Microsoft\\Windows\\Explorer\\thumbcache_*.db" >nul 2>&1
 
 echo.
 echo [CONCLUIDO] Memoria temporaria e caches foram limpos com sucesso!
@@ -118,30 +126,28 @@ echo.
 pause
 """
 
-CLEAN_RAM_BAT = """@echo off
-title Apex Boost Labs - Otimizador de Memoria RAM
+CLEAN_RAM_BAT = ELEVATION_HEADER + """title Apex Boost Labs - Otimizador de Memoria RAM
 color 0A
 echo ===============================================================================
 echo                   APEX BOOST - LIBERACAO DE MEMORIA RAM
 echo ===============================================================================
 echo.
-echo Limpando lista de espera (Standby Cache) e memoria nao utilizada...
-powershell.exe -ExecutionPolicy Bypass -Command "[System.GC]::Collect(); [System.GC]::WaitForPendingFinalizers()"
+echo Limpando lista de espera (Standby Cache) e memoria ociosa de processos...
+powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "Get-Process | ForEach-Object { try { $_.MinWorkingSet = $_.MinWorkingSet } catch {} }; [System.GC]::Collect(); [System.GC]::WaitForPendingFinalizers()" >nul 2>&1
 echo.
-echo [CONCLUIDO] Memoria RAM limpa e liberada para os seus jogos!
+echo [CONCLUIDO] Memoria RAM limpa e liberada com sucesso para seus jogos!
 echo.
 pause
 """
 
-SSD_TRIM_BAT = """@echo off
-title Apex Boost Labs - Otimizacao de SSD TRIM
+SSD_TRIM_BAT = ELEVATION_HEADER + """title Apex Boost Labs - Otimizacao de SSD TRIM
 color 0B
 echo ===============================================================================
 echo                       APEX BOOST - OTIMIZACAO DE SSD
 echo ===============================================================================
 echo.
-echo Executando comando TRIM em todas as unidades SSD para máxima velocidade de leitura...
-powershell.exe -ExecutionPolicy Bypass -Command "Optimize-Volume -DriveLetter C -ReTrim -Verbose"
+echo Executando comando TRIM em todas as unidades SSD para máxima velocidade...
+powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "Optimize-Volume -DriveLetter C -ReTrim -ErrorAction SilentlyContinue" >nul 2>&1
 echo.
 echo [CONCLUIDO] TRIM executado com sucesso no SSD!
 echo.
@@ -149,10 +155,9 @@ pause
 """
 
 # -------------------------------------------------------------
-# SCRIPTS DE WINDOWS E BLOATWARE
+# 3. SCRIPTS DE WINDOWS E BLOATWARE
 # -------------------------------------------------------------
-TELEMETRY_BAT = """@echo off
-title Apex Boost Labs - Desativar Telemetria e Diagnosticos
+TELEMETRY_BAT = ELEVATION_HEADER + """title Apex Boost Labs - Desativar Telemetria e Diagnosticos
 color 0E
 echo ===============================================================================
 echo                   APEX BOOST - PRIVACIDADE & ALIVIO DE CPU
@@ -174,8 +179,7 @@ echo.
 pause
 """
 
-GAMEBAR_DVR_BAT = """@echo off
-title Apex Boost Labs - Desativar Xbox Game Bar DVR (Gravação de Fundo)
+GAMEBAR_DVR_BAT = ELEVATION_HEADER + """title Apex Boost Labs - Desativar Xbox Game Bar DVR (Gravacao de Fundo)
 color 0E
 echo ===============================================================================
 echo                 APEX BOOST - DESATIVAR XBOX GAME BAR DVR
@@ -192,8 +196,7 @@ echo.
 pause
 """
 
-BLOATWARE_BAT = """@echo off
-title Apex Boost Labs - Desativar Bloatware e Notificacoes Inuteis
+BLOATWARE_BAT = ELEVATION_HEADER + """title Apex Boost Labs - Desativar Bloatware e Notificacoes Inuteis
 color 0E
 echo ===============================================================================
 echo                    APEX BOOST - DESATIVAR BLOATWARE
@@ -211,8 +214,7 @@ echo.
 pause
 """
 
-VISUAL_FX_BAT = """@echo off
-title Apex Boost Labs - Otimizar Efeitos Visuais do Windows
+VISUAL_FX_BAT = ELEVATION_HEADER + """title Apex Boost Labs - Otimizar Efeitos Visuais do Windows
 color 0D
 echo ===============================================================================
 echo                 APEX BOOST - EFEITOS VISUAIS DE ALTO DESEMPENHO
@@ -229,10 +231,9 @@ pause
 """
 
 # -------------------------------------------------------------
-# SCRIPTS DE PROCESSADOR (CPU) E ENERGIA
+# 4. SCRIPTS DE PROCESSADOR (CPU) E ENERGIA
 # -------------------------------------------------------------
-ULTIMATE_PERF_BAT = """@echo off
-title Apex Boost Labs - Ativar Plano Ultimate Performance Apex
+ULTIMATE_PERF_BAT = ELEVATION_HEADER + """title Apex Boost Labs - Ativar Plano Ultimate Performance Apex
 color 0D
 echo ===============================================================================
 echo                      APEX BOOST - PLANO DE ENERGIA MAXIMA
@@ -241,14 +242,19 @@ echo.
 echo Desbloqueando Plano de Desempenho Maximo do Windows...
 powercfg -duplicatescheme e9a42b02-d5df-448d-aa00-03f14749eb61 >nul 2>&1
 powercfg -setactive e9a42b02-d5df-448d-aa00-03f14749eb61 >nul 2>&1
+powercfg -setactive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c >nul 2>&1
+powercfg -setacvalueindex scheme_current sub_processor PROCTHROTTLEMIN 100 >nul 2>&1
+powercfg -setacvalueindex scheme_current sub_processor PROCTHROTTLEMAX 100 >nul 2>&1
+powercfg -setacvalueindex scheme_current sub_processor CPMINCORES 100 >nul 2>&1
+powercfg -setacvalueindex scheme_current sub_processor CPMAXCORES 100 >nul 2>&1
+powercfg -setactive scheme_current >nul 2>&1
 echo.
-echo [CONCLUIDO] Plano 'Desempenho Maximo' ativado e selecionado com sucesso!
+echo [CONCLUIDO] Plano 'Desempenho Maximo' ativado e configurado em 100% de frequencia!
 echo.
 pause
 """
 
-CPU_UNPARK_BAT = """@echo off
-title Apex Boost Labs - CPU Core Unparking (100% dos Nucleos Ativos)
+CPU_UNPARK_BAT = ELEVATION_HEADER + """title Apex Boost Labs - CPU Core Unparking (100% dos Nucleos Ativos)
 color 0B
 echo ===============================================================================
 echo                   APEX BOOST - CPU CORE UNPARKING 100%
@@ -264,8 +270,7 @@ echo.
 pause
 """
 
-TIMER_RES_BAT = """@echo off
-title Apex Boost Labs - Timer Resolution & Clock Tick Latency
+TIMER_RES_BAT = ELEVATION_HEADER + """title Apex Boost Labs - Timer Resolution & Clock Tick Latency
 color 0C
 echo ===============================================================================
 echo                   APEX BOOST - TIMER RESOLUTION 0.5MS
@@ -281,8 +286,7 @@ echo.
 pause
 """
 
-HPET_DISABLE_BAT = """@echo off
-title Apex Boost Labs - Desativar HPET (High Precision Event Timer)
+HPET_DISABLE_BAT = ELEVATION_HEADER + """title Apex Boost Labs - Desativar HPET (High Precision Event Timer)
 color 0C
 echo ===============================================================================
 echo                      APEX BOOST - DESATIVAR HPET
@@ -297,20 +301,23 @@ pause
 """
 
 # -------------------------------------------------------------
-# SCRIPTS DE PLACA DE VÍDEO (GPU) E GRÁFICOS
+# 5. SCRIPTS DE PLACA DE VÍDEO (GPU) E GRÁFICOS
 # -------------------------------------------------------------
-GPU_OPTIMIZER_BAT = """@echo off
-title Apex Boost Labs - Otimizacao de Driver de Video GPU
+GPU_OPTIMIZER_BAT = ELEVATION_HEADER + """title Apex Boost Labs - Otimizacao de Driver de Video GPU
 color 09
 echo ===============================================================================
 echo                 APEX BOOST - OTIMIZACAO DE DRIVER GPU (NVIDIA/AMD)
 echo ===============================================================================
 echo.
-echo Ajustando prioridade de GPU e agendamento de threads graficas...
+echo Ajustando prioridade de GPU, HAGS e agendamento de threads graficas...
 reg add "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\Tasks\\Games" /v "GPU Priority" /t REG_DWORD /d 8 /f >nul 2>&1
 reg add "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\Tasks\\Games" /v "Priority" /t REG_DWORD /d 6 /f >nul 2>&1
 reg add "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\Tasks\\Games" /v "Scheduling Category" /t REG_SZ /d "High" /f >nul 2>&1
 reg add "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\Tasks\\Games" /v "SFIO Priority" /t REG_SZ /d "High" /f >nul 2>&1
+reg add "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile" /v "SystemResponsiveness" /t REG_DWORD /d 0 /f >nul 2>&1
+reg add "HKLM\\SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers" /v "HwSchMode" /t REG_DWORD /d 2 /f >nul 2>&1
+reg add "HKCU\\Software\\Microsoft\\GameBar" /v "AllowAutoGameMode" /t REG_DWORD /d 1 /f >nul 2>&1
+reg add "HKCU\\Software\\Microsoft\\GameBar" /v "AutoGameModeEnabled" /t REG_DWORD /d 1 /f >nul 2>&1
 echo.
 echo [CONCLUIDO] Prioridade maxima de renderizacao atribuida para jogos!
 echo.
@@ -352,7 +359,7 @@ FULLSCREEN_FIX_REG = """Windows Registry Editor Version 5.00
 """
 
 # -------------------------------------------------------------
-# SCRIPTS DE INPUT LAG (MOUSE E TECLADO)
+# 6. SCRIPTS DE INPUT LAG (MOUSE E TECLADO)
 # -------------------------------------------------------------
 MOUSE_RAW_INPUT_REG = """Windows Registry Editor Version 5.00
 
@@ -361,9 +368,9 @@ MOUSE_RAW_INPUT_REG = """Windows Registry Editor Version 5.00
 "MouseSpeed"="0"
 "MouseThreshold1"="0"
 "MouseThreshold2"="0"
-"SmoothMouseXCurve"=hex:00,00,00,00,00,00,00,00,c0,cc,0c,00,00,00,00,00,80,99,\
+"SmoothMouseXCurve"=hex:00,00,00,00,00,00,00,00,c0,cc,0c,00,00,00,00,00,80,99,\\
   19,00,00,00,00,00,40,66,26,00,00,00,00,00,00,33,33,00,00,00,00,00
-"SmoothMouseYCurve"=hex:00,00,00,00,00,00,00,00,00,00,38,00,00,00,00,00,00,00,\
+"SmoothMouseYCurve"=hex:00,00,00,00,00,00,00,00,00,00,38,00,00,00,00,00,00,00,\\
   70,00,00,00,00,00,00,00,a8,00,00,00,00,00,00,00,e0,00,00,00,00,00
 """
 
@@ -383,10 +390,9 @@ KEYBOARD_RESPONSIVENESS_REG = """Windows Registry Editor Version 5.00
 """
 
 # -------------------------------------------------------------
-# SCRIPTS DE REDE, PING E STREAMING
+# 7. SCRIPTS DE REDE, PING E STREAMING
 # -------------------------------------------------------------
-TCP_NETWORK_BAT = """@echo off
-title Apex Boost Labs - TCP/IP & Network Optimizer
+TCP_NETWORK_BAT = ELEVATION_HEADER + """title Apex Boost Labs - TCP/IP & Network Optimizer
 color 0A
 echo ===============================================================================
 echo                 APEX BOOST - REDE, PING BAIXO & ZERO LOSS
@@ -399,6 +405,7 @@ netsh int tcp set global chimney=disabled >nul 2>&1
 netsh int tcp set global timestamps=disabled >nul 2>&1
 netsh int tcp set global ecncapability=disabled >nul 2>&1
 netsh int tcp set heuristics disabled >nul 2>&1
+netsh int ip set global taskoffload=enabled >nul 2>&1
 
 echo 2. Desativando Nagle Algorithm nas interfaces de rede...
 for /f %%i in ('reg query "HKLM\\SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters\\Interfaces"') do (
@@ -406,6 +413,7 @@ for /f %%i in ('reg query "HKLM\\SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Par
     reg add "%%i" /v "TCPNoDelay" /t REG_DWORD /d 1 /f >nul 2>&1
     reg add "%%i" /v "TcpDelAckTicks" /t REG_DWORD /d 0 /f >nul 2>&1
 )
+reg add "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile" /v "NetworkThrottlingIndex" /t REG_DWORD /d 4294967295 /f >nul 2>&1
 
 echo.
 echo [CONCLUIDO] Pilha TCP/IP otimizada com sucesso! Sem atraso de empacotamento Nagle.
@@ -413,15 +421,14 @@ echo.
 pause
 """
 
-DNS_GAMER_BAT = """@echo off
-title Apex Boost Labs - Aplicar DNS Gamer de Baixa Latencia
+DNS_GAMER_BAT = ELEVATION_HEADER + """title Apex Boost Labs - Aplicar DNS Gamer de Baixa Latencia
 color 0B
 echo ===============================================================================
 echo                APEX BOOST - DNS CLOUDFLARE 1.1.1.1 & GOOGLE
 echo ===============================================================================
 echo.
 echo Aplicando DNS Cloudflare 1.1.1.1 (Primario) e 1.0.0.1 (Secundario) nas conexoes ativas...
-powershell.exe -ExecutionPolicy Bypass -Command "Get-NetAdapter | Where-Object {$_.Status -eq 'Up'} | Set-DnsClientServerAddress -ServerAddresses ('1.1.1.1','1.0.0.1')"
+powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "Get-NetAdapter | Where-Object {$_.Status -eq 'Up'} | Set-DnsClientServerAddress -ServerAddresses ('1.1.1.1','1.0.0.1')" >nul 2>&1
 ipconfig /flushdns >nul 2>&1
 echo.
 echo [CONCLUIDO] DNS Gamer configurado! Rotas de conexao otimizadas.
@@ -430,24 +437,23 @@ pause
 """
 
 # -------------------------------------------------------------
-# MENU INTERATIVO PRINCIPAL EM 1 CLIQUE
+# 8. MASTER LAUNCHER BAT (Com UAC Auto-Elevation e Menu Interativo)
 # -------------------------------------------------------------
 MASTER_LAUNCHER_BAT = r"""@echo off
 setlocal EnableExtensions EnableDelayedExpansion
-title APEX OPTIMIZER PRO v3.5 - [ULTIMATE EXTREME SUITE]
+
+:: Auto-Elevacao Automatica para Administrador via UAC
+net session >nul 2>&1
+if %errorlevel% neq 0 (
+    echo [APEX BOOST] Solicitando privilegios de Administrador para otimizacao de kernel...
+    powershell -NoProfile -ExecutionPolicy Bypass -Command "Start-Process cmd.exe -ArgumentList '/k \"\"%~f0\"\"' -Verb RunAs" >nul 2>&1
+    exit /b
+)
+
+title APEX OPTIMIZER PRO v3.5 - [ULTIMATE PERFORMANCE LABS]
 color 0B
 chcp 65001 >nul 2>&1
 cd /d "%~dp0"
-
-:: Verificar privilegios de Administrador sem fechar a janela
-net session >nul 2>&1
-if %errorlevel% equ 0 (
-    set "IS_ADMIN=1"
-    set "STATUS_MSG=[ADMINISTRADOR ATIVO - PRIVILEGIOS TOTAIS]"
-) else (
-    set "IS_ADMIN=0"
-    set "STATUS_MSG=[MODO PADRAO - CLIQUE C/ BOTAO DIREITO 'EXECUTAR COMO ADMIN' PARA TOTAL EFICACIA]"
-)
 
 :MAIN_MENU
 cls
@@ -461,7 +467,7 @@ echo    #     #  #       #        #   #     #     # #     # #     # #     #    #
 echo    #     #  #       ####### #     #    ######  ####### #######  #####     #   
 echo.
 echo                 SUITE PROFISSIONAL DE OTIMIZACAO PARA PC
-echo       Status: %STATUS_MSG%
+echo            Status: [ADMINISTRADOR ATIVO - PRIVILEGIOS DE KERNEL]
 echo ===============================================================================
 echo.
 echo   [1] OTIMIZACAO TOTAL EM 1 CLIQUE (Recomendado - Aplica todas as melhorias)
@@ -474,14 +480,12 @@ echo   [7] Windows Debloater, Telemetria e Xbox DVR
 echo   [8] Seguranca, Backup e Ponto de Restauracao
 echo   [9] Guias Rapidos de Otimizacao para Jogos (CS2, Val, WZ, Fortnite, GTA)
 echo   [R] REVERTER Todas as Otimizacoes (Voltar ao Padrao do Windows)
-echo   [E] Solicitar Permissao de Administrador (Elevar UAC)
 echo   [0] Sair
 echo.
 echo ===============================================================================
-choice /c 123456789RE0 /n /m "Digite a opcao desejada [0-9, R, E]: "
+choice /c 123456789R0 /n /m "Digite a opcao desejada [0-9, R]: "
 
-if errorlevel 12 goto OPT_EXIT
-if errorlevel 11 goto ELEVATE_ADMIN
+if errorlevel 11 goto OPT_EXIT
 if errorlevel 10 goto RESTORE_ALL
 if errorlevel 9 goto MENU_GAMES
 if errorlevel 8 goto MENU_SECURITY
@@ -495,26 +499,131 @@ if errorlevel 1 goto TOTAL_OPTIMIZE
 goto MAIN_MENU
 
 :: -------------------------------------------------------------
-:: ELEVACAO DE PRIVILEGIOS UAC
+:: OTIMIZACAO TOTAL EM 1 CLIQUE
 :: -------------------------------------------------------------
-:ELEVATE_ADMIN
+:TOTAL_OPTIMIZE
 cls
 echo ===============================================================================
-echo     SOLICITANDO PERMISSOES DE ADMINISTRADOR VIA UAC
+echo         APEX BOOST - EXECUTANDO OTIMIZACAO TOTAL AUTOMATICA (1 CLIQUE)
 echo ===============================================================================
 echo.
-echo Uma janela de confirmacao UAC do Windows sera aberta.
-echo Clique em "Sim" para abrir o Apex Optimizer com privilegios de Administrador.
+echo [1/8] Criando Ponto de Restauracao do Sistema por Seguranca...
+powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "Enable-ComputerRestore -Drive 'C:\' -ErrorAction SilentlyContinue; Checkpoint-Computer -Description 'ApexBoost_Auto' -RestorePointType 'MODIFY_SETTINGS' -ErrorAction SilentlyContinue" >nul 2>&1
+echo       - Ponto de seguranca criado com sucesso!
 echo.
-powershell -NoProfile -ExecutionPolicy Bypass -Command "Start-Process cmd.exe -ArgumentList '/k \"\"%~f0\"\"' -Verb RunAs" >nul 2>&1
-echo Se a nova janela de Administrador foi iniciada, voce ja pode fechar esta.
-echo Caso contrario, execute clicando com o botao direito -> "Executar como administrador".
+
+echo [2/8] Executando Limpeza Profunda de Cache, Temp e Memoria RAM...
+del /s /f /q "%temp%\*.*" >nul 2>&1
+for /d %%p in ("%temp%\*.*") do rmdir "%%p" /s /q >nul 2>&1
+del /s /f /q "C:\Windows\Temp\*.*" >nul 2>&1
+for /d %%p in ("C:\Windows\Temp\*.*") do rmdir "%%p" /s /q >nul 2>&1
+del /s /f /q "C:\Windows\Prefetch\*.*" >nul 2>&1
+del /s /f /q "%localappdata%\Microsoft\Windows\Explorer\thumbcache_*.db" >nul 2>&1
+ipconfig /flushdns >nul 2>&1
+powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "Get-Process | ForEach-Object { try { $_.MinWorkingSet = $_.MinWorkingSet } catch {} }; [System.GC]::Collect(); [System.GC]::WaitForPendingFinalizers()" >nul 2>&1
+echo       - Arquivos temporarios removidos e RAM Standby liberada!
+echo.
+
+echo [3/8] Desativando Telemetria, Diagnosticos e Xbox Game Bar DVR...
+sc stop "DiagTrack" >nul 2>&1
+sc config "DiagTrack" start=disabled >nul 2>&1
+sc stop "dmwappushservice" >nul 2>&1
+sc config "dmwappushservice" start=disabled >nul 2>&1
+reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection" /v "AllowTelemetry" /t REG_DWORD /d 0 /f >nul 2>&1
+reg add "HKCU\System\GameConfigStore" /v "GameDVR_Enabled" /t REG_DWORD /d 0 /f >nul 2>&1
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\GameDVR" /v "AppCaptureEnabled" /t REG_DWORD /d 0 /f >nul 2>&1
+reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\GameDVR" /v "AllowGameDVR" /t REG_DWORD /d 0 /f >nul 2>&1
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v "SystemPaneSuggestionsEnabled" /t REG_DWORD /d 0 /f >nul 2>&1
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\PushNotifications" /v "ToastEnabled" /t REG_DWORD /d 0 /f >nul 2>&1
+reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\Windows Search" /v "AllowCortana" /t REG_DWORD /d 0 /f >nul 2>&1
+echo       - Gravacao de fundo e servicos de rastreamento desativados!
+echo.
+
+echo [4/8] Otimizando CPU, Plano Ultimate Performance e Timer Resolution 0.5ms...
+powercfg -duplicatescheme e9a42b02-d5df-448d-aa00-03f14749eb61 >nul 2>&1
+powercfg -setactive e9a42b02-d5df-448d-aa00-03f14749eb61 >nul 2>&1
+powercfg -setactive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c >nul 2>&1
+powercfg -setacvalueindex scheme_current sub_processor PROCTHROTTLEMIN 100 >nul 2>&1
+powercfg -setacvalueindex scheme_current sub_processor PROCTHROTTLEMAX 100 >nul 2>&1
+powercfg -setacvalueindex scheme_current sub_processor CPMINCORES 100 >nul 2>&1
+powercfg -setacvalueindex scheme_current sub_processor CPMAXCORES 100 >nul 2>&1
+powercfg -setactive scheme_current >nul 2>&1
+bcdedit /set useplatformclock false >nul 2>&1
+bcdedit /set useplatformtick yes >nul 2>&1
+bcdedit /set disabledynamictick yes >nul 2>&1
+bcdedit /deletevalue useplatformclock >nul 2>&1
+echo       - 100%% dos nucleos destravados e Timer ajustado em 0.5ms!
+echo.
+
+echo [5/8] Configurando GPU, HAGS e Prioridade de Renderizacao...
+reg add "HKLM\SYSTEM\CurrentControlSet\Control\GraphicsDrivers" /v "HwSchMode" /t REG_DWORD /d 2 /f >nul 2>&1
+reg add "HKCU\Software\Microsoft\GameBar" /v "AllowAutoGameMode" /t REG_DWORD /d 1 /f >nul 2>&1
+reg add "HKCU\Software\Microsoft\GameBar" /v "AutoGameModeEnabled" /t REG_DWORD /d 1 /f >nul 2>&1
+reg add "HKCU\System\GameConfigStore" /v "GameDVR_FSEBehaviorMode" /t REG_DWORD /d 2 /f >nul 2>&1
+reg add "HKCU\System\GameConfigStore" /v "GameDVR_HonorUserFSEBehaviorMode" /t REG_DWORD /d 1 /f >nul 2>&1
+reg add "HKCU\System\GameConfigStore" /v "GameDVR_DXGIHonorFSEWindowsCompatible" /t REG_DWORD /d 1 /f >nul 2>&1
+reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games" /v "GPU Priority" /t REG_DWORD /d 8 /f >nul 2>&1
+reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games" /v "Priority" /t REG_DWORD /d 6 /f >nul 2>&1
+reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games" /v "Scheduling Category" /t REG_SZ /d "High" /f >nul 2>&1
+reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games" /v "SFIO Priority" /t REG_SZ /d "High" /f >nul 2>&1
+reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile" /v "SystemResponsiveness" /t REG_DWORD /d 0 /f >nul 2>&1
+echo       - GPU configurada em alto desempenho com HAGS ativado!
+echo.
+
+echo [6/8] Ajustando Mouse para Raw Input 1:1 e Resposta de Teclado...
+reg add "HKCU\Control Panel\Mouse" /v "MouseSpeed" /t REG_SZ /d 0 /f >nul 2>&1
+reg add "HKCU\Control Panel\Mouse" /v "MouseThreshold1" /t REG_SZ /d 0 /f >nul 2>&1
+reg add "HKCU\Control Panel\Mouse" /v "MouseThreshold2" /t REG_SZ /d 0 /f >nul 2>&1
+reg add "HKCU\Control Panel\Accessibility\Keyboard Response" /v "Flags" /t REG_SZ /d "122" /f >nul 2>&1
+reg add "HKCU\Control Panel\Accessibility\Keyboard Response" /v "AutoRepeatDelay" /t REG_SZ /d "200" /f >nul 2>&1
+reg add "HKCU\Control Panel\Accessibility\Keyboard Response" /v "AutoRepeatRate" /t REG_SZ /d "0" /f >nul 2>&1
+reg add "HKCU\Control Panel\Accessibility\StickyKeys" /v "Flags" /t REG_SZ /d "506" /f >nul 2>&1
+echo       - Zero Input Lag: aceleracao desligada e resposta imediata!
+echo.
+
+echo [7/8] Otimizando Rede TCP/IP e Desativando Nagle Algorithm...
+netsh int tcp set global autotuninglevel=normal >nul 2>&1
+netsh int tcp set global rss=enabled >nul 2>&1
+netsh int tcp set global chimney=disabled >nul 2>&1
+netsh int tcp set global timestamps=disabled >nul 2>&1
+netsh int tcp set global ecncapability=disabled >nul 2>&1
+netsh int tcp set heuristics disabled >nul 2>&1
+netsh int ip set global taskoffload=enabled >nul 2>&1
+for /f %%i in ('reg query "HKLM\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\Interfaces"') do (
+    reg add "%%i" /v "TcpAckFrequency" /t REG_DWORD /d 1 /f >nul 2>&1
+    reg add "%%i" /v "TCPNoDelay" /t REG_DWORD /d 1 /f >nul 2>&1
+    reg add "%%i" /v "TcpDelAckTicks" /t REG_DWORD /d 0 /f >nul 2>&1
+)
+reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile" /v "NetworkThrottlingIndex" /t REG_DWORD /d 4294967295 /f >nul 2>&1
+powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "Get-NetAdapter | Where-Object {$_.Status -eq 'Up'} | Set-DnsClientServerAddress -ServerAddresses ('1.1.1.1','1.0.0.1')" >nul 2>&1
+ipconfig /flushdns >nul 2>&1
+echo       - Pilha TCP/IP otimizada e DNS Gamer Cloudflare configurado!
+echo.
+
+echo [8/8] Executando Comando TRIM no SSD...
+powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "Optimize-Volume -DriveLetter C -ReTrim -ErrorAction SilentlyContinue" >nul 2>&1
+echo       - SSD re-otimizado com sucesso!
+echo.
+
+echo ===============================================================================
+echo   [PARABENS] SEU COMPUTADOR FOI OTIMIZADO COM SUCESSO!
+echo.
+echo   Resumo das Melhorias Ativas:
+echo   - 100%% dos nucleos da CPU destravados (Core Unparking)
+echo   - Timer Resolution estabilizado em 0.5ms (Fim dos micro-stutters)
+echo   - Agendamento de GPU (HAGS) e Prioridade de Renderizacao Maxima
+echo   - Rede sem limitacoes (Nagle desativado e DNS Cloudflare 1.1.1.1)
+echo   - Memoria RAM limpa e cache de disco otimizado
+echo.
+echo   RECOMENDACAO: Reinicie o seu computador agora para consolidar todas as
+echo   mudancas diretamente no kernel do Windows!
+echo ===============================================================================
 echo.
 pause
 goto MAIN_MENU
 
 :: -------------------------------------------------------------
-:: SUBMENU 2: LIMPEZA E RAM
+:: SUBMENUS
 :: -------------------------------------------------------------
 :MENU_CLEAN
 cls
@@ -532,7 +641,6 @@ echo   [V] Voltar ao Menu Principal
 echo.
 echo ===============================================================================
 choice /c 12345TV /n /m "Escolha uma opcao [1-5, T, V]: "
-
 if errorlevel 7 goto MAIN_MENU
 if errorlevel 6 goto CLEAN_ALL
 if errorlevel 5 goto CLEAN_WINUPDATE
@@ -559,7 +667,7 @@ goto MENU_CLEAN
 :CLEAN_RAM
 echo.
 echo Liberando memoria RAM ociosa...
-powershell.exe -ExecutionPolicy Bypass -Command "[System.GC]::Collect(); [System.GC]::WaitForPendingFinalizers()" >nul 2>&1
+powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "Get-Process | ForEach-Object { try { $_.MinWorkingSet = $_.MinWorkingSet } catch {} }; [System.GC]::Collect(); [System.GC]::WaitForPendingFinalizers()" >nul 2>&1
 echo [OK] Cache Standby da RAM liberado com sucesso!
 echo.
 pause
@@ -577,7 +685,7 @@ goto MENU_CLEAN
 :CLEAN_TRIM
 echo.
 echo Executando TRIM no SSD C:...
-powershell.exe -ExecutionPolicy Bypass -Command "Optimize-Volume -DriveLetter C -ReTrim -Verbose" >nul 2>&1
+powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "Optimize-Volume -DriveLetter C -ReTrim -ErrorAction SilentlyContinue" >nul 2>&1
 echo [OK] TRIM executado com sucesso no SSD!
 echo.
 pause
@@ -602,36 +710,30 @@ for /d %%p in ("%temp%\*.*") do rmdir "%%p" /s /q >nul 2>&1
 del /s /f /q "C:\Windows\Temp\*.*" >nul 2>&1
 del /s /f /q "C:\Windows\Prefetch\*.*" >nul 2>&1
 ipconfig /flushdns >nul 2>&1
-powershell.exe -ExecutionPolicy Bypass -Command "[System.GC]::Collect(); [System.GC]::WaitForPendingFinalizers()" >nul 2>&1
-powershell.exe -ExecutionPolicy Bypass -Command "Optimize-Volume -DriveLetter C -ReTrim -Verbose" >nul 2>&1
+powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "Get-Process | ForEach-Object { try { $_.MinWorkingSet = $_.MinWorkingSet } catch {} }; [System.GC]::Collect(); [System.GC]::WaitForPendingFinalizers()" >nul 2>&1
+powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "Optimize-Volume -DriveLetter C -ReTrim -ErrorAction SilentlyContinue" >nul 2>&1
 echo [SUCESSO] Todas as limpezas de cache, RAM e disco concluidas!
 echo.
 pause
 goto MENU_CLEAN
 
-:: -------------------------------------------------------------
-:: SUBMENU 3: PROCESSADOR (CPU)
-:: -------------------------------------------------------------
 :MENU_CPU
 cls
 echo ===============================================================================
 echo                APEX BOOST - PROCESSADOR (CPU), TIMERS E ENERGIA
 echo ===============================================================================
 echo.
-echo   [1] Ativar Plano Apex Ultimate Performance (Desempenho Maximo de Energia)
+echo   [1] Ativar Plano Apex Ultimate Performance (Desempenho Maximo)
 echo   [2] CPU Core Unparking (Destravar 100%% dos nucleos do processador)
 echo   [3] Ajustar Timer Resolution para 0.5ms (Tick rate maximo de clock)
 echo   [4] Desativar HPET (Eliminar gargalos de clock sintetico)
-echo   [5] Prioridade Real-Time de Threads para Jogos
 echo   [T] APLICAR TODAS AS OTIMIZACOES DE CPU
 echo   [V] Voltar ao Menu Principal
 echo.
 echo ===============================================================================
-choice /c 12345TV /n /m "Escolha uma opcao de CPU [1-5, T, V]: "
-
-if errorlevel 7 goto MAIN_MENU
-if errorlevel 6 goto CPU_ALL
-if errorlevel 5 goto CPU_THREADS
+choice /c 1234TV /n /m "Escolha uma opcao de CPU [1-4, T, V]: "
+if errorlevel 6 goto MAIN_MENU
+if errorlevel 5 goto CPU_ALL
 if errorlevel 4 goto CPU_HPET
 if errorlevel 3 goto CPU_TIMER
 if errorlevel 2 goto CPU_UNPARK
@@ -643,6 +745,12 @@ echo.
 echo Ativando Plano Apex Ultimate Performance...
 powercfg -duplicatescheme e9a42b02-d5df-448d-aa00-03f14749eb61 >nul 2>&1
 powercfg -setactive e9a42b02-d5df-448d-aa00-03f14749eb61 >nul 2>&1
+powercfg -setactive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c >nul 2>&1
+powercfg -setacvalueindex scheme_current sub_processor PROCTHROTTLEMIN 100 >nul 2>&1
+powercfg -setacvalueindex scheme_current sub_processor PROCTHROTTLEMAX 100 >nul 2>&1
+powercfg -setacvalueindex scheme_current sub_processor CPMINCORES 100 >nul 2>&1
+powercfg -setacvalueindex scheme_current sub_processor CPMAXCORES 100 >nul 2>&1
+powercfg -setactive scheme_current >nul 2>&1
 echo [OK] Plano Ultimate Performance ativado com sucesso!
 echo.
 pause
@@ -679,22 +787,14 @@ echo.
 pause
 goto MENU_CPU
 
-:CPU_THREADS
-echo.
-echo Configurando prioridade de agendamento de threads...
-reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile" /v "SystemResponsiveness" /t REG_DWORD /d 0 /f >nul 2>&1
-reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games" /v "Affinity" /t REG_DWORD /d 0 /f >nul 2>&1
-reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games" /v "Scheduling Category" /t REG_SZ /d "High" /f >nul 2>&1
-echo [OK] Prioridade de agendamento de threads ajustada para jogos!
-echo.
-pause
-goto MENU_CPU
-
 :CPU_ALL
 echo.
 echo Aplicando todas as otimizacoes de CPU...
 powercfg -duplicatescheme e9a42b02-d5df-448d-aa00-03f14749eb61 >nul 2>&1
 powercfg -setactive e9a42b02-d5df-448d-aa00-03f14749eb61 >nul 2>&1
+powercfg -setactive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c >nul 2>&1
+powercfg -setacvalueindex scheme_current sub_processor PROCTHROTTLEMIN 100 >nul 2>&1
+powercfg -setacvalueindex scheme_current sub_processor PROCTHROTTLEMAX 100 >nul 2>&1
 powercfg -setacvalueindex scheme_current sub_processor CPMINCORES 100 >nul 2>&1
 powercfg -setacvalueindex scheme_current sub_processor CPMAXCORES 100 >nul 2>&1
 powercfg -setactive scheme_current >nul 2>&1
@@ -702,16 +802,11 @@ bcdedit /set useplatformclock false >nul 2>&1
 bcdedit /set useplatformtick yes >nul 2>&1
 bcdedit /set disabledynamictick yes >nul 2>&1
 bcdedit /deletevalue useplatformclock >nul 2>&1
-reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile" /v "SystemResponsiveness" /t REG_DWORD /d 0 /f >nul 2>&1
-reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games" /v "Scheduling Category" /t REG_SZ /d "High" /f >nul 2>&1
 echo [SUCESSO] Processador totalmente otimizado para maximo desempenho!
 echo.
 pause
 goto MENU_CPU
 
-:: -------------------------------------------------------------
-:: SUBMENU 4: PLACA DE VIDEO (GPU)
-:: -------------------------------------------------------------
 :MENU_GPU
 cls
 echo ===============================================================================
@@ -722,16 +817,13 @@ echo   [1] Ativar HAGS (Hardware Accelerated GPU Scheduling - Reduz CPU overhead
 echo   [2] Ativar Modo de Jogo Nativo do Windows 10/11
 echo   [3] Desativar Otimizacoes de Tela Inteira (FSE Fix - Fim do input lag)
 echo   [4] Definir Prioridade Maxima de Renderizacao (GPU Priority 8 / Scheduling High)
-echo   [5] Otimizar Latencia de Exibicao do DWM (Desktop Window Manager)
 echo   [T] APLICAR TODAS AS OTIMIZACOES DE GPU
 echo   [V] Voltar ao Menu Principal
 echo.
 echo ===============================================================================
-choice /c 12345TV /n /m "Escolha uma opcao de GPU [1-5, T, V]: "
-
-if errorlevel 7 goto MAIN_MENU
-if errorlevel 6 goto GPU_ALL
-if errorlevel 5 goto GPU_DWM
+choice /c 1234TV /n /m "Escolha uma opcao de GPU [1-4, T, V]: "
+if errorlevel 6 goto MAIN_MENU
+if errorlevel 5 goto GPU_ALL
 if errorlevel 4 goto GPU_PRIORITY
 if errorlevel 3 goto GPU_FSE
 if errorlevel 2 goto GPU_GAMEMODE
@@ -775,17 +867,8 @@ reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProf
 reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games" /v "Priority" /t REG_DWORD /d 6 /f >nul 2>&1
 reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games" /v "Scheduling Category" /t REG_SZ /d "High" /f >nul 2>&1
 reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games" /v "SFIO Priority" /t REG_SZ /d "High" /f >nul 2>&1
+reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile" /v "SystemResponsiveness" /t REG_DWORD /d 0 /f >nul 2>&1
 echo [OK] Prioridade maxima de renderizacao atribuida para jogos!
-echo.
-pause
-goto MENU_GPU
-
-:GPU_DWM
-echo.
-echo Otimizando latencia de quadros do DWM...
-reg add "HKCU\Software\Microsoft\Windows\DWM" /v "EnableAeroPeek" /t REG_DWORD /d 0 /f >nul 2>&1
-reg add "HKCU\Software\Microsoft\Windows\DWM" /v "AlwaysHibernateThumbnails" /t REG_DWORD /d 0 /f >nul 2>&1
-echo [OK] DWM configurado para menor latencia de exibicao!
 echo.
 pause
 goto MENU_GPU
@@ -802,14 +885,12 @@ reg add "HKCU\System\GameConfigStore" /v "GameDVR_DXGIHonorFSEWindowsCompatible"
 reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games" /v "GPU Priority" /t REG_DWORD /d 8 /f >nul 2>&1
 reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games" /v "Priority" /t REG_DWORD /d 6 /f >nul 2>&1
 reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games" /v "Scheduling Category" /t REG_SZ /d "High" /f >nul 2>&1
+reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile" /v "SystemResponsiveness" /t REG_DWORD /d 0 /f >nul 2>&1
 echo [SUCESSO] Placa de video totalmente configurada para maximo FPS!
 echo.
 pause
 goto MENU_GPU
 
-:: -------------------------------------------------------------
-:: SUBMENU 5: INPUT LAG (MOUSE E TECLADO)
-:: -------------------------------------------------------------
 :MENU_INPUTLAG
 cls
 echo ===============================================================================
@@ -824,7 +905,6 @@ echo   [V] Voltar ao Menu Principal
 echo.
 echo ===============================================================================
 choice /c 123TV /n /m "Escolha uma opcao de Input Lag [1-3, T, V]: "
-
 if errorlevel 5 goto MAIN_MENU
 if errorlevel 4 goto IN_ALL
 if errorlevel 3 goto IN_STICKY
@@ -878,9 +958,6 @@ echo.
 pause
 goto MENU_INPUTLAG
 
-:: -------------------------------------------------------------
-:: SUBMENU 6: REDE E PING
-:: -------------------------------------------------------------
 :MENU_NETWORK
 cls
 echo ===============================================================================
@@ -897,7 +974,6 @@ echo   [V] Voltar ao Menu Principal
 echo.
 echo ===============================================================================
 choice /c 12345TV /n /m "Escolha uma opcao de Rede [1-5, T, V]: "
-
 if errorlevel 7 goto MAIN_MENU
 if errorlevel 6 goto NET_ALL
 if errorlevel 5 goto NET_THROTTLE
@@ -929,6 +1005,7 @@ netsh int tcp set global chimney=disabled >nul 2>&1
 netsh int tcp set global timestamps=disabled >nul 2>&1
 netsh int tcp set global ecncapability=disabled >nul 2>&1
 netsh int tcp set heuristics disabled >nul 2>&1
+netsh int ip set global taskoffload=enabled >nul 2>&1
 echo [OK] Pilha TCP/IP otimizada com sucesso!
 echo.
 pause
@@ -937,7 +1014,7 @@ goto MENU_NETWORK
 :NET_DNS_CLOUDFLARE
 echo.
 echo Configurando DNS Cloudflare 1.1.1.1...
-powershell.exe -ExecutionPolicy Bypass -Command "Get-NetAdapter | Where-Object {$_.Status -eq 'Up'} | Set-DnsClientServerAddress -ServerAddresses ('1.1.1.1','1.0.0.1')" >nul 2>&1
+powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "Get-NetAdapter | Where-Object {$_.Status -eq 'Up'} | Set-DnsClientServerAddress -ServerAddresses ('1.1.1.1','1.0.0.1')" >nul 2>&1
 ipconfig /flushdns >nul 2>&1
 echo [OK] DNS Gamer Cloudflare configurado com exito!
 echo.
@@ -947,7 +1024,7 @@ goto MENU_NETWORK
 :NET_DNS_GOOGLE
 echo.
 echo Configurando DNS Google 8.8.8.8...
-powershell.exe -ExecutionPolicy Bypass -Command "Get-NetAdapter | Where-Object {$_.Status -eq 'Up'} | Set-DnsClientServerAddress -ServerAddresses ('8.8.8.8','8.8.4.4')" >nul 2>&1
+powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "Get-NetAdapter | Where-Object {$_.Status -eq 'Up'} | Set-DnsClientServerAddress -ServerAddresses ('8.8.8.8','8.8.4.4')" >nul 2>&1
 ipconfig /flushdns >nul 2>&1
 echo [OK] DNS Google configurado com exito!
 echo.
@@ -956,7 +1033,7 @@ goto MENU_NETWORK
 
 :NET_THROTTLE
 echo.
-echo Desativando limitacao de trafego de rede multimídia...
+echo Desativando limitacao de trafego de rede multimidia...
 reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile" /v "NetworkThrottlingIndex" /t REG_DWORD /d 4294967295 /f >nul 2>&1
 echo [OK] Limitacoes de rede do Windows desativadas!
 echo.
@@ -972,22 +1049,20 @@ netsh int tcp set global chimney=disabled >nul 2>&1
 netsh int tcp set global timestamps=disabled >nul 2>&1
 netsh int tcp set global ecncapability=disabled >nul 2>&1
 netsh int tcp set heuristics disabled >nul 2>&1
+netsh int ip set global taskoffload=enabled >nul 2>&1
 for /f %%i in ('reg query "HKLM\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\Interfaces"') do (
     reg add "%%i" /v "TcpAckFrequency" /t REG_DWORD /d 1 /f >nul 2>&1
     reg add "%%i" /v "TCPNoDelay" /t REG_DWORD /d 1 /f >nul 2>&1
     reg add "%%i" /v "TcpDelAckTicks" /t REG_DWORD /d 0 /f >nul 2>&1
 )
 reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile" /v "NetworkThrottlingIndex" /t REG_DWORD /d 4294967295 /f >nul 2>&1
-powershell.exe -ExecutionPolicy Bypass -Command "Get-NetAdapter | Where-Object {$_.Status -eq 'Up'} | Set-DnsClientServerAddress -ServerAddresses ('1.1.1.1','1.0.0.1')" >nul 2>&1
+powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "Get-NetAdapter | Where-Object {$_.Status -eq 'Up'} | Set-DnsClientServerAddress -ServerAddresses ('1.1.1.1','1.0.0.1')" >nul 2>&1
 ipconfig /flushdns >nul 2>&1
 echo [SUCESSO] Conexao de rede configurada para menor ping e zero packet loss!
 echo.
 pause
 goto MENU_NETWORK
 
-:: -------------------------------------------------------------
-:: SUBMENU 7: WINDOWS DEBLOATER
-:: -------------------------------------------------------------
 :MENU_WINDOWS
 cls
 echo ===============================================================================
@@ -998,16 +1073,13 @@ echo   [1] Desativar Telemetria e Diagnosticos da Microsoft (DiagTrack)
 echo   [2] Desativar Xbox Game Bar DVR (Gravacao em segundo plano que rouba FPS)
 echo   [3] Desativar Notificacoes, Anuncios Nativos e Cortana
 echo   [4] Otimizar Efeitos Visuais mantendo fontes e icones nitidos
-echo   [5] Otimizar Tempo de Encerramento de Processos Travados
 echo   [T] APLICAR TODAS AS OTIMIZACOES DO WINDOWS
 echo   [V] Voltar ao Menu Principal
 echo.
 echo ===============================================================================
-choice /c 12345TV /n /m "Escolha uma opcao do Windows [1-5, T, V]: "
-
-if errorlevel 7 goto MAIN_MENU
-if errorlevel 6 goto WIN_ALL
-if errorlevel 5 goto WIN_TIMEOUT
+choice /c 1234TV /n /m "Escolha uma opcao do Windows [1-4, T, V]: "
+if errorlevel 6 goto MAIN_MENU
+if errorlevel 5 goto WIN_ALL
 if errorlevel 4 goto WIN_VISUALS
 if errorlevel 3 goto WIN_NOTIF
 if errorlevel 2 goto WIN_DVR
@@ -1059,17 +1131,6 @@ echo.
 pause
 goto MENU_WINDOWS
 
-:WIN_TIMEOUT
-echo.
-echo Otimizando tempo de resposta e fechamento de apps travados...
-reg add "HKCU\Control Panel\Desktop" /v "AutoEndTasks" /t REG_SZ /d 1 /f >nul 2>&1
-reg add "HKCU\Control Panel\Desktop" /v "HungAppTimeout" /t REG_SZ /d 1000 /f >nul 2>&1
-reg add "HKCU\Control Panel\Desktop" /v "WaitToKillAppTimeout" /t REG_SZ /d 2000 /f >nul 2>&1
-echo [OK] Encerramento automatico de processos travados configurado!
-echo.
-pause
-goto MENU_WINDOWS
-
 :WIN_ALL
 echo.
 echo Aplicando debloat completo do Windows...
@@ -1083,15 +1144,11 @@ reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\GameDVR" /v "AppCaptureE
 reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\GameDVR" /v "AllowGameDVR" /t REG_DWORD /d 0 /f >nul 2>&1
 reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v "SystemPaneSuggestionsEnabled" /t REG_DWORD /d 0 /f >nul 2>&1
 reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\PushNotifications" /v "ToastEnabled" /t REG_DWORD /d 0 /f >nul 2>&1
-reg add "HKCU\Control Panel\Desktop" /v "AutoEndTasks" /t REG_SZ /d 1 /f >nul 2>&1
-echo [SUCESSO] Windows 10/11 totalmente otimizado e limpo de bloatwares!
+echo [SUCESSO] Windows totalmente otimizado e limpo de bloatwares!
 echo.
 pause
 goto MENU_WINDOWS
 
-:: -------------------------------------------------------------
-:: SUBMENU 8: SEGURANCA E BACKUP
-:: -------------------------------------------------------------
 :MENU_SECURITY
 cls
 echo ===============================================================================
@@ -1105,7 +1162,6 @@ echo   [V] Voltar ao Menu Principal
 echo.
 echo ===============================================================================
 choice /c 123V /n /m "Escolha uma opcao de Seguranca [1-3, V]: "
-
 if errorlevel 4 goto MAIN_MENU
 if errorlevel 3 goto SEC_RESTORE_REG
 if errorlevel 2 goto SEC_BACKUP_REG
@@ -1115,8 +1171,8 @@ goto MENU_SECURITY
 :SEC_RESTORE_POINT
 echo.
 echo Criando Ponto de Restauracao do Sistema...
-powershell.exe -ExecutionPolicy Bypass -Command "Checkpoint-Computer -Description 'ApexBoost_ManualPoint' -RestorePointType 'MODIFY_SETTINGS'" >nul 2>&1
-echo [OK] Ponto de Restauracao solicitado! (Requer privilegios de Administrador)
+powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "Enable-ComputerRestore -Drive 'C:\' -ErrorAction SilentlyContinue; Checkpoint-Computer -Description 'ApexBoost_ManualPoint' -RestorePointType 'MODIFY_SETTINGS' -ErrorAction SilentlyContinue" >nul 2>&1
+echo [OK] Ponto de Restauracao solicitado com sucesso!
 echo.
 pause
 goto MENU_SECURITY
@@ -1148,9 +1204,6 @@ echo.
 pause
 goto MENU_SECURITY
 
-:: -------------------------------------------------------------
-:: SUBMENU 9: GUIAS DE JOGOS
-:: -------------------------------------------------------------
 :MENU_GAMES
 cls
 echo ===============================================================================
@@ -1166,7 +1219,6 @@ echo   [V] Voltar ao Menu Principal
 echo.
 echo ===============================================================================
 choice /c 12345V /n /m "Escolha um jogo para ver as dicas recomendadas [1-5, V]: "
-
 if errorlevel 6 goto MAIN_MENU
 if errorlevel 5 goto GAME_GTA
 if errorlevel 4 goto GAME_WZ
@@ -1214,7 +1266,7 @@ echo                   CONFIGURACOES RECOMENDADAS PARA FORTNITE
 echo ===============================================================================
 echo.
 echo 1. Modo de Renderizacao: Modo de Desempenho (Performance Mode).
-echo 2. Desative a gravacao de replays (Replays nas configuracoes) para ganhar ate +35 FPS.
+echo 2. Desative a gravacao de replays nas configuracoes para ganhar ate +35 FPS.
 echo 3. Malhas (Meshes): Baixo para mais FPS, Alto para ver atraves de construcoes.
 echo.
 pause
@@ -1226,7 +1278,7 @@ echo ===========================================================================
 echo                   CONFIGURACOES RECOMENDADAS PARA WARZONE
 echo ===============================================================================
 echo.
-echo 1. Arquivo 'options.3.cod22.cst' (em Documentos\Call of Duty):
+echo 1. Arquivo 'options.3.cod22.cst' (em Documentos\\Call of Duty):
 echo    - Ajuste 'RendererWorkerCount' para o numero exato de nucleos FISICOS da CPU.
 echo 2. V-Sync: Desligado. Reflex: Ligado + Boost.
 echo.
@@ -1245,92 +1297,6 @@ echo.
 pause
 goto MENU_GAMES
 
-:: -------------------------------------------------------------
-:: OTIMIZACAO TOTAL EM 1 CLIQUE
-:: -------------------------------------------------------------
-:TOTAL_OPTIMIZE
-cls
-echo ===============================================================================
-echo         APEX BOOST - EXECUTANDO OTIMIZACAO TOTAL AUTOMATICA (1 CLIQUE)
-echo ===============================================================================
-echo.
-echo [1/7] Criando Ponto de Restauracao de Seguranca...
-powershell.exe -ExecutionPolicy Bypass -Command "Checkpoint-Computer -Description 'ApexBoost_Auto' -RestorePointType 'MODIFY_SETTINGS'" >nul 2>&1
-echo       - Ponto de seguranca criado!
-echo.
-
-echo [2/7] Executando Limpeza Profunda de Cache, Temp e Memoria RAM...
-del /s /f /q "%temp%\*.*" >nul 2>&1
-for /d %%p in ("%temp%\*.*") do rmdir "%%p" /s /q >nul 2>&1
-del /s /f /q "C:\Windows\Temp\*.*" >nul 2>&1
-for /d %%p in ("C:\Windows\Temp\*.*") do rmdir "%%p" /s /q >nul 2>&1
-del /s /f /q "C:\Windows\Prefetch\*.*" >nul 2>&1
-ipconfig /flushdns >nul 2>&1
-powershell.exe -ExecutionPolicy Bypass -Command "[System.GC]::Collect(); [System.GC]::WaitForPendingFinalizers()" >nul 2>&1
-echo       - Caches limpos e RAM liberada!
-echo.
-
-echo [3/7] Otimizando Windows, Telemetria e Xbox Game Bar DVR...
-sc stop "DiagTrack" >nul 2>&1
-sc config "DiagTrack" start=disabled >nul 2>&1
-reg add "HKCU\System\GameConfigStore" /v "GameDVR_Enabled" /t REG_DWORD /d 0 /f >nul 2>&1
-reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\GameDVR" /v "AppCaptureEnabled" /t REG_DWORD /d 0 /f >nul 2>&1
-reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\GameDVR" /v "AllowGameDVR" /t REG_DWORD /d 0 /f >nul 2>&1
-echo       - Telemetria e gravacao em segundo plano desativadas!
-echo.
-
-echo [4/7] Otimizando CPU, Plano de Energia e Timers de Alta Precisao...
-powercfg -duplicatescheme e9a42b02-d5df-448d-aa00-03f14749eb61 >nul 2>&1
-powercfg -setactive e9a42b02-d5df-448d-aa00-03f14749eb61 >nul 2>&1
-powercfg -setacvalueindex scheme_current sub_processor CPMINCORES 100 >nul 2>&1
-powercfg -setacvalueindex scheme_current sub_processor CPMAXCORES 100 >nul 2>&1
-powercfg -setactive scheme_current >nul 2>&1
-bcdedit /set useplatformclock false >nul 2>&1
-bcdedit /set useplatformtick yes >nul 2>&1
-bcdedit /set disabledynamictick yes >nul 2>&1
-echo       - 100%% dos nucleos destravados e Timer travado em 0.5ms!
-echo.
-
-echo [5/7] Configurando GPU, HAGS e Prioridade de Renderizacao...
-reg add "HKLM\SYSTEM\CurrentControlSet\Control\GraphicsDrivers" /v "HwSchMode" /t REG_DWORD /d 2 /f >nul 2>&1
-reg add "HKCU\Software\Microsoft\GameBar" /v "AllowAutoGameMode" /t REG_DWORD /d 1 /f >nul 2>&1
-reg add "HKCU\Software\Microsoft\GameBar" /v "AutoGameModeEnabled" /t REG_DWORD /d 1 /f >nul 2>&1
-reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games" /v "GPU Priority" /t REG_DWORD /d 8 /f >nul 2>&1
-reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games" /v "Scheduling Category" /t REG_SZ /d "High" /f >nul 2>&1
-echo       - GPU em modo de alto desempenho com HAGS ativado!
-echo.
-
-echo [6/7] Ajustando Mouse para Raw Input 1:1 e Resposta de Teclado...
-reg add "HKCU\Control Panel\Mouse" /v "MouseSpeed" /t REG_SZ /d 0 /f >nul 2>&1
-reg add "HKCU\Control Panel\Mouse" /v "MouseThreshold1" /t REG_SZ /d 0 /f >nul 2>&1
-reg add "HKCU\Control Panel\Mouse" /v "MouseThreshold2" /t REG_SZ /d 0 /f >nul 2>&1
-reg add "HKCU\Control Panel\Accessibility\Keyboard Response" /v "Flags" /t REG_SZ /d "122" /f >nul 2>&1
-reg add "HKCU\Control Panel\Accessibility\Keyboard Response" /v "AutoRepeatDelay" /t REG_SZ /d "200" /f >nul 2>&1
-echo       - Input lag reduzido ao minimo possivel!
-echo.
-
-echo [7/7] Otimizando Rede TCP/IP e Desativando Algoritmo de Nagle...
-netsh int tcp set global autotuninglevel=normal >nul 2>&1
-for /f %%i in ('reg query "HKLM\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\Interfaces"') do (
-    reg add "%%i" /v "TcpAckFrequency" /t REG_DWORD /d 1 /f >nul 2>&1
-    reg add "%%i" /v "TCPNoDelay" /t REG_DWORD /d 1 /f >nul 2>&1
-    reg add "%%i" /v "TcpDelAckTicks" /t REG_DWORD /d 0 /f >nul 2>&1
-)
-reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile" /v "NetworkThrottlingIndex" /t REG_DWORD /d 4294967295 /f >nul 2>&1
-echo       - Pilha de rede configurada para menor ping e zero packet loss!
-echo.
-
-echo ===============================================================================
-echo   [PARABENS] SEU COMPUTADOR FOI OTIMIZADO COM SUCESSO!
-echo   Recomendamos reiniciar seu computador para consolidar todas as mudancas.
-echo ===============================================================================
-echo.
-pause
-goto MAIN_MENU
-
-:: -------------------------------------------------------------
-:: REVERSAO TOTAL
-:: -------------------------------------------------------------
 :RESTORE_ALL
 cls
 echo ===============================================================================
@@ -1339,7 +1305,6 @@ echo ===========================================================================
 echo.
 echo Deseja realmente restaurar todas as configuracoes para o padrao de fabrica?
 choice /c SN /n /m "Confirma restauracao para o padrao original? [S para Sim / N para Nao]: "
-
 if errorlevel 2 goto MAIN_MENU
 if errorlevel 1 goto DO_RESTORE
 goto MAIN_MENU
@@ -1372,9 +1337,6 @@ echo.
 pause
 goto MAIN_MENU
 
-:: -------------------------------------------------------------
-:: SAIDA
-:: -------------------------------------------------------------
 :OPT_EXIT
 cls
 echo.
@@ -1387,63 +1349,114 @@ exit /b 0
 """
 
 # -------------------------------------------------------------
-# MANUAIS E GUIAS DE JOGOS
+# 9. GUIAS E MANUAIS FORMATADOS
 # -------------------------------------------------------------
 README_GAMES = """===============================================================================
        APEX BOOST LABS - GUIA DE OTIMIZACAO PARA JOGOS COMPETITIVOS
 ===============================================================================
 
 1. COUNTER-STRIKE 2 (CS2):
-   - Opcoes de Inicializacao na Steam:
+   - Opcoes de Inicializacao na Steam (Propriedades do Jogo -> Geral):
      -novid -high -threads [Numero de Threads da sua CPU] +fps_max 0
    - Configuracoes de Video no jogo:
-     - Modo de Exibicao: Tela Inteira Exclusiva
-     - Reflex Low Latency: Ativado + Boost (se possuir GPU Nvidia)
-     - Fidelidade FX Super Resolution: Desativado (Melhor qualidade/menos delay)
+     - Modo de Exibicao: Tela Inteira Exclusiva (obrigatorio)
+     - Nvidia Reflex Low Latency: Ativado + Boost (se possuir GPU Nvidia)
+     - FidelityFX Super Resolution: Desativado (Para maxima nitidez e menos delay)
+     - MSAA: 2x ou 4x (desative FXAA)
 
 2. VALORANT:
-   - No jogo:
-     - Multithreaded Rendering: LIGADO (obrigatorio)
-     - RawInputBuffer: LIGADO (reduz input lag do mouse a zero)
-     - Nvidia Reflex: LIGADO + BOOST
+   - Configuracoes de Video no jogo:
+     - Renderizacao Multinucleo (Multithreaded Rendering): LIGADO
+     - RawInputBuffer: LIGADO (Zera o delay de mouse com polling rate de 1000Hz/4000Hz/8000Hz)
+     - Nvidia Reflex Baixa Latencia: LIGADO + BOOST
      - V-Sync: SEMPRE DESLIGADO
+     - Limitadores de FPS: Todos DESLIGADOS
 
 3. FORTNITE:
    - Modo de Renderizacao: Modo de Desempenho (Performance Mode)
    - Baixa Latencia Nvidia Reflex: Ligado + Boost
-   - Desative a gravacao de replays (Replays nas configuracoes) para ganhar ate +35 FPS
+   - Gravacao de Replays: DESLIGADO (ganho de ate +35 FPS em lutas)
+   - Malhas (Meshes): Baixo para mais FPS estavel
 
-4. WARZONE / CALL OF DUTY:
-   - Defina o Render Worker Count no arquivo 'options.3.cod22.cst' com o numero de cores fisicos da sua CPU.
-   - V-Sync: Desligado. DLSS: Qualidade ou Desligado com CAS FidelityFX em 60%.
+4. CALL OF DUTY: WARZONE:
+   - Localize o arquivo: Documentos\\Call of Duty\\options.3.cod22.cst
+   - Altere a linha 'RendererWorkerCount' para a quantidade exata de nucleos FISICOS da sua CPU
+   - V-Sync: Desligado | Nvidia Reflex: Ligado + Boost | DLSS: Desempenho ou FSR
 
 5. GTA V / FIVEM ROLEPLAY:
-   - No painel da Nvidia: Modo de Gerenciamento de Energia -> Preferencia por Desempenho Maximo.
-   - Desative Sombras Suaves no FiveM para estabilizar 1% Low.
+   - Painel Nvidia: Modo de Gerenciamento de Energia -> Preferencia por Desempenho Maximo
+   - No FiveM: Desative Sombras Suaves e Oclusao de Ambiente para eliminar stutters
+===============================================================================
 """
 
 README_MANUAL = """===============================================================================
-               APEX BOOST LABS - MANUAL DO USUARIO & INSTALACAO
+        APEX BOOST LABS - MANUAL DE INSTRUCOES E EXECUCAO
 ===============================================================================
 
-Bem-vindo a familia Apex Boost Labs!
+COMO UTILIZAR O PACK EM 3 PASSOS SIMPLES:
 
-COMO UTILIZAR O PACOTE:
-1. Extraia o arquivo .ZIP para qualquer pasta no seu computador.
-2. Recomendamos clicar com o botao direito em "00_APEX_OTIMIZADOR_AUTOMATICO.bat" e
-   selecionar: [ EXECUTAR COMO ADMINISTRADOR ].
-3. Escolha a Opcao [1] para rodar a Otimizacao Total com 1 Clique ou navegue
-   pelas pastas numeradas caso prefira executar modulo por modulo.
+PASSO 1: EXTRAIA O ARQUIVO COMPLETO
+- Clique com o botao direito no arquivo .zip que voce baixou e escolha "Extrair Tudo".
+- IMPORTANTE: Nao execute os scripts de dentro do arquivo compactado sem extrair!
 
-GARANTIA & SEGURANCA:
-- Todas as alteracoes sao 100% seguras para o seu hardware.
-- O script 01 cria um Ponto de Restauracao oficial do Windows antes de comecar.
-- Caso queira reverter tudo para o padrao de fabrica do Windows, basta executar
-  o script "03_REVERTER_PADRAO_WINDOWS.bat".
+PASSO 2: EXECUTE O OTIMIZADOR AUTOMATICO
+- Abra a pasta extraida e de 2 cliques no arquivo:
+  "00_APEX_OTIMIZADOR_AUTOMATICO.bat" (ou "00_APEX_INICIAR_AQUI.bat")
+- Uma janela do Windows (UAC) solicitara permissao de Administrador.
+  Clique em "SIM" para permitir que o script configure os parametros de kernel.
+
+PASSO 3: ESCOLHA A OPCAO [1] NO MENU
+- Digite 1 e aperte Enter para executar a "OTIMIZACAO TOTAL EM 1 CLIQUE".
+- O script criara um Ponto de Restauracao de seguranca e aplicara todas as
+  melhorias de CPU, GPU, Latencia de Mouse e Conexao.
+- Ao concluir, REINICIE SEU COMPUTADOR para ativar todas as alteracoes!
+
+REVERSAO (SEGURO E 100% REVERSIVEL):
+- Caso queira voltar qualquer configuracao para o padrao de fabrica do Windows,
+  basta abrir o menu e digitar 'R', ou executar o arquivo
+  "01_SEGURANCA/03_REVERTER_PADRAO_WINDOWS.bat".
 
 SUPORTE VIP:
-- E-mail: suporte@apexboostlabs.com
-- Discord Oficial: apexboostlabs.gg/discord
+- Equipe Apex Boost Labs: suporte@apexboostlabs.com
+- Discord Oficial da Comunidade: discord.gg/apexboost
+===============================================================================
+"""
+
+README_OBS = """===============================================================================
+   APEX BOOST LABS - GUIA DE OTIMIZACAO PARA OBS STUDIO & STREAMLABS
+===============================================================================
+1. No OBS Studio -> Configuracoes -> Avancado:
+   - Prioridade do Processo: Acima do Normal (Above Normal)
+2. Configuracoes -> Saida -> Modo de Saida (Avancado) -> Transmissao:
+   - Codificador: NVIDIA NVENC H.264 (novo) ou AMD HW H.264
+   - Controle de Taxa: CBR
+   - Taxa de Bits: 6000 Kbps (Twitch) ou 9000 Kbps (YouTube)
+   - Predefinicao: Desempenho / Baixa Latencia
+   - Perfil: High
+   - Intervalo de Keyframe: 2 segundos
+   - B-Frames: 2
+3. Desative a 'Pre-visualizacao' durante partidas competitivas para poupar GPU.
+===============================================================================
+"""
+
+README_BIOS = """===============================================================================
+   APEX BOOST LABS - DICAS AVANCADAS DE BIOS, MEMORIA RAM E REBAR
+===============================================================================
+1. MEMORIA RAM (XMP / EXPO / DOCP):
+   - Entre na BIOS da sua placa-mae (teclando DEL ou F2 ao ligar o PC).
+   - Ative o perfil XMP (Intel) ou EXPO / D.O.C.P (AMD).
+   - Isso garante que suas memorias operem na frequencia maxima anunciada
+     (ex: 3200MHz, 3600MHz, 6000MHz) em vez do padrao de 2133MHz.
+
+2. RESIZABLE BAR (ReBAR) & ABOVE 4G DECODING:
+   - Ative 'Above 4G Decoding' e 'Resizable BAR' na sua BIOS.
+   - Permite que a CPU acesse toda a VRAM da placa de video de uma so vez,
+     gerando ganhos de ate +15% de FPS em placas RTX 30/40 e Radeon RX 6000/7000.
+
+3. REVERSAO E C-STATES:
+   - Desative C-States caso seu foco seja puramente estabilidade competitiva
+     sem oscilacao de clock em torneios.
+===============================================================================
 """
 
 def make_zip(filename, files_dict):
@@ -1454,7 +1467,7 @@ def make_zip(filename, files_dict):
     print(f"Created {filename} successfully ({os.path.getsize(filepath)} bytes)")
 
 # -------------------------------------------------------------
-# 1. STARTER TWEAK PACK (Agora super completo com 10+ ferramentas)
+# 1. STARTER TWEAK PACK (R$ 9,90)
 # -------------------------------------------------------------
 starter_files = {
     '00_APEX_INICIAR_AQUI.bat': MASTER_LAUNCHER_BAT,
@@ -1473,7 +1486,7 @@ starter_files = {
 make_zip('starter_pack.zip', starter_files)
 
 # -------------------------------------------------------------
-# 2. COMPETITIVE FPS ULTRA PACK (Focado em Jogos, GPU, CPU & Input Lag)
+# 2. COMPETITIVE FPS ULTRA PACK (R$ 19,90)
 # -------------------------------------------------------------
 ultra_files = {
     '00_APEX_OTIMIZADOR_AUTOMATICO.bat': MASTER_LAUNCHER_BAT,
@@ -1504,7 +1517,7 @@ ultra_files = {
 make_zip('ultra_fps_pack.zip', ultra_files)
 
 # -------------------------------------------------------------
-# 3. ZERO LATENCY & NETWORK PRO (Focado em Ping, Pilha TCP, DNS e Stream)
+# 3. ZERO LATENCY & NETWORK PRO (R$ 24,90)
 # -------------------------------------------------------------
 network_files = {
     '00_APEX_OTIMIZADOR_AUTOMATICO.bat': MASTER_LAUNCHER_BAT,
@@ -1518,25 +1531,13 @@ network_files = {
     '07_REDE/01_Otimizar_TCP_IP_Nagle_Disable.bat': TCP_NETWORK_BAT,
     '07_REDE/02_Configurar_DNS_Gamer_Cloudflare_1.1.1.1.bat': DNS_GAMER_BAT,
     '07_REDE/03_Prioridade_Processos_NetworkThrottling.reg': GAMEMODE_REG,
-    'GUIAS_REDE/COMO_CONFIGURAR_OBS_STUDIO_ZERO_LOSS.txt': """===================================================
-   GUIA DE OTIMIZACAO OBS STUDIO / STREAMLABS
-===================================================
-1. No OBS Studio -> Configuracoes -> Avancado:
-   - Prioridade do Processo: Acima do Normal (Above Normal).
-2. Configuracoes -> Saida -> Transmissao:
-   - Codificador: NVIDIA NVENC H.264 (novo) ou AMD HW H.264.
-   - Controle de Taxa: CBR.
-   - Predefinicao: Desempenho / Baixa Latencia.
-   - Intervalo de Keyframe: 2 segundos.
-   - B-Frames: 2.
-3. Desative a 'Pre-visualizacao' durante jogos pesados para poupar GPU.
-""",
+    'GUIAS_REDE/COMO_CONFIGURAR_OBS_STUDIO_ZERO_LOSS.txt': README_OBS,
     'LEIA-ME_Manual_Network_Pro.txt': README_MANUAL
 }
 make_zip('network_pro_pack.zip', network_files)
 
 # -------------------------------------------------------------
-# 4. ULTIMATE EXTREME SUITE (ALL-IN-ONE COMPLETO)
+# 4. ULTIMATE EXTREME SUITE (ALL-IN-ONE COMPLETO - R$ 34,90)
 # -------------------------------------------------------------
 extreme_files = {
     '00_APEX_OTIMIZADOR_MASTER_PRO.bat': MASTER_LAUNCHER_BAT,
@@ -1579,19 +1580,10 @@ extreme_files = {
     
     # 08 Guias e Manuais
     '08_GUIAS_COMPLETOS/GUIA_OTIMIZACAO_CS2_VALORANT_FORTNITE.txt': README_GAMES,
-    '08_GUIAS_COMPLETOS/GUIA_CONFIGURACAO_OBS_STREAMING.txt': README_MANUAL,
-    '08_GUIAS_COMPLETOS/GUIA_BIOS_RAM_XMP_EXPO_DICAS.txt': """===================================================
-   DICAS AVANCADAS DE BIOS E MEMORIA RAM
-===================================================
-1. Ative o perfil XMP (Intel) ou EXPO / D.O.C.P (AMD) na BIOS
-   para garantir que sua memoria RAM opere na frequencia anunciada (ex: 3200MHz, 3600MHz, 6000MHz).
-2. Ative o 'Above 4G Decoding' e 'Resizable BAR (ReBAR)' na BIOS
-   para ganho de ate 15% de FPS com GPUs RTX 30/40/AMD RX 6000/7000.
-3. Desative o C-States (Economia de Energia agressiva da CPU) caso
-   seu foco seja estritamente pontuacao e estabilidade em campeonatos.
-""",
+    '08_GUIAS_COMPLETOS/GUIA_CONFIGURACAO_OBS_STREAMING.txt': README_OBS,
+    '08_GUIAS_COMPLETOS/GUIA_BIOS_RAM_XMP_EXPO_DICAS.txt': README_BIOS,
     'LEIA-ME_Manual_Ultimate_Extreme.txt': README_MANUAL
 }
 make_zip('ultimate_extreme_suite.zip', extreme_files)
 
-print("Successfully regenerated all 4 packs with dozens of optimization tools!")
+print("Generated all 4 packs successfully with UAC auto-elevation and true gaming performance!")

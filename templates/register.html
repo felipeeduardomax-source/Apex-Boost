@@ -3,46 +3,122 @@
 {% block title %}Criar Conta VIP | Apex Boost Labs{% endblock %}
 
 {% block content %}
-<div class="container py-5">
-    <div class="glass-card p-4 p-md-5 mx-auto" style="max-width: 480px;">
-        <div class="text-center mb-4">
-            <div class="rounded-circle d-inline-flex p-3 text-white mb-2" style="background: var(--grad-primary); box-shadow: 0 0 20px rgba(0, 102, 255, 0.4);">
-                <i class="bi bi-person-plus-fill fs-2"></i>
-            </div>
-            <h2 class="text-white fw-black fs-4">CRIAR SUA CONTA</h2>
-            <p class="text-secondary small">Tenha acesso permanente aos seus arquivos e licenças.</p>
+<div class="auth-card mx-auto">
+    <!-- Brand & Portal Logo -->
+    <div class="text-center mb-4">
+        <div class="brand-icon-box mx-auto mb-3" style="width: 58px; height: 58px; font-size: 1.8rem; box-shadow: 0 0 35px rgba(0, 102, 255, 0.5);">
+            <i class="bi bi-lightning-charge-fill"></i>
         </div>
-
-        <form method="POST" action="{{ url_for('register') }}">
-            <div class="mb-3">
-                <label class="form-label" for="regName">Nome Completo / Nickname</label>
-                <input type="text" id="regName" name="name" class="form-control" placeholder="Ex: Felipe ou Coldzera" value="{{ name or '' }}" required autofocus>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label" for="regEmail">E-mail Principal</label>
-                <input type="email" id="regEmail" name="email" class="form-control" placeholder="seuemail@exemplo.com" value="{{ email or '' }}" required>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label" for="regPassword">Senha (mínimo 6 caracteres)</label>
-                <input type="password" id="regPassword" name="password" class="form-control" placeholder="••••••••" required minlength="6">
-            </div>
-
-            <div class="mb-4">
-                <label class="form-label" for="regConfirmPassword">Confirmar Senha</label>
-                <input type="password" id="regConfirmPassword" name="confirm_password" class="form-control" placeholder="••••••••" required minlength="6">
-            </div>
-
-            <button type="submit" class="btn btn-apex-primary w-100 py-3 mb-3">
-                <i class="bi bi-check2-circle me-1"></i> Criar Minha Conta
-            </button>
-        </form>
-
-        <div class="text-center mt-3 border-top border-secondary border-opacity-50 pt-3">
-            <span class="text-secondary small">Já possui uma conta cadastrada?</span>
-            <a href="{{ url_for('login') }}" class="text-blue fw-bold small text-decoration-none ms-1">Fazer Login</a>
+        <div class="d-flex justify-content-center align-items-baseline gap-1">
+            <span class="brand-title-white fs-3 fw-black">APEX</span>
+            <span class="brand-title-blue fs-3 fw-black">BOOST</span>
+        </div>
+        <div class="text-uppercase tracking-wider text-cyan fw-bold mt-1" style="font-size: 0.75rem; letter-spacing: 0.1em;">
+            Cadastro de Novo Membro &bull; Performance Labs
         </div>
     </div>
+
+    <!-- Segmented Navigation Tabs (Entrar / Criar Conta) -->
+    <div class="auth-tabs-nav">
+        <a href="{{ url_for('login', next=request.args.get('next')) }}" class="auth-tab-btn">
+            <i class="bi bi-box-arrow-in-right"></i> Entrar na Conta
+        </a>
+        <a href="{{ url_for('register', next=request.args.get('next')) }}" class="auth-tab-btn active">
+            <i class="bi bi-person-plus"></i> Criar Conta
+        </a>
+    </div>
+
+    <div class="text-center mb-3">
+        <h2 class="text-white fw-bold fs-5 mb-1">Crie sua Conta VIP</h2>
+        <p class="text-secondary small mb-0">Cadastre-se para acessar os packs de FPS e ferramentas do site.</p>
+    </div>
+
+    <!-- Flash Alerts -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show rounded-3 py-2 px-3 small mb-3" role="alert">
+                    <i class="bi {% if category == 'success' %}bi-check-circle-fill text-success{% else %}bi-exclamation-triangle-fill text-warning{% endif %} me-2"></i>
+                    {{ message }}
+                    <button type="button" class="btn-close py-2 px-3" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Register Form -->
+    <form method="POST" action="{{ url_for('register', next=request.args.get('next')) }}" id="registerForm">
+        <div class="mb-3">
+            <label class="form-label text-secondary small" for="regName">Seu Nome ou Nick Gamer</label>
+            <div class="auth-input-group">
+                <i class="bi bi-person-fill auth-input-icon"></i>
+                <input type="text" id="regName" name="name" class="form-control auth-input-field" placeholder="Ex: Felipe ou Coldzera" value="{{ name or '' }}" required autofocus>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label text-secondary small" for="regEmail">Seu Melhor E-mail</label>
+            <div class="auth-input-group">
+                <i class="bi bi-envelope-fill auth-input-icon"></i>
+                <input type="email" id="regEmail" name="email" class="form-control auth-input-field" placeholder="seuemail@exemplo.com" value="{{ email or '' }}" required>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label text-secondary small" for="regPassword">Senha de Acesso (Mínimo 6 caracteres)</label>
+            <div class="auth-input-group">
+                <i class="bi bi-shield-lock-fill auth-input-icon"></i>
+                <input type="password" id="regPassword" name="password" class="form-control auth-input-field" placeholder="••••••••" required minlength="6">
+                <button type="button" class="auth-toggle-pwd" id="toggleRegPwdBtn" title="Mostrar/Ocultar Senha">
+                    <i class="bi bi-eye-fill" id="toggleRegPwdIcon"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="mb-4">
+            <label class="form-label text-secondary small" for="regConfirmPassword">Confirmar Senha</label>
+            <div class="auth-input-group">
+                <i class="bi bi-shield-check auth-input-icon"></i>
+                <input type="password" id="regConfirmPassword" name="confirm_password" class="form-control auth-input-field" placeholder="••••••••" required minlength="6">
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-apex-primary w-100 py-3 fw-bold fs-6 shadow-lg mb-3">
+            <i class="bi bi-check2-circle me-2"></i> CRIAR CONTA E ACESSAR O SITE
+        </button>
+    </form>
+
+    <div class="text-center mt-2 border-top border-secondary border-opacity-25 pt-3">
+        <span class="text-secondary small">Já possui uma conta registrada?</span>
+        <a href="{{ url_for('login', next=request.args.get('next')) }}" class="text-blue fw-bold small text-decoration-none ms-1">
+            Entrar agora <i class="bi bi-arrow-right"></i>
+        </a>
+    </div>
+
+    <!-- Security Badges -->
+    <div class="d-flex justify-content-center align-items-center gap-3 text-secondary pt-3 mt-3 border-top border-secondary border-opacity-25" style="font-size: 0.76rem;">
+        <span><i class="bi bi-lock-fill text-cyan me-1"></i>SSL 256-Bit</span>
+        <span>&bull;</span>
+        <span><i class="bi bi-lightning-fill text-warning me-1"></i>Acesso Vitalício</span>
+        <span>&bull;</span>
+        <span><i class="bi bi-patch-check-fill text-success me-1"></i>Garantia Total</span>
+    </div>
 </div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// Toggle Password Visibility
+const toggleBtn = document.getElementById('toggleRegPwdBtn');
+const pwdInput = document.getElementById('regPassword');
+const pwdIcon = document.getElementById('toggleRegPwdIcon');
+
+if (toggleBtn && pwdInput && pwdIcon) {
+    toggleBtn.addEventListener('click', () => {
+        const isPassword = pwdInput.type === 'password';
+        pwdInput.type = isPassword ? 'text' : 'password';
+        pwdIcon.className = isPassword ? 'bi bi-eye-slash-fill text-cyan' : 'bi bi-eye-fill';
+    });
+}
+</script>
 {% endblock %}

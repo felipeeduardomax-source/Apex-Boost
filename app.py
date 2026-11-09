@@ -35,6 +35,35 @@ def inject_global_data():
         'current_year': datetime.datetime.now().year
     }
 
+# ----------------- ACCESS CONTROL MIDDLEWARE ----------------- #
+
+@app.before_request
+def require_login():
+    """Requires user to be logged in before accessing the site"""
+    public_endpoints = {'login', 'register', 'static'}
+    if request.endpoint in public_endpoints or (request.endpoint and request.endpoint.startswith('static')):
+        return
+
+    # Direct static file requests
+    if request.path.startswith('/static/'):
+        return
+
+    # If unauthenticated, redirect to login
+    if 'user_id' not in session:
+        if request.path in ('/login', '/register'):
+            return
+
+        # If AJAX / JSON request
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.is_json:
+            return jsonify({'error': 'unauthorized', 'message': 'Faça login para continuar.', 'redirect': url_for('login')}), 401
+
+        # Preserve query or path for redirect after login
+        next_param = None
+        if request.method == 'GET' and request.path not in ('/', '/login', '/register', '/logout'):
+            next_param = request.full_path.rstrip('?')
+
+        return redirect(url_for('login', next=next_param))
+
 # ----------------- HOME & CATALOG ROUTES ----------------- #
 
 @app.route('/')
@@ -80,7 +109,7 @@ def product_detail(slug):
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if 'user_id' in session:
-        return redirect(url_for('profile'))
+        return redirect(url_for('index'))
         
     if request.method == 'POST':
         name = request.form.get('name', '').strip()
@@ -104,8 +133,8 @@ def register():
         existing = conn.execute("SELECT id FROM users WHERE email = ?", (email,)).fetchone()
         if existing:
             conn.close()
-            flash('Este email já está cadastrado. Faça login!', 'warning')
-            return redirect(url_for('login'))
+            flash('Este email já está cadastrado. Faça login para entrar!', 'warning')
+            return redirect(url_for('login', next=request.args.get('next')))
 
         password_hash = generate_password_hash(password)
         cursor = conn.cursor()
@@ -123,26 +152,28 @@ def register():
         session['user_email'] = email
         session['is_admin'] = 0
 
-        flash(f'Conta criada com sucesso! Bem-vindo(a), {name}!', 'success')
+        flash(f'Conta criada com sucesso! Bem-vindo(a) ao Apex Boost Labs, {name}! 🚀', 'success')
         
-        # If cart has items, redirect to checkout
+        next_url = request.args.get('next')
+        if next_url and next_url.startswith('/') and next_url not in ('/login', '/register'):
+            return redirect(next_url)
         if session.get('cart'):
             return redirect(url_for('checkout'))
-        return redirect(url_for('profile'))
+        return redirect(url_for('index'))
 
     return render_template('register.html')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if 'user_id' in session:
-        return redirect(url_for('profile'))
+        return redirect(url_for('index'))
 
     if request.method == 'POST':
         email = request.form.get('email', '').strip().lower()
         password = request.form.get('password', '').strip()
 
         if not email or not password:
-            flash('Informe seu e-mail e sua senha.', 'danger')
+            flash('Informe seu e-mail e sua senha para entrar.', 'danger')
             return render_template('login.html', email=email)
 
         conn = get_db()
@@ -155,13 +186,13 @@ def login():
             session['user_email'] = user['email']
             session['is_admin'] = bool(user['is_admin'])
 
-            flash(f'Login realizado com sucesso! Olá, {user["name"]}.', 'success')
+            flash(f'Login realizado com sucesso! Bem-vindo(a), {user["name"]}! 🚀', 'success')
             next_url = request.args.get('next')
-            if next_url and next_url.startswith('/'):
+            if next_url and next_url.startswith('/') and next_url not in ('/login', '/register'):
                 return redirect(next_url)
             if session.get('cart'):
                 return redirect(url_for('checkout'))
-            return redirect(url_for('profile'))
+            return redirect(url_for('index'))
         else:
             flash('E-mail ou senha incorretos. Verifique suas credenciais.', 'danger')
             return render_template('login.html', email=email)
@@ -174,8 +205,8 @@ def logout():
     session.pop('user_name', None)
     session.pop('user_email', None)
     session.pop('is_admin', None)
-    flash('Você saiu da sua conta com sucesso.', 'info')
-    return redirect(url_for('index'))
+    flash('Você saiu da sua conta com sucesso. Faça login novamente para acessar o site.', 'info')
+    return redirect(url_for('login'))
 
 @app.route('/profile', methods=['GET', 'POST'])
 def profile():

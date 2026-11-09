@@ -10,7 +10,19 @@ class StoreTestCase(unittest.TestCase):
         self.client = app.test_client()
         init_db()
 
-    def test_01_index_page(self):
+    def test_01_index_page_and_gateway(self):
+        # 1. Unauthenticated request to / should redirect to /login
+        res_guest = self.client.get('/')
+        self.assertEqual(res_guest.status_code, 302)
+        self.assertIn('/login', res_guest.headers.get('Location', ''))
+
+        # 2. Login with valid account
+        self.client.post('/login', data={
+            'email': 'gamer@teste.com',
+            'password': '123456'
+        })
+
+        # 3. Authenticated access to / succeeds with 200 OK and loads store
         response = self.client.get('/')
         self.assertEqual(response.status_code, 200)
         self.assertIn(b'APEX', response.data)
@@ -18,6 +30,11 @@ class StoreTestCase(unittest.TestCase):
         self.assertIn(b'Competitive FPS Ultra Pack', response.data)
 
     def test_02_product_detail(self):
+        # Log in first
+        self.client.post('/login', data={
+            'email': 'gamer@teste.com',
+            'password': '123456'
+        })
         response = self.client.get('/pack/ultra-fps-competitive-pack')
         self.assertEqual(response.status_code, 200)
         self.assertIn(b'Competitive FPS Ultra Pack', response.data)
@@ -25,7 +42,6 @@ class StoreTestCase(unittest.TestCase):
     def test_03_registration_and_login(self):
         # Register new gamer
         test_email = "testgamer@domain.com"
-        # Cleanup if exists
         conn = get_db()
         conn.execute("DELETE FROM users WHERE email = ?", (test_email,))
         conn.commit()
@@ -40,19 +56,27 @@ class StoreTestCase(unittest.TestCase):
         self.assertEqual(res_reg.status_code, 200)
         self.assertIn(b'Conta criada com sucesso', res_reg.data)
 
-        # Logout
+        # Logout redirects to login
         res_logout = self.client.get('/logout', follow_redirects=True)
         self.assertEqual(res_logout.status_code, 200)
+        self.assertIn(b'Acesse sua Conta', res_logout.data)
 
-        # Login
+        # Login redirects to home page / site
         res_login = self.client.post('/login', data={
             'email': test_email,
             'password': 'password123'
         }, follow_redirects=True)
         self.assertEqual(res_login.status_code, 200)
         self.assertIn(b'Login realizado com sucesso', res_login.data)
+        self.assertIn(b'Competitive FPS Ultra Pack', res_login.data)
 
     def test_04_cart_and_coupon(self):
+        # Log in first
+        self.client.post('/login', data={
+            'email': 'gamer@teste.com',
+            'password': '123456'
+        })
+
         # Add product 1 to cart
         res_add = self.client.get('/cart/add/1', follow_redirects=True)
         self.assertEqual(res_add.status_code, 200)
@@ -83,9 +107,14 @@ class StoreTestCase(unittest.TestCase):
         }, follow_redirects=True)
         self.assertEqual(res_checkout.status_code, 200)
         self.assertIn(b'LIBERADOS', res_checkout.data)
-        self.assertIn(b'APEX-', res_checkout.data) # License key
+        self.assertIn(b'APEX-', res_checkout.data)
 
     def test_06_download_file(self):
+        # Login first
+        self.client.post('/login', data={
+            'email': 'gamer@teste.com',
+            'password': '123456'
+        })
         res = self.client.get('/download/ultra_fps_pack.zip')
         self.assertEqual(res.status_code, 200)
         self.assertIn(res.headers.get('Content-Type'), ['application/zip', 'application/x-zip-compressed'])

@@ -3,45 +3,145 @@
 {% block title %}Entrar na Conta | Apex Boost Labs{% endblock %}
 
 {% block content %}
-<div class="container py-5">
-    <div class="glass-card p-4 p-md-5 mx-auto" style="max-width: 450px;">
-        <div class="text-center mb-4">
-            <div class="rounded-circle d-inline-flex p-3 text-white mb-2" style="background: var(--grad-primary); box-shadow: 0 0 20px rgba(0, 102, 255, 0.4);">
-                <i class="bi bi-person-lock fs-2"></i>
-            </div>
-            <h2 class="text-white fw-black fs-4">ENTRAR NA CONTA</h2>
-            <p class="text-secondary small">Acesse seus downloads, licenças e histórico de pedidos.</p>
+<div class="auth-card mx-auto">
+    <!-- Brand & Portal Logo -->
+    <div class="text-center mb-4">
+        <div class="brand-icon-box mx-auto mb-3" style="width: 58px; height: 58px; font-size: 1.8rem; box-shadow: 0 0 35px rgba(0, 102, 255, 0.5);">
+            <i class="bi bi-lightning-charge-fill"></i>
         </div>
-
-        <form method="POST" action="{{ url_for('login', next=request.args.get('next')) }}">
-            <div class="mb-3">
-                <label class="form-label" for="loginEmail">E-mail</label>
-                <input type="email" id="loginEmail" name="email" class="form-control" placeholder="seuemail@exemplo.com" value="{{ email or '' }}" required autofocus>
-            </div>
-
-            <div class="mb-4">
-                <label class="form-label" for="loginPassword">Senha</label>
-                <input type="password" id="loginPassword" name="password" class="form-control" placeholder="••••••••" required>
-            </div>
-
-            <button type="submit" class="btn btn-apex-primary w-100 py-3 mb-3">
-                <i class="bi bi-box-arrow-in-right me-1"></i> Acessar Minha Conta
-            </button>
-        </form>
-
-        <!-- Quick Demo Credentials Box -->
-        <div class="p-3 rounded-3 border border-secondary border-opacity-50 mb-3 small" style="background: rgba(0, 102, 255, 0.08);">
-            <div class="text-blue fw-bold mb-1"><i class="bi bi-info-circle-fill"></i> Contas de Demonstração:</div>
-            <div class="text-secondary" style="font-size: 0.82rem;">
-                &bull; <strong>Gamer:</strong> <code>gamer@teste.com</code> | Senha: <code>123456</code><br>
-                &bull; <strong>Admin:</strong> <code>admin@apexboost.com</code> | Senha: <code>admin123</code>
-            </div>
+        <div class="d-flex justify-content-center align-items-baseline gap-1">
+            <span class="brand-title-white fs-3 fw-black">APEX</span>
+            <span class="brand-title-blue fs-3 fw-black">BOOST</span>
         </div>
-
-        <div class="text-center mt-3 border-top border-secondary border-opacity-50 pt-3">
-            <span class="text-secondary small">Ainda não possui uma conta?</span>
-            <a href="{{ url_for('register') }}" class="text-blue fw-bold small text-decoration-none ms-1">Cadastre-se</a>
+        <div class="text-uppercase tracking-wider text-cyan fw-bold mt-1" style="font-size: 0.75rem; letter-spacing: 0.1em;">
+            Portal de Acesso VIP &bull; Performance Labs
         </div>
     </div>
+
+    <!-- Segmented Navigation Tabs (Entrar / Criar Conta) -->
+    <div class="auth-tabs-nav">
+        <a href="{{ url_for('login', next=request.args.get('next')) }}" class="auth-tab-btn active">
+            <i class="bi bi-box-arrow-in-right"></i> Entrar na Conta
+        </a>
+        <a href="{{ url_for('register', next=request.args.get('next')) }}" class="auth-tab-btn">
+            <i class="bi bi-person-plus"></i> Criar Conta
+        </a>
+    </div>
+
+    <div class="text-center mb-3">
+        <h2 class="text-white fw-bold fs-5 mb-1">Acesse sua Conta</h2>
+        <p class="text-secondary small mb-0">Faça login com a sua conta para liberar o acesso total ao site.</p>
+    </div>
+
+    <!-- Flash Alerts -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show rounded-3 py-2 px-3 small mb-3" role="alert">
+                    <i class="bi {% if category == 'success' %}bi-check-circle-fill text-success{% else %}bi-exclamation-triangle-fill text-warning{% endif %} me-2"></i>
+                    {{ message }}
+                    <button type="button" class="btn-close py-2 px-3" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Login Form -->
+    <form method="POST" action="{{ url_for('login', next=request.args.get('next')) }}" id="loginForm">
+        <div class="mb-3">
+            <label class="form-label text-secondary small" for="loginEmail">E-mail de Acesso</label>
+            <div class="auth-input-group">
+                <i class="bi bi-envelope-fill auth-input-icon"></i>
+                <input type="email" id="loginEmail" name="email" class="form-control auth-input-field" placeholder="seuemail@exemplo.com" value="{{ email or '' }}" required autofocus>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+                <label class="form-label text-secondary small mb-0" for="loginPassword">Sua Senha</label>
+                <a href="javascript:void(0)" onclick="alert('Para testar o acesso à loja, use um dos botões de 1-Clique abaixo ou crie uma conta em Criar Conta!')" class="text-cyan text-decoration-none" style="font-size: 0.78rem;">Esqueceu a senha?</a>
+            </div>
+            <div class="auth-input-group">
+                <i class="bi bi-shield-lock-fill auth-input-icon"></i>
+                <input type="password" id="loginPassword" name="password" class="form-control auth-input-field" placeholder="••••••••" required>
+                <button type="button" class="auth-toggle-pwd" id="toggleLoginPasswordBtn" title="Mostrar/Ocultar Senha">
+                    <i class="bi bi-eye-fill" id="toggleLoginPasswordIcon"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="rememberMe" checked>
+                <label class="form-check-label text-secondary small" for="rememberMe">
+                    Lembrar neste navegador
+                </label>
+            </div>
+            <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-50 small" style="font-size: 0.72rem;">
+                <i class="bi bi-shield-check me-1"></i>Protegido
+            </span>
+        </div>
+
+        <button type="submit" class="btn btn-apex-primary w-100 py-3 fw-bold fs-6 shadow-lg mb-3">
+            <i class="bi bi-box-arrow-in-right me-2"></i> ENTRAR E ACESSAR O SITE
+        </button>
+    </form>
+
+    <!-- 1-Click Fast Demo Credentials for Client/Reviewer -->
+    <div class="auth-quick-login-box">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+            <span class="text-blue fw-bold small"><i class="bi bi-lightning-charge-fill"></i> Acesso Rápido de Teste:</span>
+            <span class="text-muted" style="font-size: 0.72rem;">(1-Clique)</span>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+            <button type="button" class="auth-demo-pill flex-grow-1" onclick="autoFillLogin('gamer@teste.com', '123456')">
+                <i class="bi bi-controller text-cyan"></i>
+                <span><strong>Gamer</strong> (Felipe)</span>
+            </button>
+            <button type="button" class="auth-demo-pill flex-grow-1" onclick="autoFillLogin('admin@apexboost.com', 'admin123')">
+                <i class="bi bi-shield-lock-fill text-warning"></i>
+                <span><strong>Admin</strong> Apex</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Security & Guarantees Row -->
+    <div class="d-flex justify-content-center align-items-center gap-3 text-secondary pt-3 mt-3 border-top border-secondary border-opacity-25" style="font-size: 0.76rem;">
+        <span><i class="bi bi-lock-fill text-cyan me-1"></i>SSL 256-Bit</span>
+        <span>&bull;</span>
+        <span><i class="bi bi-lightning-fill text-warning me-1"></i>Liberação Instantânea</span>
+        <span>&bull;</span>
+        <span><i class="bi bi-patch-check-fill text-success me-1"></i>Antiban 100%</span>
+    </div>
 </div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// Toggle Password Visibility
+const toggleBtn = document.getElementById('toggleLoginPasswordBtn');
+const pwdInput = document.getElementById('loginPassword');
+const pwdIcon = document.getElementById('toggleLoginPasswordIcon');
+
+if (toggleBtn && pwdInput && pwdIcon) {
+    toggleBtn.addEventListener('click', () => {
+        const isPassword = pwdInput.type === 'password';
+        pwdInput.type = isPassword ? 'text' : 'password';
+        pwdIcon.className = isPassword ? 'bi bi-eye-slash-fill text-cyan' : 'bi bi-eye-fill';
+    });
+}
+
+// 1-Click Auto Fill and Submit
+function autoFillLogin(email, password) {
+    const emailField = document.getElementById('loginEmail');
+    const pwdField = document.getElementById('loginPassword');
+    const form = document.getElementById('loginForm');
+    
+    if (emailField && pwdField && form) {
+        emailField.value = email;
+        pwdField.value = password;
+        form.submit();
+    }
+}
+</script>
 {% endblock %}

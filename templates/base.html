@@ -18,6 +18,9 @@
 </head>
 <body>
 
+    {% set is_auth_portal = (request.endpoint in ['login', 'register'] and not current_user) %}
+
+    {% if not is_auth_portal %}
     <!-- Floating Toggle to Show Sidebar (Shown when sidebar is hidden) -->
     <button type="button" class="btn btn-apex-primary floating-sidebar-toggle" id="expandSidebarBtn" title="Mostrar Menu Lateral">
         <i class="bi bi-layout-sidebar-inset me-1"></i>
@@ -26,8 +29,10 @@
 
     <!-- Mobile Overlay for Sidebar Drawer -->
     <div id="mobileSidebarOverlay" class="mobile-overlay"></div>
+    {% endif %}
 
-    <div class="app-wrapper" id="appWrapper">
+    <div class="{% if is_auth_portal %}auth-portal-viewport{% else %}app-wrapper{% endif %}" id="appWrapper">
+        {% if not is_auth_portal %}
         <!-- Persistent Gamer Sidebar (Show/Hide Supported) -->
         <aside class="app-sidebar" id="appSidebar">
             <!-- Sidebar Header / Brand with Collapse Button -->
@@ -154,9 +159,23 @@
                 {% endif %}
             </div>
         </aside>
+        {% endif %}
 
         <!-- Main Workspace Area -->
-        <div class="app-main">
+        <div class="{% if is_auth_portal %}w-100 my-auto py-3{% else %}app-main{% endif %}">
+            {% if is_auth_portal %}
+            <!-- Floating Quick Controls for Auth Portal -->
+            <div class="auth-portal-topbar">
+                <button type="button" class="btn btn-sm btn-apex-outline sound-toggle-btn" title="Ativar/Desativar Som">
+                    <i class="bi bi-volume-up-fill sound-icon text-cyan"></i>
+                    <span class="sound-label d-none d-sm-inline ms-1">Som</span>
+                </button>
+                <button type="button" class="btn btn-sm btn-apex-outline theme-toggle-btn" title="Alternar Modo Claro / Escuro">
+                    <i class="bi bi-moon-stars-fill theme-icon text-warning"></i>
+                    <span class="theme-label d-none d-sm-inline ms-1">Tema</span>
+                </button>
+            </div>
+            {% else %}
             <!-- Mobile Topbar (< 992px) -->
             <header class="mobile-topbar">
                 <button type="button" class="btn btn-sm btn-apex-outline px-2 py-1" id="openSidebarBtn">
@@ -239,12 +258,14 @@
                     {% endif %}
                 {% endwith %}
             </div>
+            {% endif %}
 
             <!-- Page Content -->
-            <main class="flex-grow-1 px-3 px-md-4 py-3">
+            <main class="{% if is_auth_portal %}container px-2 px-md-3{% else %}flex-grow-1 px-3 px-md-4 py-3{% endif %}">
                 {% block content %}{% endblock %}
             </main>
 
+            {% if not is_auth_portal %}
             <!-- Footer -->
             <footer>
                 <div class="container-fluid px-4 px-md-5">
@@ -305,9 +326,17 @@
                     </div>
                 </div>
             </footer>
+            {% else %}
+            <footer class="auth-portal-footer text-center py-3">
+                <div class="text-secondary small">
+                    &copy; {{ current_year }} <strong>Apex Boost Labs</strong> &bull; Sistema de Autenticação Segura &bull; Otimização Gamer para Windows
+                </div>
+            </footer>
+            {% endif %}
         </div>
     </div>
 
+    {% if not is_auth_portal %}
     <!-- Live Social Proof Toast -->
     <div id="liveSalesToast" class="live-sales-toast">
         <div class="rounded-circle p-2 text-white" style="background: var(--grad-primary);">
@@ -319,6 +348,7 @@
             <div class="text-muted" style="font-size: 0.74rem;"><i class="bi bi-check2-circle text-success me-1"></i><span id="toastTime">Compra confirmada</span></div>
         </div>
     </div>
+    {% endif %}
 
     <!-- Bootstrap 5.3 JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -392,11 +422,13 @@
     });
     </script>
 
+    {% if not is_auth_portal %}
     <!-- Floating Quick Support & Help Widget -->
     <a href="{{ url_for('index') }}#tab-faq" class="floating-support-pill" data-tab-target="tab-faq" title="Dúvidas ou Suporte Técnico? Fale Conosco!">
         <i class="bi bi-headset text-cyan fs-5"></i>
         <span>Dúvidas & Ajuda</span>
     </a>
+    {% endif %}
 
     {% block extra_scripts %}{% endblock %}
 </body>

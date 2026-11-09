@@ -1,13 +1,48 @@
-import sqlite3
 import os
+import sys
 import json
 import uuid
+import re
 from werkzeug.security import generate_password_hash
 
+# ----------------- .ENV LOADER ----------------- #
+def load_env():
+    """Carrega variáveis do arquivo .env local se existir"""
+    env_path = os.path.join(os.path.dirname(__file__), '.env')
+    if os.path.exists(env_path):
+        try:
+            with open(env_path, 'r', encoding='utf-8') as f:
+                for line in f:
+                    line = line.strip()
+                    if line and not line.startswith('#') and '=' in line:
+                        k, v = line.split('=', 1)
+                        k = k.strip()
+                        v = v.strip().strip('"').strip("'")
+                        if k and k not in os.environ:
+                            os.environ[k] = v
+        except Exception as e:
+            print("[DB] Aviso ao ler .env:", e)
+
+load_env()
+
+# ----------------- CONFIGURAÇÃO DE CONEXÃO ----------------- #
+def get_database_url():
+    url = os.environ.get('DATABASE_URL') or os.environ.get('NEON_DATABASE_URL') or os.environ.get('POSTGRES_URL')
+    if url:
+        # Neon e SQLAlchemy usam postgresql://
+        if url.startswith('postgres://'):
+            url = url.replace('postgres://', 'postgresql://', 1)
+        # Garantir sslmode=require para conexões Neon seguras
+        if 'sslmode=' not in url and 'localhost' not in url and '127.0.0.1' not in url:
+            sep = '&' if '?' in url else '?'
+            url = f"{url}{sep}sslmode=require"
+    return url
+
+DATABASE_URL = get_database_url()
 DB_PATH = os.path.join(os.path.dirname(__file__), 'store.db')
 
-# Suporte ao ambiente Serverless da Vercel (onde o diretório raiz é somente leitura)
-if os.environ.get('VERCEL'):
+# Suporte ao ambiente Serverless da Vercel para fallback SQLite
+if os.environ.get('VERCEL') and not DATABASE_URL:
     import shutil
     tmp_db = '/tmp/store.db'
     if not os.path.exists(tmp_db) and os.path.exists(DB_PATH):
@@ -17,13 +52,215 @@ if os.environ.get('VERCEL'):
             print("Aviso ao copiar banco para /tmp:", e)
     DB_PATH = tmp_db
 
-def get_db():
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    conn.execute("PRAGMA foreign_keys = ON")
-    return conn
+def is_using_postgres():
+    return bool(get_database_url())
 
+# ----------------- ADAPTADOR POSTGRESQL (NEON) ----------------- #
+if is_using_postgres():
+    try:
+        import psycopg2
+        from psycopg2.extras import RealDictCursor
+    except ImportError:
+        print("[DB] AVISO: psycopg2-binary não encontrado. Rodando em modo SQLite.")
+        DATABASE_URL = None
+
+class PostgresCursorWrapper:
+    def __init__(self, cursor):
+        self._cursor = cursor
+        self.lastrowid = None
+
+    def execute(self, sql, params=None):
+        # Converte sintaxe SQLite ? para %s do PostgreSQL
+        translated = sql.replace('?', '%s')
+
+        # Substitui INSERT OR IGNORE INTO por sintaxe padrão Postgres ON CONFLICT DO NOTHING
+        if 'INSERT OR IGNORE INTO' in translated.upper():
+            translated = re.sub(r'INSERT\s+OR\s+IGNORE\s+INTO', 'INSERT INTO', translated, flags=re.IGNORECASE)
+            if 'ON CONFLICT' not in translated.upper():
+                translated = translated.rstrip().rstrip(';') + ' ON CONFLICT DO NOTHING;'
+
+        # Suporte a lastrowid em INSERTs que não possuem RETURNING
+        is_insert = translated.strip().upper().startswith('INSERT INTO')
+        needs_returning = is_insert and 'RETURNING' not in translated.upper() and 'ON CONFLICT DO NOTHING' not in translated.upper()
+        
+        if needs_returning:
+            clean = translated.rstrip().rstrip(';')
+            translated = f"{clean} RETURNING id;"
+
+        if params is not None:
+            # Converte tuplas e listas para formato aceito pelo psycopg2
+            self._cursor.execute(translated, tuple(params))
+        else:
+            self._cursor.execute(translated)
+
+        if needs_returning:
+            try:
+                row = self._cursor.fetchone()
+                if row:
+                    if isinstance(row, dict):
+                        self.lastrowid = row.get('id')
+                    elif hasattr(row, '__getitem__'):
+                        self.lastrowid = row[0]
+            except Exception:
+                pass
+        return self
+
+    def fetchone(self):
+        return self._cursor.fetchone()
+
+    def fetchall(self):
+        return self._cursor.fetchall()
+
+    def fetchmany(self, size=None):
+        return self._cursor.fetchmany(size)
+
+    def __iter__(self):
+        return iter(self._cursor)
+
+    def __getattr__(self, name):
+        return getattr(self._cursor, name)
+
+class PostgresConnectionWrapper:
+    def __init__(self, raw_conn):
+        self._conn = raw_conn
+
+    def cursor(self):
+        from psycopg2.extras import RealDictCursor
+        cur = self._conn.cursor(cursor_factory=RealDictCursor)
+        return PostgresCursorWrapper(cur)
+
+    def execute(self, sql, params=None):
+        cur = self.cursor()
+        return cur.execute(sql, params)
+
+    def commit(self):
+        self._conn.commit()
+
+    def rollback(self):
+        self._conn.rollback()
+
+    def close(self):
+        self._conn.close()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if exc_type:
+            self.rollback()
+        else:
+            self.commit()
+        self.close()
+
+    def __getattr__(self, name):
+        return getattr(self._conn, name)
+
+# ----------------- GET_DB FACTORY ----------------- #
+def get_db():
+    db_url = get_database_url()
+    if db_url:
+        import psycopg2
+        raw_conn = psycopg2.connect(db_url)
+        return PostgresConnectionWrapper(raw_conn)
+    else:
+        import sqlite3
+        conn = sqlite3.connect(DB_PATH)
+        conn.row_factory = sqlite3.Row
+        conn.execute("PRAGMA foreign_keys = ON")
+        return conn
+
+# ----------------- INICIALIZAÇÃO E SEEDING ----------------- #
 def init_db():
+    db_url = get_database_url()
+    if db_url:
+        _init_db_postgres()
+    else:
+        _init_db_sqlite()
+
+def _init_db_postgres():
+    conn = get_db()
+    cursor = conn.cursor()
+
+    # DDL PostgreSQL para Neon
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        name TEXT NOT NULL,
+        email TEXT UNIQUE NOT NULL,
+        password_hash TEXT NOT NULL,
+        is_admin INTEGER DEFAULT 0,
+        avatar TEXT DEFAULT 'gamer_avatar.png',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS products (
+        id SERIAL PRIMARY KEY,
+        slug TEXT UNIQUE NOT NULL,
+        name TEXT NOT NULL,
+        tag TEXT,
+        short_desc TEXT,
+        description TEXT,
+        price NUMERIC(10, 2) NOT NULL,
+        old_price NUMERIC(10, 2),
+        badge TEXT,
+        fps_gain TEXT,
+        latency_drop TEXT,
+        features TEXT,
+        download_file TEXT,
+        icon TEXT,
+        popular INTEGER DEFAULT 0,
+        active INTEGER DEFAULT 1
+    );
+
+    CREATE TABLE IF NOT EXISTS orders (
+        id SERIAL PRIMARY KEY,
+        order_code TEXT UNIQUE NOT NULL,
+        user_id INTEGER NOT NULL REFERENCES users(id),
+        customer_name TEXT,
+        customer_email TEXT,
+        total NUMERIC(10, 2) NOT NULL,
+        discount NUMERIC(10, 2) DEFAULT 0.0,
+        coupon_used TEXT,
+        payment_method TEXT NOT NULL,
+        status TEXT DEFAULT 'PAGO',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS order_items (
+        id SERIAL PRIMARY KEY,
+        order_id INTEGER NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+        product_id INTEGER NOT NULL REFERENCES products(id),
+        product_name TEXT NOT NULL,
+        price NUMERIC(10, 2) NOT NULL,
+        license_key TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS coupons (
+        id SERIAL PRIMARY KEY,
+        code TEXT UNIQUE NOT NULL,
+        discount_percent INTEGER NOT NULL,
+        active INTEGER DEFAULT 1
+    );
+
+    CREATE TABLE IF NOT EXISTS reviews (
+        id SERIAL PRIMARY KEY,
+        author TEXT NOT NULL,
+        game TEXT NOT NULL,
+        rating INTEGER NOT NULL,
+        text TEXT NOT NULL,
+        fps_before INTEGER,
+        fps_after INTEGER,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+    ''')
+    conn.commit()
+
+    _seed_initial_data(cursor, conn, is_postgres=True)
+    conn.close()
+    print("[DB] Conexão com Neon PostgreSQL inicializada com sucesso!")
+
+def _init_db_sqlite():
+    import sqlite3
     conn = get_db()
     cursor = conn.cursor()
 
@@ -50,7 +287,7 @@ def init_db():
         badge TEXT,
         fps_gain TEXT,
         latency_drop TEXT,
-        features TEXT, -- JSON string
+        features TEXT,
         download_file TEXT,
         icon TEXT,
         popular INTEGER DEFAULT 0,
@@ -101,8 +338,13 @@ def init_db():
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
     ''')
+    conn.commit()
 
-    # Seed Default Admin & Demo User
+    _seed_initial_data(cursor, conn, is_postgres=False)
+    conn.close()
+
+def _seed_initial_data(cursor, conn, is_postgres=False):
+    # Seed Admin & Demo Gamer
     admin = cursor.execute("SELECT id FROM users WHERE email = ?", ('admin@apexboost.com',)).fetchone()
     if not admin:
         cursor.execute('''
@@ -125,10 +367,17 @@ def init_db():
         ('CYBER25', 25)
     ]
     for code, disc in coupons:
-        cursor.execute('''
-            INSERT OR IGNORE INTO coupons (code, discount_percent)
-            VALUES (?, ?)
-        ''', (code, disc))
+        if is_postgres:
+            cursor.execute('''
+                INSERT INTO coupons (code, discount_percent)
+                VALUES (?, ?)
+                ON CONFLICT (code) DO NOTHING
+            ''', (code, disc))
+        else:
+            cursor.execute('''
+                INSERT OR IGNORE INTO coupons (code, discount_percent)
+                VALUES (?, ?)
+            ''', (code, disc))
 
     # Seed Products
     default_products = [
@@ -271,7 +520,8 @@ def init_db():
             ))
 
     # Seed Reviews
-    reviews_count = cursor.execute("SELECT COUNT(*) as cnt FROM reviews").fetchone()['cnt']
+    res_reviews = cursor.execute("SELECT COUNT(*) as cnt FROM reviews").fetchone()
+    reviews_count = res_reviews['cnt'] if isinstance(res_reviews, dict) else res_reviews[0]
     if reviews_count == 0:
         default_reviews = [
             ("Gabriel 'coldzera' S.", "CS2", 5, "Mano, meu CS2 saía de 140 FPS e dropava pra 70 nas smokes. Depois de aplicar o Competitive Ultra Pack, travou em 230 FPS e os stutters sumiram completamente! Valeu cada centavo.", 140, 230),
@@ -287,7 +537,6 @@ def init_db():
             ''', (author, game, rating, text, before, after))
 
     conn.commit()
-    conn.close()
 
 def generate_license_key():
     parts = [uuid.uuid4().hex[:4].upper() for _ in range(4)]
@@ -295,5 +544,5 @@ def generate_license_key():
 
 if __name__ == '__main__':
     init_db()
-    print("Database initialized successfully!")
-
+    backend = "Neon PostgreSQL" if is_using_postgres() else "SQLite"
+    print(f"Banco de dados inicializado com sucesso usando: {backend}")

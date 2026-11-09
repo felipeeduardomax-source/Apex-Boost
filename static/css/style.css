@@ -909,10 +909,22 @@ body.theme-dark .feature-list li {
 }
 
 body.theme-dark .form-control,
-body.theme-dark .form-select {
+body.theme-dark .form-select,
+[data-bs-theme="dark"] .form-control,
+[data-bs-theme="dark"] .form-select {
   background: #11141c !important;
   border: 1px solid #1e2330 !important;
   color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+.form-control::placeholder,
+.form-control::-webkit-input-placeholder,
+body.theme-dark .form-control::placeholder,
+[data-bs-theme="dark"] .form-control::placeholder {
+  color: #94a3b8 !important;
+  -webkit-text-fill-color: #94a3b8 !important;
+  opacity: 1 !important;
 }
 
 .form-control:focus, .form-select:focus {

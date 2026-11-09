@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-bs-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -16,10 +16,10 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <style>
         body {
-            background-color: #090a0f;
+            background-color: #090a0f !important;
             background-image: 
-                radial-gradient(circle at 50% 10%, rgba(0, 102, 255, 0.18) 0%, transparent 60%),
-                radial-gradient(circle at 80% 80%, rgba(0, 210, 255, 0.08) 0%, transparent 50%);
+                radial-gradient(circle at 50% 10%, rgba(0, 102, 255, 0.22) 0%, transparent 60%),
+                radial-gradient(circle at 80% 80%, rgba(0, 210, 255, 0.1) 0%, transparent 50%);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -27,7 +27,7 @@
             align-items: center;
             padding: 24px 16px;
             font-family: 'Inter', sans-serif;
-            color: #f1f3f7;
+            color: #ffffff !important;
             position: relative;
             overflow-x: hidden;
         }
@@ -37,9 +37,9 @@
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
             background-image: 
-                linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-            background-size: 40px 40px;
+                linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+            background-size: 38px 38px;
             pointer-events: none;
             z-index: 0;
         }
@@ -52,33 +52,33 @@
         }
 
         .auth-box {
-            background: rgba(13, 15, 23, 0.92);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
-            border: 1px solid rgba(0, 102, 255, 0.35);
+            background: rgba(13, 15, 23, 0.95);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(0, 102, 255, 0.4);
             border-radius: 24px;
             padding: 40px 32px;
             box-shadow: 
-                0 25px 60px rgba(0, 0, 0, 0.8),
-                0 0 35px rgba(0, 102, 255, 0.2);
+                0 25px 60px rgba(0, 0, 0, 0.85),
+                0 0 40px rgba(0, 102, 255, 0.25);
             transition: border-color 0.3s ease;
         }
 
         .auth-box:hover {
-            border-color: rgba(0, 210, 255, 0.5);
+            border-color: rgba(0, 210, 255, 0.6);
         }
 
         .brand-badge {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 58px;
-            height: 58px;
-            border-radius: 16px;
+            width: 60px;
+            height: 60px;
+            border-radius: 18px;
             background: linear-gradient(135deg, #0052cc 0%, #0066ff 50%, #00d2ff 100%);
-            box-shadow: 0 0 30px rgba(0, 102, 255, 0.6);
+            box-shadow: 0 0 32px rgba(0, 102, 255, 0.7);
             color: #ffffff;
-            font-size: 1.8rem;
+            font-size: 1.85rem;
             margin-bottom: 16px;
         }
 
@@ -93,112 +93,161 @@
         }
 
         .brand-title-white {
-            color: #ffffff;
-            font-size: 1.7rem;
+            color: #ffffff !important;
+            font-size: 1.75rem;
         }
 
         .brand-title-blue {
-            color: #00d2ff;
-            font-size: 1.7rem;
+            color: #00d2ff !important;
+            font-size: 1.75rem;
         }
 
         .brand-sub {
-            font-size: 0.72rem;
+            font-size: 0.75rem;
             font-weight: 800;
-            color: #94a3b8;
+            color: #94a3b8 !important;
             letter-spacing: 0.15em;
             text-transform: uppercase;
             margin-top: 2px;
         }
 
-        .form-floating-custom {
-            position: relative;
-            margin-bottom: 16px;
+        .auth-subtitle {
+            color: #cbd5e1 !important;
+            font-size: 0.9rem;
         }
 
-        .form-floating-custom .input-icon {
+        .form-group-custom {
+            margin-bottom: 18px;
+            text-align: left;
+        }
+
+        .form-group-custom label {
+            display: block;
+            color: #e2e8f0 !important;
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper .input-icon {
             position: absolute;
             left: 16px;
             top: 50%;
             transform: translateY(-50%);
-            color: #0066ff;
-            font-size: 1.1rem;
+            color: #00d2ff;
+            font-size: 1.15rem;
             pointer-events: none;
             z-index: 4;
         }
 
-        .form-floating-custom .form-control {
-            background: #11141c !important;
-            border: 1px solid #1e2330 !important;
+        /* 100% Crisp White Typed Text & High Contrast Input */
+        .input-wrapper .form-control {
+            background-color: #11141c !important;
+            border: 1.5px solid #232938 !important;
             color: #ffffff !important;
+            -webkit-text-fill-color: #ffffff !important;
             border-radius: 14px !important;
-            padding: 14px 44px 14px 46px !important;
+            padding: 14px 44px 14px 48px !important;
             height: 52px;
-            font-size: 0.95rem;
+            font-size: 0.98rem;
+            font-weight: 500;
             transition: all 0.2s ease;
         }
 
-        .form-floating-custom .form-control:focus {
-            background: #161a24 !important;
-            border-color: #00d2ff !important;
-            box-shadow: 0 0 0 3px rgba(0, 210, 255, 0.25) !important;
+        /* Highly Visible Silver Placeholders */
+        .input-wrapper .form-control::placeholder,
+        .input-wrapper input::placeholder {
+            color: #94a3b8 !important;
+            -webkit-text-fill-color: #94a3b8 !important;
+            opacity: 1 !important;
+            font-weight: 400;
         }
 
-        .form-floating-custom .toggle-password {
+        .input-wrapper .form-control:focus {
+            background-color: #161b26 !important;
+            border-color: #00d2ff !important;
+            color: #ffffff !important;
+            -webkit-text-fill-color: #ffffff !important;
+            box-shadow: 0 0 0 3px rgba(0, 210, 255, 0.3) !important;
+        }
+
+        /* Prevent Chrome Autofill from turning text black or dark */
+        .input-wrapper input:-webkit-autofill,
+        .input-wrapper input:-webkit-autofill:hover, 
+        .input-wrapper input:-webkit-autofill:focus, 
+        .input-wrapper input:-webkit-autofill:active {
+            -webkit-box-shadow: 0 0 0 1000px #161b26 inset !important;
+            -webkit-text-fill-color: #ffffff !important;
+            transition: background-color 5000s ease-in-out 0s;
+            color: #ffffff !important;
+        }
+
+        .input-wrapper .toggle-password {
             position: absolute;
             right: 14px;
             top: 50%;
             transform: translateY(-50%);
             background: transparent;
             border: none;
-            color: #64748b;
+            color: #94a3b8;
             cursor: pointer;
-            padding: 4px;
+            padding: 6px;
             z-index: 4;
+            font-size: 1.1rem;
             transition: color 0.2s;
         }
 
-        .form-floating-custom .toggle-password:hover {
+        .input-wrapper .toggle-password:hover {
             color: #00d2ff;
         }
 
         .btn-enter {
             background: linear-gradient(135deg, #0052cc 0%, #0066ff 50%, #00d2ff 100%);
             border: none;
-            color: #ffffff;
+            color: #ffffff !important;
             font-weight: 800;
             letter-spacing: 0.05em;
             border-radius: 14px;
             padding: 14px;
             font-size: 1rem;
-            box-shadow: 0 10px 25px rgba(0, 102, 255, 0.4);
+            box-shadow: 0 10px 25px rgba(0, 102, 255, 0.45);
             transition: all 0.25s ease;
             text-transform: uppercase;
         }
 
         .btn-enter:hover {
             background: linear-gradient(135deg, #0044aa 0%, #0055ee 50%, #00c4ff 100%);
-            box-shadow: 0 12px 30px rgba(0, 210, 255, 0.5);
+            box-shadow: 0 12px 30px rgba(0, 210, 255, 0.55);
             transform: translateY(-2px);
-            color: #ffffff;
+            color: #ffffff !important;
+        }
+
+        .btn-enter:active {
+            transform: translateY(0);
         }
 
         .auth-footer-text {
-            color: #94a3b8;
-            font-size: 0.88rem;
+            color: #cbd5e1 !important;
+            font-size: 0.9rem;
             text-align: center;
-            margin-top: 20px;
+            margin-top: 22px;
         }
 
         .auth-footer-text a {
-            color: #00d2ff;
+            color: #00d2ff !important;
             font-weight: 700;
             text-decoration: none;
-            transition: color 0.2s;
+            transition: all 0.2s;
         }
 
         .auth-footer-text a:hover {
-            color: #ffffff;
+            color: #ffffff !important;
             text-decoration: underline;
         }
 
@@ -207,21 +256,21 @@
             align-items: center;
             justify-content: center;
             gap: 16px;
-            color: #64748b;
-            font-size: 0.78rem;
+            color: #94a3b8 !important;
+            font-size: 0.8rem;
             margin-top: 24px;
             padding-top: 18px;
-            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .security-badges span {
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 6px;
         }
     </style>
 </head>
-<body>
+<body class="theme-dark">
 
     <div class="auth-container">
         <div class="auth-box">
@@ -240,14 +289,14 @@
             <!-- Page Title -->
             <div class="text-center mb-4">
                 <h1 class="h4 fw-bold text-white mb-1">CRIAR SUA CONTA</h1>
-                <p class="text-secondary small mb-0">Cadastre-se para liberar o acesso total ao site</p>
+                <p class="auth-subtitle mb-0">Cadastre-se para liberar o acesso total ao site</p>
             </div>
 
             <!-- Flash Alerts -->
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
                     {% for category, message in messages %}
-                        <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show rounded-3 py-2 px-3 small mb-3 border-0" style="background: rgba(220, 53, 69, 0.2); color: #ff858d;" role="alert">
+                        <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show rounded-3 py-2 px-3 small mb-3 border-0" style="background: rgba(220, 53, 69, 0.25); color: #ff858d;" role="alert">
                             <i class="bi bi-exclamation-triangle-fill me-1"></i>
                             {{ message }}
                             <button type="button" class="btn-close btn-close-white py-2 px-3" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -258,27 +307,39 @@
 
             <!-- Register Form -->
             <form method="POST" action="{{ url_for('register', next=request.args.get('next')) }}">
-                <div class="form-floating-custom">
-                    <i class="bi bi-person-fill input-icon"></i>
-                    <input type="text" id="name" name="name" class="form-control" placeholder="Nome Completo ou Nickname" value="{{ name or '' }}" required autofocus>
+                <div class="form-group-custom">
+                    <label for="name">Nome / Nickname</label>
+                    <div class="input-wrapper">
+                        <i class="bi bi-person-fill input-icon"></i>
+                        <input type="text" id="name" name="name" class="form-control" placeholder="Digite seu nome ou nickname" value="{{ name or '' }}" required autofocus>
+                    </div>
                 </div>
 
-                <div class="form-floating-custom">
-                    <i class="bi bi-envelope-fill input-icon"></i>
-                    <input type="email" id="email" name="email" class="form-control" placeholder="Seu melhor e-mail" value="{{ email or '' }}" required>
+                <div class="form-group-custom">
+                    <label for="email">E-mail</label>
+                    <div class="input-wrapper">
+                        <i class="bi bi-envelope-fill input-icon"></i>
+                        <input type="email" id="email" name="email" class="form-control" placeholder="Digite seu e-mail" value="{{ email or '' }}" required>
+                    </div>
                 </div>
 
-                <div class="form-floating-custom">
-                    <i class="bi bi-shield-lock-fill input-icon"></i>
-                    <input type="password" id="password" name="password" class="form-control" placeholder="Senha (mínimo 6 caracteres)" required minlength="6">
-                    <button type="button" class="toggle-password" id="togglePasswordBtn" title="Mostrar/Ocultar Senha">
-                        <i class="bi bi-eye-fill" id="togglePasswordIcon"></i>
-                    </button>
+                <div class="form-group-custom">
+                    <label for="password">Senha (mínimo 6 caracteres)</label>
+                    <div class="input-wrapper">
+                        <i class="bi bi-shield-lock-fill input-icon"></i>
+                        <input type="password" id="password" name="password" class="form-control" placeholder="Crie uma senha segura" required minlength="6">
+                        <button type="button" class="toggle-password" id="togglePasswordBtn" title="Mostrar/Ocultar Senha">
+                            <i class="bi bi-eye-fill" id="togglePasswordIcon"></i>
+                        </button>
+                    </div>
                 </div>
 
-                <div class="form-floating-custom">
-                    <i class="bi bi-shield-check input-icon"></i>
-                    <input type="password" id="confirm_password" name="confirm_password" class="form-control" placeholder="Confirmar Senha" required minlength="6">
+                <div class="form-group-custom">
+                    <label for="confirm_password">Confirmar Senha</label>
+                    <div class="input-wrapper">
+                        <i class="bi bi-shield-check input-icon"></i>
+                        <input type="password" id="confirm_password" name="confirm_password" class="form-control" placeholder="Repita a mesma senha" required minlength="6">
+                    </div>
                 </div>
 
                 <button type="submit" class="btn btn-enter w-100 mb-2">

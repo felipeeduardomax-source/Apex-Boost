@@ -59,17 +59,17 @@ def inject_global_data():
 @app.before_request
 def require_login():
     """Requires user to be logged in before accessing the site"""
-    public_endpoints = {'login', 'register', 'static'}
+    public_endpoints = {'login', 'register', 'static', 'favicon'}
     if request.endpoint in public_endpoints or (request.endpoint and request.endpoint.startswith('static')):
         return
 
     # Direct static file requests
-    if request.path.startswith('/static/'):
+    if request.path.startswith('/static/') or request.path == '/favicon.ico':
         return
 
     # If unauthenticated, redirect to login
     if 'user_id' not in session:
-        if request.path in ('/login', '/register'):
+        if request.path in ('/login', '/register', '/favicon.ico'):
             return
 
         # If AJAX / JSON request
@@ -524,6 +524,14 @@ def download_file(filename):
         filename,
         as_attachment=True,
         download_name=filename
+    )
+
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory(
+        os.path.join(app.root_path, 'static', 'img'),
+        'favicon.ico',
+        mimetype='image/vnd.microsoft.icon'
     )
 
 # ----------------- ADMIN DASHBOARD ----------------- #

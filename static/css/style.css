@@ -137,32 +137,222 @@ h1, h2, h3, h4, h5, h6, .brand-font {
 }
 
 /* Ensure text-white on light canvas transforms to rich black (except in dark mode, inside sidebar, buttons, or dark cards) */
-body:not(.theme-dark) .app-main h1.text-white,
-body:not(.theme-dark) .app-main h2.text-white,
-body:not(.theme-dark) .app-main h3.text-white,
-body:not(.theme-dark) .app-main h4.text-white,
-body:not(.theme-dark) .app-main h5.text-white,
-body:not(.theme-dark) .app-main h6.text-white,
-body:not(.theme-dark) .app-main p.text-white,
-body:not(.theme-dark) .app-main div.text-white:not(.brand-icon-box *):not(.badge):not(.badge *):not(.btn):not(.btn *):not(.popular-banner-top):not(.announcement-badge):not(.scanner-step-badge):not(.lootbox-vault *):not(.terminal-box-code *):not(.discord-feed-card *):not(.savings-box *),
-body:not(.theme-dark) .app-main strong.text-white,
+body:not(.theme-dark) .app-main h1.text-white:not(.discord-feed-card *):not(.fps-meter-card *),
+body:not(.theme-dark) .app-main h2.text-white:not(.discord-feed-card *):not(.fps-meter-card *),
+body:not(.theme-dark) .app-main h3.text-white:not(.discord-feed-card *):not(.fps-meter-card *),
+body:not(.theme-dark) .app-main h4.text-white:not(.discord-feed-card *):not(.fps-meter-card *),
+body:not(.theme-dark) .app-main h5.text-white:not(.discord-feed-card *):not(.fps-meter-card *),
+body:not(.theme-dark) .app-main h6.text-white:not(.discord-feed-card *):not(.fps-meter-card *),
+body:not(.theme-dark) .app-main p.text-white:not(.discord-feed-card *):not(.fps-meter-card *):not(.checkout-qr-box *),
+body:not(.theme-dark) .app-main div.text-white:not(.brand-icon-box *):not(.badge):not(.badge *):not(.btn):not(.btn *):not(.popular-banner-top):not(.announcement-badge):not(.scanner-step-badge):not(.lootbox-vault *):not(.terminal-box-code *):not(.discord-feed-card *):not(.fps-meter-card *):not(.savings-box *),
+body:not(.theme-dark) .app-main strong.text-white:not(.discord-feed-card *):not(.fps-meter-card *):not(.terminal-box-code *),
 body:not(.theme-dark) .app-main td.text-white,
 body:not(.theme-dark) .app-main th.text-white,
-body:not(.theme-dark) .app-main a.text-white,
-body:not(.theme-dark) .app-main span.text-white:not(.badge *):not(.badge):not(.btn *):not(.popular-banner-top):not(.announcement-badge):not(.brand-icon-box *) {
+body:not(.theme-dark) .app-main a.text-white:not(.btn):not(.btn *),
+body:not(.theme-dark) .app-main span.text-white:not(.badge *):not(.badge):not(.btn *):not(.popular-banner-top):not(.announcement-badge):not(.brand-icon-box *):not(.discord-feed-card *):not(.fps-meter-card *):not(.terminal-box-code *) {
   color: #090a0f !important;
 }
 
-body:not(.theme-dark) .app-main .text-secondary {
+body:not(.theme-dark) .app-main .text-secondary:not(.discord-feed-card *):not(.fps-meter-card *):not(.terminal-box-code *):not([style*="background: var(--color-black)"] *):not([style*="background:var(--color-black)"] *) {
   color: #475569 !important;
 }
 
-body:not(.theme-dark) .app-main .text-muted {
+body:not(.theme-dark) .app-main .text-muted:not(.discord-feed-card *):not(.fps-meter-card *):not(.terminal-box-code *) {
   color: #64748b !important;
 }
 
-body:not(.theme-dark) .app-main .text-light {
+body:not(.theme-dark) .app-main .text-light:not(.discord-feed-card *):not(.fps-meter-card *):not(.terminal-box-code *) {
   color: #334155 !important;
+}
+
+/* ==========================================================================
+   HIGH-CONTRAST LIGHT MODE FIXES FOR DARK GAUGES, DISCORD & FAQ ACCORDIONS
+   ========================================================================== */
+
+/* 1. FAQ Accordion in Light Mode */
+body:not(.theme-dark) .accordion-item {
+  background-color: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04) !important;
+}
+
+body:not(.theme-dark) .accordion-button {
+  background-color: #ffffff !important;
+  color: #0f172a !important; /* Deep dark slate for maximum legibility */
+  box-shadow: none !important;
+}
+
+body:not(.theme-dark) .accordion-button:not(.collapsed) {
+  background-color: #f0f7ff !important;
+  color: #0052cc !important;
+}
+
+body:not(.theme-dark) .accordion-button::after {
+  filter: brightness(0) saturate(100%) !important; /* Sharp black arrow in light mode */
+}
+
+body:not(.theme-dark) .accordion-body {
+  background-color: #ffffff !important;
+  color: #334155 !important;
+  border-top: 1px solid #f1f5f9 !important;
+}
+
+/* 2. Discord Community Card in Light Mode */
+body:not(.theme-dark) .discord-feed-card {
+  background: #11141c !important;
+  border: 1px solid #1e2330 !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25) !important;
+}
+
+body:not(.theme-dark) .discord-feed-header {
+  background: #0d0f17 !important;
+  border-bottom: 1px solid #1e2330 !important;
+}
+
+body:not(.theme-dark) .discord-feed-card strong,
+body:not(.theme-dark) .discord-feed-card .text-white,
+body:not(.theme-dark) .discord-feed-card strong.text-white,
+body:not(.theme-dark) .discord-feed-card span.text-white {
+  color: #ffffff !important;
+}
+
+body:not(.theme-dark) .discord-feed-card p,
+body:not(.theme-dark) .discord-feed-card .text-light,
+body:not(.theme-dark) .discord-feed-card p.text-light {
+  color: #e2e8f0 !important; /* Crisp readable light gray */
+}
+
+body:not(.theme-dark) .discord-feed-card .text-secondary {
+  color: #94a3b8 !important;
+}
+
+body:not(.theme-dark) .discord-feed-card .text-muted {
+  color: #64748b !important;
+}
+
+body:not(.theme-dark) .discord-feed-card .discord-badge-role {
+  background: rgba(0, 102, 255, 0.2) !important;
+  color: #38bdf8 !important;
+  border: 1px solid rgba(0, 102, 255, 0.4) !important;
+}
+
+/* 3. FPS Calculator & Gauge in Light Mode */
+body:not(.theme-dark) .fps-meter-card {
+  background: #0b0f19 !important;
+  border: 1px solid #1e293b !important;
+  box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.5) !important;
+}
+
+body:not(.theme-dark) .fps-meter-card .fps-counter-display,
+body:not(.theme-dark) .fps-meter-card #calcAfterFps {
+  color: #00d2ff !important;
+  text-shadow: 0 0 25px rgba(0, 210, 255, 0.6) !important;
+}
+
+body:not(.theme-dark) .fps-meter-card .text-danger,
+body:not(.theme-dark) .fps-meter-card #calcBeforeFps {
+  color: #ef4444 !important;
+  text-shadow: 0 0 20px rgba(239, 68, 68, 0.3) !important;
+}
+
+body:not(.theme-dark) .fps-meter-card .text-secondary {
+  color: #94a3b8 !important;
+}
+
+body:not(.theme-dark) .fps-meter-card .text-muted {
+  color: #64748b !important;
+}
+
+body:not(.theme-dark) .fps-meter-card strong {
+  color: #ffffff !important;
+}
+
+body:not(.theme-dark) .fps-meter-card span.text-blue {
+  color: #38bdf8 !important;
+}
+
+body:not(.theme-dark) .fps-meter-card [style*="background: var(--color-black)"],
+body:not(.theme-dark) .fps-meter-card [style*="background:var(--color-black)"] {
+  background: rgba(0, 0, 0, 0.5) !important;
+  border-color: rgba(0, 102, 255, 0.3) !important;
+}
+
+body:not(.theme-dark) .fps-meter-card [style*="background: var(--color-black)"] span,
+body:not(.theme-dark) .fps-meter-card [style*="background:var(--color-black)"] span {
+  color: #cbd5e1 !important;
+}
+
+/* 4. Scanner Checkbox Options in Light Mode */
+.scanner-symptom-label {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+body:not(.theme-dark) .scanner-symptom-label {
+  background: #f8fafc !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+body:not(.theme-dark) .scanner-symptom-label span {
+  color: #0f172a !important;
+}
+
+body:not(.theme-dark) .scanner-symptom-label:hover {
+  background: #eff6ff !important;
+  border-color: #3b82f6 !important;
+}
+
+/* 5. Telemetry & Terminal Panels in Light Mode */
+body:not(.theme-dark) [style*="background: var(--color-black)"],
+body:not(.theme-dark) [style*="background:var(--color-black)"] {
+  background: #0b0f19 !important;
+  border-color: #1e293b !important;
+}
+
+body:not(.theme-dark) [style*="background: var(--color-black)"] span:not(.text-danger):not(.text-blue):not(.text-success):not(.text-cyan),
+body:not(.theme-dark) [style*="background:var(--color-black)"] span:not(.text-danger):not(.text-blue):not(.text-success):not(.text-cyan),
+body:not(.theme-dark) [style*="background: var(--color-black)"] .text-secondary,
+body:not(.theme-dark) [style*="background:var(--color-black)"] .text-secondary {
+  color: #cbd5e1 !important;
+}
+
+.metric-before-box {
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+body:not(.theme-dark) .metric-before-box {
+  background: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+}
+body:not(.theme-dark) .metric-before-box .text-muted {
+  color: #475569 !important;
+}
+
+.metric-after-box {
+  background: rgba(0, 102, 255, 0.12);
+  border: 1px solid var(--color-blue);
+}
+body:not(.theme-dark) .metric-after-box {
+  background: #eff6ff !important;
+  border-color: #3b82f6 !important;
+}
+
+.checkout-qr-box {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+body:not(.theme-dark) .checkout-qr-box {
+  background: #f8fafc !important;
+  border: 1px solid #e2e8f0 !important;
+}
+body:not(.theme-dark) .checkout-qr-box p,
+body:not(.theme-dark) .checkout-qr-box strong,
+body:not(.theme-dark) .checkout-qr-box span {
+  color: #0f172a !important;
 }
 
 /* ==========================================================================
@@ -1818,6 +2008,32 @@ footer a {
 
 footer a:hover {
   color: var(--color-cyan);
+}
+
+body:not(.theme-dark) footer {
+  background: #f8fafc !important;
+  border-top: 1px solid #e2e8f0 !important;
+  color: #475569 !important;
+}
+
+body:not(.theme-dark) footer h6,
+body:not(.theme-dark) footer .navbar-brand,
+body:not(.theme-dark) footer strong {
+  color: #0f172a !important;
+}
+
+body:not(.theme-dark) footer p,
+body:not(.theme-dark) footer .text-muted {
+  color: #64748b !important;
+}
+
+body:not(.theme-dark) footer a,
+body:not(.theme-dark) footer .text-secondary {
+  color: #475569 !important;
+}
+
+body:not(.theme-dark) footer a:hover {
+  color: #0052cc !important;
 }
 
 /* ==========================================================================

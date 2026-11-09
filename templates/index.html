@@ -82,14 +82,14 @@
 
                     <div class="row g-2 text-center mb-3">
                         <div class="col-6">
-                            <div class="p-3 rounded-3" style="background: rgba(0, 0, 0, 0.5); border: 1px solid rgba(255, 255, 255, 0.1);">
+                            <div class="p-3 rounded-3 metric-before-box">
                                 <small class="text-muted d-block" style="font-size: 0.72rem;">ANTES DO PACK</small>
                                 <div class="fs-4 fw-black text-danger my-1">118 FPS</div>
                                 <small class="text-muted" style="font-size: 0.7rem;">Quedas constantes</small>
                             </div>
                         </div>
                         <div class="col-6">
-                            <div class="p-3 rounded-3" style="background: rgba(0, 102, 255, 0.12); border: 1px solid var(--color-blue);">
+                            <div class="p-3 rounded-3 metric-after-box">
                                 <small class="text-blue d-block fw-bold" style="font-size: 0.72rem;">COM APEX BOOST</small>
                                 <div class="fs-4 fw-black text-blue my-1">245 FPS</div>
                                 <small class="text-cyan fw-semibold" style="font-size: 0.7rem;">+107% Travado e Liso</small>
@@ -665,19 +665,19 @@
                     <p class="text-secondary small mb-3">Marque o que você mais nota ao jogar CS2, Valorant, Warzone ou Fortnite:</p>
 
                     <div class="d-flex flex-column gap-2 mb-4">
-                        <label class="p-2 rounded border border-secondary border-opacity-25 d-flex align-items-center gap-2 text-white small" style="background: rgba(0,0,0,0.25); cursor: pointer;">
+                        <label class="scanner-symptom-label p-2 rounded d-flex align-items-center gap-2 small">
                             <input type="checkbox" class="form-check-input mt-0 scan-symptom" value="stutters" checked>
                             <span>Micro-travamentos e quedas bruscas de FPS em tiroteios</span>
                         </label>
-                        <label class="p-2 rounded border border-secondary border-opacity-25 d-flex align-items-center gap-2 text-white small" style="background: rgba(0,0,0,0.25); cursor: pointer;">
+                        <label class="scanner-symptom-label p-2 rounded d-flex align-items-center gap-2 small">
                             <input type="checkbox" class="form-check-input mt-0 scan-symptom" value="mouse_delay" checked>
                             <span>Mira pesada / delay de resposta nos movimentos do mouse</span>
                         </label>
-                        <label class="p-2 rounded border border-secondary border-opacity-25 d-flex align-items-center gap-2 text-white small" style="background: rgba(0,0,0,0.25); cursor: pointer;">
+                        <label class="scanner-symptom-label p-2 rounded d-flex align-items-center gap-2 small">
                             <input type="checkbox" class="form-check-input mt-0 scan-symptom" value="ping_loss">
                             <span>Oscilação de ping, perda de pacotes ou hits que não registram</span>
                         </label>
-                        <label class="p-2 rounded border border-secondary border-opacity-25 d-flex align-items-center gap-2 text-white small" style="background: rgba(0,0,0,0.25); cursor: pointer;">
+                        <label class="scanner-symptom-label p-2 rounded d-flex align-items-center gap-2 small">
                             <input type="checkbox" class="form-check-input mt-0 scan-symptom" value="ram_cpu">
                             <span>Memória RAM lotando e uso de CPU alto em segundo plano</span>
                         </label>
@@ -850,7 +850,7 @@
                             </div>
                             <div class="col-6 border-start border-secondary border-opacity-50">
                                 <span class="text-blue small d-block fw-bold">FPS COM TWEAK:</span>
-                                <div class="fps-counter-display text-white glow-blue" id="calcAfterFps">248</div>
+                                <div class="fps-counter-display glow-blue" id="calcAfterFps">248</div>
                                 <span class="badge-fire" id="calcPercentBoost">+55% FPS</span>
                             </div>
                         </div>
@@ -1062,7 +1062,7 @@
         <div class="accordion accordion-flush mx-auto" id="faqAccordion" style="max-width: 860px;">
             <div class="accordion-item glass-card mb-3 border-0 rounded-3 overflow-hidden">
                 <h2 class="accordion-header">
-                    <button class="accordion-button collapsed bg-transparent text-white fw-bold shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                    <button class="accordion-button collapsed fw-bold shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
                         <i class="bi bi-shield-check text-blue me-2"></i> Dá ban em jogos com anti-cheat como Vanguard ou Ricochet?
                     </button>
                 </h2>
@@ -1075,7 +1075,7 @@
 
             <div class="accordion-item glass-card mb-3 border-0 rounded-3 overflow-hidden">
                 <h2 class="accordion-header">
-                    <button class="accordion-button collapsed bg-transparent text-white fw-bold shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                    <button class="accordion-button collapsed fw-bold shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
                         <i class="bi bi-lightning-charge text-blue me-2"></i> Como e quando eu recebo os arquivos após o pagamento?
                     </button>
                 </h2>
@@ -1088,7 +1088,7 @@
 
             <div class="accordion-item glass-card mb-3 border-0 rounded-3 overflow-hidden">
                 <h2 class="accordion-header">
-                    <button class="accordion-button collapsed bg-transparent text-white fw-bold shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                    <button class="accordion-button collapsed fw-bold shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
                         <i class="bi bi-arrow-counterclockwise text-cyan me-2"></i> Posso reverter as configurações se eu quiser?
                     </button>
                 </h2>
@@ -1101,7 +1101,7 @@
 
             <div class="accordion-item glass-card mb-3 border-0 rounded-3 overflow-hidden">
                 <h2 class="accordion-header">
-                    <button class="accordion-button collapsed bg-transparent text-white fw-bold shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">
+                    <button class="accordion-button collapsed fw-bold shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">
                         <i class="bi bi-windows text-blue me-2"></i> Funciona tanto no Windows 10 quanto no Windows 11?
                     </button>
                 </h2>
@@ -1114,7 +1114,7 @@
 
             <div class="accordion-item glass-card mb-3 border-0 rounded-3 overflow-hidden">
                 <h2 class="accordion-header">
-                    <button class="accordion-button collapsed bg-transparent text-white fw-bold shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#faq5">
+                    <button class="accordion-button collapsed fw-bold shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#faq5">
                         <i class="bi bi-hdd-rack text-cyan me-2"></i> Preciso formatar o computador antes de aplicar?
                     </button>
                 </h2>

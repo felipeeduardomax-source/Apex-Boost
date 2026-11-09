@@ -7,7 +7,7 @@ from flask import (
     flash, session, jsonify, send_from_directory, abort
 )
 from werkzeug.security import generate_password_hash, check_password_hash
-from database import get_db, init_db, generate_license_key
+from database import get_db, init_db, generate_license_key, is_using_postgres
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'apex_boost_secret_key_ultra_secure_2026_gamer')
@@ -15,6 +15,25 @@ app.config['DOWNLOAD_FOLDER'] = os.path.join(os.path.dirname(__file__), 'static'
 
 # Ensure DB exists
 init_db()
+
+# Jinja template filters for robust date formatting across SQLite and Neon PostgreSQL
+@app.template_filter('format_datetime')
+def format_datetime_filter(value, fmt='%d/%m/%Y %H:%M'):
+    if not value:
+        return ''
+    if isinstance(value, (datetime.datetime, datetime.date)):
+        return value.strftime(fmt)
+    val_str = str(value)
+    try:
+        clean_str = val_str.replace('T', ' ')[:19]
+        dt = datetime.datetime.strptime(clean_str, '%Y-%m-%d %H:%M:%S')
+        return dt.strftime(fmt)
+    except Exception:
+        return val_str[:16]
+
+@app.template_filter('format_date')
+def format_date_filter(value, fmt='%d/%m/%Y'):
+    return format_datetime_filter(value, fmt=fmt)
 
 # Context processor for templates
 @app.context_processor
@@ -516,22 +535,33 @@ def admin_dashboard():
         return redirect(url_for('login', next=request.path))
 
     conn = get_db()
-    total_sales = conn.execute("SELECT COALESCE(SUM(total), 0) as total FROM orders WHERE status = 'PAGO'").fetchone()['total']
-    total_orders = conn.execute("SELECT COUNT(*) as cnt FROM orders").fetchone()['cnt']
-    total_users = conn.execute("SELECT COUNT(*) as cnt FROM users").fetchone()['cnt']
-    total_products = conn.execute("SELECT COUNT(*) as cnt FROM products").fetchone()['cnt']
+    try:
+        total_sales_row = conn.execute("SELECT COALESCE(SUM(total), 0) as total FROM orders WHERE status = 'PAGO'").fetchone()
+        total_sales = float(total_sales_row['total']) if total_sales_row and total_sales_row['total'] is not None else 0.0
 
-    recent_orders = conn.execute("""
-        SELECT o.*, u.name as user_name, u.email as user_email
-        FROM orders o
-        JOIN users u ON o.user_id = u.id
-        ORDER BY o.id DESC LIMIT 15
-    """).fetchall()
+        total_orders_row = conn.execute("SELECT COUNT(*) as cnt FROM orders").fetchone()
+        total_orders = total_orders_row['cnt'] if total_orders_row else 0
 
-    products = conn.execute("SELECT * FROM products ORDER BY id ASC").fetchall()
-    users = conn.execute("SELECT id, name, email, is_admin, created_at FROM users ORDER BY id DESC LIMIT 20").fetchall()
-    coupons = conn.execute("SELECT * FROM coupons ORDER BY id DESC").fetchall()
-    conn.close()
+        total_users_row = conn.execute("SELECT COUNT(*) as cnt FROM users").fetchone()
+        total_users = total_users_row['cnt'] if total_users_row else 0
+
+        total_products_row = conn.execute("SELECT COUNT(*) as cnt FROM products").fetchone()
+        total_products = total_products_row['cnt'] if total_products_row else 0
+
+        recent_orders = conn.execute("""
+            SELECT o.*, u.name as user_name, u.email as user_email
+            FROM orders o
+            LEFT JOIN users u ON o.user_id = u.id
+            ORDER BY o.id DESC LIMIT 15
+        """).fetchall()
+
+        products = conn.execute("SELECT * FROM products ORDER BY id ASC").fetchall()
+        users = conn.execute("SELECT id, name, email, is_admin, created_at FROM users ORDER BY id DESC LIMIT 20").fetchall()
+        coupons = conn.execute("SELECT * FROM coupons ORDER BY id DESC").fetchall()
+    finally:
+        conn.close()
+
+    db_backend = "Neon PostgreSQL (Nuvem)" if is_using_postgres() else "SQLite (Local)"
 
     return render_template(
         'admin.html',
@@ -542,7 +572,8 @@ def admin_dashboard():
         recent_orders=recent_orders,
         products=products,
         users=users,
-        coupons=coupons
+        coupons=coupons,
+        db_backend=db_backend
     )
 
 @app.route('/admin/toggle-product/<int:product_id>')

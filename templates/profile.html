@@ -23,7 +23,7 @@
                 </div>
                 <div class="text-secondary small mt-1">
                     <i class="bi bi-envelope me-1"></i> {{ user.email }} &bull;
-                    <i class="bi bi-calendar-check me-1"></i> Membro desde {{ user.created_at[:10] }}
+                    <i class="bi bi-calendar-check me-1"></i> Membro desde {{ user.created_at | format_date }}
                 </div>
             </div>
             <div class="col-auto">
@@ -162,7 +162,7 @@
                                         {% for ord in orders %}
                                         <tr class="border-bottom border-secondary border-opacity-25">
                                             <td><strong class="text-blue">{{ ord.order_code }}</strong></td>
-                                            <td class="text-secondary small">{{ ord.created_at[:16] }}</td>
+                                            <td class="text-secondary small">{{ ord.created_at | format_datetime }}</td>
                                             <td><span class="badge bg-dark border border-secondary">{{ ord.payment_method }}</span></td>
                                             <td><strong class="text-heading fs-6">R$ {{ "%.2f"|format(ord.total)|replace('.', ',') }}</strong></td>
                                             <td>

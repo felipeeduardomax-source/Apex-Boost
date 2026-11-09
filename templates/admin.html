@@ -20,7 +20,7 @@
         <div class="col-6 col-lg-3">
             <div class="glass-card p-3 p-md-4">
                 <small class="text-secondary d-block mb-1 text-uppercase" style="font-size: 0.72rem;">FATURAMENTO TOTAL</small>
-                <div class="fs-3 fw-black text-heading glow-blue">R$ {{ "%.2f"|format(total_sales)|replace('.', ',') }}</div>
+                <div class="fs-3 fw-black text-heading glow-blue">R$ {{ "%.2f"|format(total_sales or 0)|replace('.', ',') }}</div>
                 <small class="text-blue"><i class="bi bi-cash-stack"></i> Vendas aprovadas</small>
             </div>
         </div>
@@ -80,7 +80,7 @@
 
                 <div class="p-3 rounded-3" style="background: var(--bg-surface-2); border: 1px solid var(--border-subtle);">
                     <small class="text-secondary d-block" style="font-size: 0.75rem;">Status do Banco de Dados:</small>
-                    <div class="text-success small fw-bold mt-1"><i class="bi bi-database-check me-1"></i> SQLite Conectado</div>
+                    <div class="text-success small fw-bold mt-1"><i class="bi bi-database-check me-1"></i> {{ db_backend }} Conectado</div>
                 </div>
             </div>
         </div>
@@ -125,9 +125,9 @@
                                             <td><strong class="text-blue">{{ o.order_code }}</strong></td>
                                             <td><strong class="text-heading">{{ o.customer_name or o.user_name }}</strong></td>
                                             <td class="text-secondary small">{{ o.customer_email or o.user_email }}</td>
-                                            <td><strong class="text-heading fs-6">R$ {{ "%.2f"|format(o.total)|replace('.', ',') }}</strong></td>
+                                            <td><strong class="text-heading fs-6">R$ {{ "%.2f"|format(o.total or 0)|replace('.', ',') }}</strong></td>
                                             <td><span class="badge bg-secondary" style="font-size: 0.72rem;">{{ o.payment_method }}</span></td>
-                                            <td class="text-secondary small">{{ o.created_at[:16] }}</td>
+                                            <td class="text-secondary small">{{ o.created_at | format_datetime }}</td>
                                             <td><span class="badge-fire">{{ o.status }}</span></td>
                                         </tr>
                                         {% endfor %}
@@ -163,8 +163,14 @@
                                             <strong class="text-heading">{{ p.name }}</strong>
                                             <small class="text-blue d-block fw-semibold">{{ p.tag }}</small>
                                         </td>
-                                        <td class="text-heading fw-bold">R$ {{ "%.2f"|format(p.price)|replace('.', ',') }}</td>
-                                        <td class="text-secondary">R$ {{ "%.2f"|format(p.old_price)|replace('.', ',') }}</td>
+                                        <td class="text-heading fw-bold">R$ {{ "%.2f"|format(p.price or 0)|replace('.', ',') }}</td>
+                                        <td class="text-secondary">
+                                            {% if p.old_price %}
+                                                R$ {{ "%.2f"|format(p.old_price)|replace('.', ',') }}
+                                            {% else %}
+                                                -
+                                            {% endif %}
+                                        </td>
                                         <td><code>{{ p.download_file }}</code></td>
                                         <td>
                                             {% if p.active %}
@@ -264,7 +270,7 @@
                                                 <span class="badge-gamer">Gamer</span>
                                             {% endif %}
                                         </td>
-                                        <td class="text-secondary small">{{ u.created_at[:16] }}</td>
+                                        <td class="text-secondary small">{{ u.created_at | format_datetime }}</td>
                                     </tr>
                                     {% endfor %}
                                 </tbody>

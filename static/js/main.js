@@ -1058,28 +1058,83 @@ function initBottleneckScanner() {
 }
 
 // ==========================================================================
-// Mystery Drop Gamer Lootbox Modal
+// Mystery Drop Gamer Lootbox Modal (Resgate Único por Usuário)
 // ==========================================================================
 function initMysteryDropModal() {
     const triggerVault = document.getElementById('lootboxTrigger');
     const openBtn = document.getElementById('btnOpenLootbox');
     const closedState = document.getElementById('lootboxClosedState');
     const openedState = document.getElementById('lootboxOpenedState');
+    const dropVipContainer = document.getElementById('dropVipContainer');
 
     if (!openBtn || !triggerVault) return;
 
-    function handleOpenDrop() {
+    let isClaiming = false;
+
+    async function handleOpenDrop() {
+        if (isClaiming) return;
+        isClaiming = true;
+
         triggerVault.classList.add('lootbox-shake');
         openBtn.disabled = true;
         openBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span> Desbloqueando...';
         ApexSound.playClick();
 
-        setTimeout(() => {
+        try {
+            const response = await fetch('/api/claim-drop', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            const data = await response.json();
+
+            setTimeout(() => {
+                triggerVault.classList.remove('lootbox-shake');
+
+                if (data.success) {
+                    if (closedState) closedState.classList.add('d-none');
+                    if (openedState) openedState.classList.remove('d-none');
+                    ApexSound.playSuccess();
+                    showQuickAlert(data.message || 'Drop VIP resgatado com sucesso! Cupom de 20% aplicado.', 'success');
+
+                    // Atualiza o botão da barra superior para o badge de resgatado
+                    if (dropVipContainer) {
+                        dropVipContainer.innerHTML = `
+                            <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-50 py-1 px-2 d-inline-flex align-items-center" style="font-size: 0.75rem;" title="Você já resgatou o seu Drop VIP exclusivo">
+                                <i class="bi bi-check-circle-fill me-1"></i> Drop VIP Resgatado
+                            </span>
+                        `;
+                    }
+                } else if (data.already_claimed) {
+                    ApexSound.playWarning();
+                    showQuickAlert(data.message || 'Você já resgatou o seu Drop VIP nesta conta.', 'warning');
+                    if (closedState) closedState.classList.add('d-none');
+                    if (openedState) openedState.classList.remove('d-none');
+                    if (dropVipContainer) {
+                        dropVipContainer.innerHTML = `
+                            <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-50 py-1 px-2 d-inline-flex align-items-center" style="font-size: 0.75rem;" title="Você já resgatou o seu Drop VIP exclusivo">
+                                <i class="bi bi-check-circle-fill me-1"></i> Drop VIP Resgatado
+                            </span>
+                        `;
+                    }
+                } else {
+                    ApexSound.playWarning();
+                    showQuickAlert(data.message || 'Erro ao resgatar Drop VIP.', 'danger');
+                    openBtn.disabled = false;
+                    openBtn.innerHTML = '<i class="bi bi-key-fill me-1"></i> Abrir Caixa de Suprimentos';
+                    isClaiming = false;
+                }
+            }, 900);
+        } catch (err) {
             triggerVault.classList.remove('lootbox-shake');
-            if (closedState) closedState.classList.add('d-none');
-            if (openedState) openedState.classList.remove('d-none');
-            ApexSound.playSuccess();
-        }, 1100);
+            openBtn.disabled = false;
+            openBtn.innerHTML = '<i class="bi bi-key-fill me-1"></i> Abrir Caixa de Suprimentos';
+            isClaiming = false;
+            showQuickAlert('Erro na conexão ao resgatar o Drop VIP.', 'danger');
+        }
     }
 
     triggerVault.addEventListener('click', handleOpenDrop);

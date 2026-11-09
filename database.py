@@ -218,6 +218,7 @@ def _init_db_postgres():
         password_hash TEXT NOT NULL,
         is_admin INTEGER DEFAULT 0,
         avatar TEXT DEFAULT 'gamer_avatar.png',
+        drop_vip_claimed INTEGER DEFAULT 0,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
 
@@ -283,6 +284,13 @@ def _init_db_postgres():
     ''')
     conn.commit()
 
+    # Migração segura para coluna drop_vip_claimed no Postgres
+    try:
+        cursor.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS drop_vip_claimed INTEGER DEFAULT 0;")
+        conn.commit()
+    except Exception:
+        pass
+
     _seed_initial_data(cursor, conn, is_postgres=True)
     conn.close()
     print("[DB] Conexão com Neon PostgreSQL inicializada com sucesso!")
@@ -300,6 +308,7 @@ def _init_db_sqlite():
         password_hash TEXT NOT NULL,
         is_admin INTEGER DEFAULT 0,
         avatar TEXT DEFAULT 'gamer_avatar.png',
+        drop_vip_claimed INTEGER DEFAULT 0,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
 
@@ -367,6 +376,13 @@ def _init_db_sqlite():
     );
     ''')
     conn.commit()
+
+    # Migração segura para coluna drop_vip_claimed no SQLite
+    try:
+        cursor.execute("ALTER TABLE users ADD COLUMN drop_vip_claimed INTEGER DEFAULT 0;")
+        conn.commit()
+    except Exception:
+        pass
 
     _seed_initial_data(cursor, conn, is_postgres=False)
     conn.close()

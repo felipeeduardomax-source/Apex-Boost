@@ -214,5 +214,45 @@ class StoreTestCase(unittest.TestCase):
         self.assertNotIn('malicious-phishing.com', res.headers.get('Location', ''))
         self.assertEqual(res.headers.get('Location'), '/')
 
+    def test_14_drop_vip_single_claim(self):
+        # 1. Unauthenticated request to /api/claim-drop returns 401
+        res_unauth = self.client.post('/api/claim-drop')
+        self.assertEqual(res_unauth.status_code, 401)
+
+        # 2. Register fresh user for Drop VIP test
+        drop_user_email = "newuser_drop@test.com"
+        conn = get_db()
+        conn.execute("DELETE FROM users WHERE email = ?", (drop_user_email,))
+        conn.commit()
+        conn.close()
+
+        self.client.post('/register', data={
+            'name': 'Novo Gamer Drop',
+            'email': drop_user_email,
+            'password': 'password123',
+            'confirm_password': 'password123'
+        })
+
+        # 3. First claim should succeed and apply coupon
+        res_claim1 = self.client.post('/api/claim-drop')
+        self.assertEqual(res_claim1.status_code, 200)
+        data1 = json.loads(res_claim1.data)
+        self.assertTrue(data1['success'])
+        self.assertEqual(data1['coupon'], 'PRIMEIRACOMPRA')
+        self.assertEqual(data1['discount'], 20)
+
+        # 4. Second claim by the SAME user must be REJECTED (already claimed)
+        res_claim2 = self.client.post('/api/claim-drop')
+        self.assertEqual(res_claim2.status_code, 400)
+        data2 = json.loads(res_claim2.data)
+        self.assertFalse(data2['success'])
+        self.assertTrue(data2['already_claimed'])
+
+        # 5. Status endpoint should report claimed: True
+        res_status = self.client.get('/api/drop-status')
+        self.assertEqual(res_status.status_code, 200)
+        data_status = json.loads(res_status.data)
+        self.assertTrue(data_status['claimed'])
+
 if __name__ == '__main__':
     unittest.main()

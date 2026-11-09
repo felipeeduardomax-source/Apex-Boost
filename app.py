@@ -86,7 +86,7 @@ def inject_global_data():
     if 'user_id' in session:
         conn = get_db()
         logged_user = conn.execute(
-            "SELECT id, name, email, is_admin, avatar FROM users WHERE id = ?",
+            "SELECT id, name, email, is_admin, avatar, drop_vip_claimed FROM users WHERE id = ?",
             (session['user_id'],)
         ).fetchone()
         conn.close()
@@ -132,8 +132,8 @@ def security_firewall():
         if request.path in ('/login', '/register', '/favicon.ico', '/api/ping'):
             return
 
-        # Se for requisição AJAX / JSON
-        if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.is_json:
+        # Se for requisição API / AJAX / JSON
+        if request.path.startswith('/api/') or request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.is_json:
             return jsonify({'error': 'unauthorized', 'message': 'Faça login para continuar.', 'redirect': url_for('login')}), 401
 
         # Preservar destino se for rota segura
@@ -819,6 +819,62 @@ def live_sales():
         {"buyer": "Bruno C. (SC)", "pack": "Competitive FPS Ultra Pack", "time": "há 29 minutos"}
     ]
     return jsonify(notifications)
+
+@app.route('/api/claim-drop', methods=['POST'])
+def claim_drop():
+    """Resgate único do Drop VIP para usuários logados"""
+    if 'user_id' not in session:
+        return jsonify({
+            'success': False,
+            'message': 'Você precisa estar logado para resgatar seu Drop VIP!',
+            'redirect': url_for('login')
+        }), 401
+
+    user_id = session['user_id']
+    conn = get_db()
+    try:
+        user = conn.execute("SELECT id, drop_vip_claimed FROM users WHERE id = ?", (user_id,)).fetchone()
+        if not user:
+            return jsonify({'success': False, 'message': 'Usuário não encontrado.'}), 404
+
+        u_dict = dict(user)
+        if u_dict.get('drop_vip_claimed'):
+            return jsonify({
+                'success': False,
+                'already_claimed': True,
+                'message': 'Você já resgatou o seu Drop VIP exclusivo de boas-vindas nesta conta.'
+            }), 400
+
+        # Marca como resgatado no banco de dados de forma definitiva
+        conn.execute("UPDATE users SET drop_vip_claimed = 1 WHERE id = ?", (user_id,))
+        conn.commit()
+
+        # Ativa o cupom de 20% OFF automaticamente na sessão do usuário
+        session['coupon_code'] = 'PRIMEIRACOMPRA'
+        session['discount_percent'] = 20.0
+        session.modified = True
+
+        return jsonify({
+            'success': True,
+            'coupon': 'PRIMEIRACOMPRA',
+            'discount': 20,
+            'message': 'Drop Lendário desbloqueado! Cupom PRIMEIRACOMPRA (20% OFF) aplicado automaticamente.'
+        })
+    finally:
+        conn.close()
+
+@app.route('/api/drop-status')
+def drop_status():
+    """Retorna o status do Drop VIP do usuário logado"""
+    if 'user_id' not in session:
+        return jsonify({'logged_in': False, 'claimed': False})
+    conn = get_db()
+    try:
+        user = conn.execute("SELECT drop_vip_claimed FROM users WHERE id = ?", (session['user_id'],)).fetchone()
+        claimed = bool(dict(user).get('drop_vip_claimed')) if user else False
+        return jsonify({'logged_in': True, 'claimed': claimed})
+    finally:
+        conn.close()
 
 # ----------------- CUSTOM ERROR HANDLERS (ANTI-LEAK) ----------------- #
 

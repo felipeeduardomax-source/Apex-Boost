@@ -1,0 +1,222 @@
+{% extends "base.html" %}
+
+{% block title %}Checkout Seguro | Apex Boost Labs{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <span class="badge-fire mb-2 d-inline-block"><i class="bi bi-shield-lock-fill"></i> AMBIENTE 100% CRIPTOGRAFADO</span>
+        <h1 class="display-5 fw-black text-white">CHECKOUT EXPRESS</h1>
+        <p class="text-secondary">Preencha seus dados para liberação imediata das suas licenças e downloads.</p>
+    </div>
+
+    <form method="POST" action="{{ url_for('checkout') }}" id="checkoutForm">
+        <div class="row g-5">
+            <!-- Left: Customer Details & Payment Options -->
+            <div class="col-lg-7">
+                <!-- Step 1: Customer Details -->
+                <div class="glass-card p-4 mb-4">
+                    <h5 class="text-white fw-bold mb-3 border-bottom border-secondary border-opacity-50 pb-2">
+                        <span class="text-blue me-2">01.</span> DADOS DO COMPRADOR
+                    </h5>
+
+                    {% if current_user %}
+                        <div class="p-3 rounded-3 mb-3 d-flex align-items-center gap-2" style="background: rgba(0, 102, 255, 0.12); border: 1px solid var(--color-blue);">
+                            <i class="bi bi-person-check-fill text-blue fs-4"></i>
+                            <span class="text-white">Comprando como <strong>{{ current_user.name }}</strong> ({{ current_user.email }}).</span>
+                        </div>
+                        <input type="hidden" name="name" value="{{ current_user.name }}">
+                        <input type="hidden" name="email" value="{{ current_user.email }}">
+                    {% else %}
+                        <p class="text-secondary small mb-3">
+                            Informe seu nome e e-mail para receber as chaves de ativação e ter acesso permanente aos downloads.
+                        </p>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label" for="custName">Nome Completo ou Nickname *</label>
+                                <input type="text" id="custName" name="name" class="form-control" placeholder="Seu nome ou Nickname" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="custEmail">E-mail para Recebimento *</label>
+                                <input type="email" id="custEmail" name="email" class="form-control" placeholder="seuemail@exemplo.com" required>
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <small class="text-secondary">Já possui cadastro? <a href="{{ url_for('login', next=request.path) }}" class="text-blue fw-bold">Faça login</a> para vincular automaticamente.</small>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Step 2: Payment Method Selection -->
+                <div class="glass-card p-4 mb-4">
+                    <h5 class="text-white fw-bold mb-3 border-bottom border-secondary border-opacity-50 pb-2">
+                        <span class="text-blue me-2">02.</span> FORMA DE PAGAMENTO
+                    </h5>
+
+                    <ul class="nav nav-pills nav-fill gap-2 mb-4" id="paymentTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active btn-apex-outline py-2 px-3 text-start d-flex align-items-center gap-2" id="pix-tab" data-bs-toggle="pill" data-bs-target="#pixContent" type="button" role="tab">
+                                <i class="bi bi-qr-code text-blue fs-3"></i>
+                                <div>
+                                    <strong class="d-block text-white">PIX Automático</strong>
+                                    <small class="text-blue fw-semibold" style="font-size: 0.75rem;">Aprovação em segundos ⚡</small>
+                                </div>
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link btn-apex-outline py-2 px-3 text-start d-flex align-items-center gap-2" id="card-tab" data-bs-toggle="pill" data-bs-target="#cardContent" type="button" role="tab">
+                                <i class="bi bi-credit-card text-violet fs-3"></i>
+                                <div>
+                                    <strong class="d-block text-white">Cartão de Crédito</strong>
+                                    <small class="text-secondary" style="font-size: 0.75rem;">Em até 12x</small>
+                                </div>
+                            </button>
+                        </li>
+                    </ul>
+
+                    <input type="hidden" name="payment_method" id="paymentMethodInput" value="PIX">
+
+                    <!-- Tab Contents -->
+                    <div class="tab-content" id="paymentTabContents">
+                        <!-- PIX Tab Content -->
+                        <div class="tab-pane fade show active" id="pixContent" role="tabpanel">
+                            <!-- Live PIX Countdown Badge -->
+                            <div class="pix-timer-box mb-3 text-white w-100 justify-content-between">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="bi bi-clock-history text-blue fs-5"></i>
+                                    <div>
+                                        <span class="d-block text-secondary" style="font-size: 0.75rem;">Reserva de chave e chave PIX válida por:</span>
+                                        <strong class="text-white">Tempo restante: <span id="pixTimerDisplay" class="text-cyan fw-black fs-6">10:00</span></strong>
+                                    </div>
+                                </div>
+                                <span class="badge-status-dot"></span>
+                            </div>
+
+                            <div class="p-3 rounded-3 border border-secondary border-opacity-50 mb-3" style="background: rgba(0, 0, 0, 0.4);">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="bg-white p-2 rounded shadow-sm text-center">
+                                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=130x130&data=00020126580014BR.GOV.BCB.PIX0136apexboost-pix-key-92819283742520400005303986540{{ total }}5802BR5920APEX%20BOOST%20LABS6009SAO%20PAULO62070503***6304" alt="QR Code PIX" class="img-fluid" style="width: 110px; height: 110px;">
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <span class="badge-cyan mb-1 d-inline-block">CHAVE COPIA E COLA</span>
+                                        <p class="text-white small mb-2">Escaneie o QR Code ou copie o código PIX abaixo no app do seu banco:</p>
+                                        
+                                        <div class="input-group input-group-sm mb-2">
+                                            <input type="text" id="pixCopiaCola" class="form-control" readonly value="00020126580014BR.GOV.BCB.PIX0136apex-boost-digital-pay-9482103540{{ total }}5802BR5920APEX_BOOST_LABS">
+                                            <button class="btn btn-apex-primary btn-copy-clip" type="button" data-copy-target="pixCopiaCola">
+                                                <i class="bi bi-copy"></i> Copiar
+                                            </button>
+                                        </div>
+                                        <small class="text-blue fw-semibold"><i class="bi bi-lightning-fill"></i> Liberação imediata após a confirmação!</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card Tab Content -->
+                        <div class="tab-pane fade" id="cardContent" role="tabpanel">
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <label class="form-label">Número do Cartão</label>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" placeholder="0000 0000 0000 0000" maxlength="19">
+                                        <span class="input-group-text bg-dark border-secondary border-opacity-50 text-blue"><i class="bi bi-credit-card"></i></span>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Nome Impresso no Cartão</label>
+                                    <input type="text" class="form-control" placeholder="Como está no cartão">
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Validade</label>
+                                    <input type="text" class="form-control" placeholder="MM/AA" maxlength="5">
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label">Código de Segurança (CVV)</label>
+                                    <input type="password" class="form-control" placeholder="123" maxlength="4">
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Parcelamento</label>
+                                    <select class="form-select">
+                                        <option value="1">1x de R$ {{ "%.2f"|format(total)|replace('.', ',') }} (Sem juros)</option>
+                                        <option value="2">2x de R$ {{ "%.2f"|format(total/2)|replace('.', ',') }} (Sem juros)</option>
+                                        <option value="3">3x de R$ {{ "%.2f"|format(total/3)|replace('.', ',') }} (Sem juros)</option>
+                                        <option value="6">6x de R$ {{ "%.2f"|format(total/6)|replace('.', ',') }}</option>
+                                        <option value="12">12x de R$ {{ "%.2f"|format(total/12)|replace('.', ',') }}</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Order Summary & Confirm Button -->
+            <div class="col-lg-5">
+                <div class="glass-card p-4 sticky-top" style="top: 90px;">
+                    <h5 class="text-white fw-bold mb-3 border-bottom border-secondary border-opacity-50 pb-2">RESUMO DA COMPRA</h5>
+
+                    <ul class="list-unstyled mb-3">
+                        {% for item in cart_items %}
+                        <li class="d-flex justify-content-between align-items-center py-2 border-bottom border-secondary border-opacity-50">
+                            <div>
+                                <strong class="text-white d-block small">{{ item.name }}</strong>
+                                <small class="text-blue">{{ item.tag }}</small>
+                            </div>
+                            <span class="text-white fw-bold">R$ {{ "%.2f"|format(item.price)|replace('.', ',') }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+
+                    <div class="d-flex justify-content-between text-secondary small mb-2">
+                        <span>Subtotal:</span>
+                        <span>R$ {{ "%.2f"|format(subtotal)|replace('.', ',') }}</span>
+                    </div>
+
+                    {% if discount_amount > 0 %}
+                    <div class="d-flex justify-content-between text-blue small mb-2">
+                        <span>Desconto de Cupom:</span>
+                        <span>- R$ {{ "%.2f"|format(discount_amount)|replace('.', ',') }}</span>
+                    </div>
+                    {% endif %}
+
+                    <div class="d-flex justify-content-between text-secondary small mb-3">
+                        <span>Envio Digital:</span>
+                        <span class="text-blue fw-bold">Instantâneo (Grátis)</span>
+                    </div>
+
+                    <hr class="border-secondary border-opacity-50">
+
+                    <div class="d-flex justify-content-between align-items-baseline mb-4">
+                        <span class="text-white fw-bold">Total a Pagar:</span>
+                        <span class="fs-2 fw-black text-white glow-blue">R$ {{ "%.2f"|format(total)|replace('.', ',') }}</span>
+                    </div>
+
+                    <button type="submit" id="btnSubmitCheckout" class="btn btn-apex-primary btn-lg w-100 py-3 mb-3 text-center">
+                        <i class="bi bi-shield-check me-2"></i> FINALIZAR E BAIXAR PACKS
+                    </button>
+
+                    <div class="p-3 rounded-3 border border-secondary border-opacity-50 text-center small text-secondary" style="background: rgba(255,255,255,0.02);">
+                        <i class="bi bi-shield-lock-fill text-blue me-1"></i> Liberação imediata no PIX com suporte técnico vitalício.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const pixTab = document.getElementById('pix-tab');
+    const cardTab = document.getElementById('card-tab');
+    const paymentInput = document.getElementById('paymentMethodInput');
+
+    if (pixTab && cardTab && paymentInput) {
+        pixTab.addEventListener('click', () => { paymentInput.value = 'PIX'; });
+        cardTab.addEventListener('click', () => { paymentInput.value = 'Cartão de Crédito'; });
+    }
+});
+</script>
+{% endblock %}

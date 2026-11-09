@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}Pedido Confirmado | Apex Boost Labs{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="glass-card p-4 p-md-5 mx-auto text-center mb-5" style="max-width: 780px;">
+        <div class="rounded-circle d-inline-flex p-3 text-white mb-3" style="background: var(--grad-primary); box-shadow: 0 0 25px rgba(0, 102, 255, 0.4);">
+            <i class="bi bi-check-circle-fill display-4"></i>
+        </div>
+        
+        <span class="badge-fire mb-2 d-inline-block">PAGAMENTO APROVADO</span>
+        <h1 class="display-6 fw-black text-white mb-2">SEUS PACKS ESTÃO LIBERADOS!</h1>
+        <p class="text-secondary small mb-4">
+            Código do Pedido: <strong class="text-blue">{{ order.order_code }}</strong> &bull; Total: <strong class="text-white">R$ {{ "%.2f"|format(order.total)|replace('.', ',') }}</strong>
+        </p>
+
+        <!-- Purchased Packs Card List -->
+        <div class="text-start mb-4">
+            <h6 class="text-white fw-bold mb-3 border-bottom border-secondary border-opacity-50 pb-2 text-uppercase text-blue" style="font-size: 0.82rem;">
+                <i class="bi bi-box-seam me-1"></i> Packs Disponíveis para Download
+            </h6>
+
+            {% for item in items %}
+            <div class="p-3 rounded-3 mb-3 border border-secondary border-opacity-50" style="background: #0f1426;">
+                <div class="row align-items-center g-3">
+                    <div class="col-md-7">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <i class="bi {{ item.icon }} text-blue fs-4"></i>
+                            <h6 class="text-white fw-bold mb-0">{{ item.product_name }}</h6>
+                        </div>
+                        <div>
+                            <small class="text-secondary d-block mb-1" style="font-size: 0.72rem;">SUA CHAVE DE LICENÇA:</small>
+                            <div class="license-display">
+                                <span id="licKey{{ loop.index }}">{{ item.license_key }}</span>
+                                <button type="button" class="btn btn-sm btn-apex-outline py-0 px-2 btn-copy-clip" data-copy-target="licKey{{ loop.index }}" title="Copiar Chave">
+                                    <i class="bi bi-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-5 text-md-end">
+                        <a href="{{ url_for('download_file', filename=item.download_file) }}" class="btn btn-apex-primary w-100 py-2">
+                            <i class="bi bi-download me-1"></i> Baixar Pack (.ZIP)
+                        </a>
+                        <small class="text-secondary d-block mt-1" style="font-size: 0.7rem;">Download direto e seguro</small>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Quick 3-Step Setup Instructions -->
+        <div class="p-4 rounded-3 text-start mb-4 border border-secondary border-opacity-50" style="background: rgba(0, 0, 0, 0.4);">
+            <h6 class="text-white fw-bold mb-3 small text-uppercase"><i class="bi bi-lightning-charge-fill text-blue me-1"></i> Como Executar os Scripts:</h6>
+            <ol class="small text-secondary mb-0 ps-3 d-flex flex-column gap-2">
+                <li><strong class="text-white">1. Extraia o arquivo:</strong> Clique com o botão direito no arquivo baixado e escolha <em>Extrair Tudo</em>.</li>
+                <li><strong class="text-white">2. Execute como Administrador:</strong> Clique com botão direito em cada script <code>.bat</code> e escolha <em>Executar como Administrador</em>. O script 01 criará automaticamente um Ponto de Restauração de segurança.</li>
+                <li><strong class="text-white">3. Reinicie seu PC:</strong> Abra seu jogo e aproveite o ganho de fluidez e FPS.</li>
+            </ol>
+        </div>
+
+        <div class="d-flex justify-content-center gap-3 flex-wrap">
+            <a href="{{ url_for('profile') }}" class="btn btn-apex-purple px-4 py-2">
+                <i class="bi bi-person me-1"></i> Ir para Meu Painel de Membro
+            </a>
+            <a href="{{ url_for('index') }}" class="btn btn-apex-outline px-4 py-2">
+                Voltar à Página Inicial
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

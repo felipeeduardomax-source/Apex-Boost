@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block title %}Meu Carrinho | Apex Boost Labs{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <span class="badge-gamer mb-2 d-inline-block"><i class="bi bi-bag-check-fill text-blue"></i> CHECKOUT SEGURO</span>
+        <h1 class="display-5 fw-black text-white">SEU CARRINHO</h1>
+        <p class="text-secondary">Confira os itens selecionados antes de prosseguir para o pagamento.</p>
+    </div>
+
+    {% if not cart_items %}
+        <div class="glass-card p-5 text-center mx-auto" style="max-width: 560px;">
+            <div class="rounded-circle d-inline-flex p-4 mb-3" style="background: rgba(0, 102, 255, 0.12);">
+                <i class="bi bi-bag-x fs-1 text-blue"></i>
+            </div>
+            <h3 class="text-white fw-bold mb-2">Seu carrinho está vazio</h3>
+            <p class="text-secondary small mb-4">Você ainda não escolheu nenhum pack de otimização.</p>
+            <a href="{{ url_for('index') }}#packs" class="btn btn-apex-primary px-4 py-2">
+                <i class="bi bi-lightning-charge-fill me-1"></i> Ver Catálogo de Packs
+            </a>
+        </div>
+    {% else %}
+        <div class="row g-4">
+            <!-- Items List -->
+            <div class="col-lg-8">
+                <div class="glass-card p-4 mb-4">
+                    <h5 class="text-white fw-bold mb-3 border-bottom border-secondary border-opacity-50 pb-2">
+                        Packs no Carrinho ({{ cart_items|length }})
+                    </h5>
+
+                    <div class="table-responsive">
+                        <table class="table custom-gamer-table align-middle mb-0">
+                            <thead>
+                                <tr class="text-secondary small border-bottom border-secondary border-opacity-50">
+                                    <th>Pack</th>
+                                    <th>Preço</th>
+                                    <th>Ação</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in cart_items %}
+                                <tr class="border-bottom border-secondary border-opacity-25">
+                                    <td class="py-3">
+                                        <div class="d-flex align-items-center gap-3">
+                                            <div class="pack-icon-glow mb-0" style="width: 44px; height: 44px; font-size: 1.25rem;">
+                                                <i class="bi {{ item.icon }}"></i>
+                                            </div>
+                                            <div>
+                                                <a href="{{ url_for('product_detail', slug=item.slug) }}" class="text-heading fw-bold text-decoration-none">
+                                                    {{ item.name }}
+                                                </a>
+                                                <small class="text-blue d-block fw-semibold">{{ item.tag }} &bull; {{ item.fps_gain }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <strong class="text-heading fs-5">R$ {{ "%.2f"|format(item.price)|replace('.', ',') }}</strong>
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('remove_from_cart', product_id=item.id) }}" class="btn btn-sm btn-outline-danger" title="Remover item">
+                                            <i class="bi bi-trash3-fill"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mt-3 pt-2">
+                        <a href="{{ url_for('index') }}#packs" class="btn btn-sm btn-apex-outline">
+                            &larr; Continuar Comprando
+                        </a>
+                        <a href="{{ url_for('clear_cart') }}" class="btn btn-sm btn-outline-secondary">
+                            Limpar Carrinho
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Order Bump: Special Addon Offer -->
+                <div class="order-bump-box mb-4">
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
+                        <span class="badge-fire" style="font-size: 0.7rem;"><i class="bi bi-fire"></i> OFERTA RELÂMPAGO NO CARRINHO</span>
+                        <span class="text-white fw-bold">Por apenas <span class="text-blue fw-black fs-5">R$ 9,90</span></span>
+                    </div>
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="pack-icon-glow mb-0" style="width: 48px; height: 48px; font-size: 1.4rem;">
+                            <i class="bi bi-lightning-charge text-cyan"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="text-white fw-bold mb-1">Leve Junto: Starter Tweak Pack (Básico & Limpeza)</h6>
+                            <p class="text-secondary small mb-2">Excelente para otimizar notebooks secundários ou PC de um amigo sem pagar caro.</p>
+                            <a href="{{ url_for('add_to_cart', product_id=1) }}" class="btn btn-sm btn-apex-outline py-1 px-3">
+                                <i class="bi bi-plus-circle text-blue me-1"></i> Adicionar ao Pedido (+ R$ 9,90)
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Coupon Box -->
+                <div class="glass-card p-4">
+                    <h6 class="text-white fw-bold mb-2"><i class="bi bi-ticket-perforated-fill text-blue me-2"></i> Possui Cupom de Desconto?</h6>
+                    <form action="{{ url_for('apply_coupon') }}" method="POST" class="d-flex gap-2">
+                        <input type="text" name="coupon_code" class="form-control text-uppercase" placeholder="Ex: PRIMEIRACOMPRA ou FPSBOOST" value="{{ coupon_code }}">
+                        <button type="submit" class="btn btn-apex-purple px-4 text-nowrap">Aplicar</button>
+                    </form>
+                    {% if coupon_code %}
+                        <div class="text-blue small mt-2 fw-semibold">
+                            <i class="bi bi-check-circle-fill"></i> Cupom <strong>{{ coupon_code }}</strong> ativado com {{ discount_percent }}% de desconto!
+                        </div>
+                    {% else %}
+                        <small class="text-secondary d-block mt-2">Dica: Utilize <strong>PRIMEIRACOMPRA</strong> para receber 20% de desconto imediato.</small>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Order Summary -->
+            <div class="col-lg-4">
+                <div class="glass-card p-4 sticky-top" style="top: 90px;">
+                    <h5 class="text-white fw-bold mb-3 border-bottom border-secondary border-opacity-50 pb-2">RESUMO DO PEDIDO</h5>
+
+                    <div class="d-flex justify-content-between text-secondary mb-2">
+                        <span>Subtotal:</span>
+                        <strong class="text-white">R$ {{ "%.2f"|format(subtotal)|replace('.', ',') }}</strong>
+                    </div>
+
+                    {% if discount_amount > 0 %}
+                    <div class="d-flex justify-content-between text-blue mb-2">
+                        <span>Desconto ({{ discount_percent }}%):</span>
+                        <strong>- R$ {{ "%.2f"|format(discount_amount)|replace('.', ',') }}</strong>
+                    </div>
+                    {% endif %}
+
+                    <div class="d-flex justify-content-between text-secondary mb-3">
+                        <span>Entrega:</span>
+                        <span class="text-blue fw-bold">Instantânea (Grátis)</span>
+                    </div>
+
+                    <hr class="border-secondary border-opacity-50">
+
+                    <div class="d-flex justify-content-between align-items-baseline mb-4">
+                        <span class="text-white fw-bold">Total a Pagar:</span>
+                        <span class="fs-2 fw-black text-white glow-blue">R$ {{ "%.2f"|format(total)|replace('.', ',') }}</span>
+                    </div>
+
+                    <a href="{{ url_for('checkout') }}" class="btn btn-apex-primary btn-lg w-100 py-3 mb-3 text-center">
+                        <i class="bi bi-lock-fill me-1"></i> Ir para o Pagamento
+                    </a>
+
+                    <div class="p-3 rounded-3 border border-secondary border-opacity-50 text-center small text-secondary" style="background: rgba(255,255,255,0.02);">
+                        <i class="bi bi-shield-check text-blue me-1"></i> Transação 100% Segura e Criptografada
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

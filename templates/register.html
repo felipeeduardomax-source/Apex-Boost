@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Criar Conta VIP | Apex Boost Labs{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="glass-card p-4 p-md-5 mx-auto" style="max-width: 480px;">
+        <div class="text-center mb-4">
+            <div class="rounded-circle d-inline-flex p-3 text-white mb-2" style="background: var(--grad-primary); box-shadow: 0 0 20px rgba(0, 102, 255, 0.4);">
+                <i class="bi bi-person-plus-fill fs-2"></i>
+            </div>
+            <h2 class="text-white fw-black fs-4">CRIAR SUA CONTA</h2>
+            <p class="text-secondary small">Tenha acesso permanente aos seus arquivos e licenças.</p>
+        </div>
+
+        <form method="POST" action="{{ url_for('register') }}">
+            <div class="mb-3">
+                <label class="form-label" for="regName">Nome Completo / Nickname</label>
+                <input type="text" id="regName" name="name" class="form-control" placeholder="Ex: Felipe ou Coldzera" value="{{ name or '' }}" required autofocus>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label" for="regEmail">E-mail Principal</label>
+                <input type="email" id="regEmail" name="email" class="form-control" placeholder="seuemail@exemplo.com" value="{{ email or '' }}" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label" for="regPassword">Senha (mínimo 6 caracteres)</label>
+                <input type="password" id="regPassword" name="password" class="form-control" placeholder="••••••••" required minlength="6">
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label" for="regConfirmPassword">Confirmar Senha</label>
+                <input type="password" id="regConfirmPassword" name="confirm_password" class="form-control" placeholder="••••••••" required minlength="6">
+            </div>
+
+            <button type="submit" class="btn btn-apex-primary w-100 py-3 mb-3">
+                <i class="bi bi-check2-circle me-1"></i> Criar Minha Conta
+            </button>
+        </form>
+
+        <div class="text-center mt-3 border-top border-secondary border-opacity-50 pt-3">
+            <span class="text-secondary small">Já possui uma conta cadastrada?</span>
+            <a href="{{ url_for('login') }}" class="text-blue fw-bold small text-decoration-none ms-1">Fazer Login</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

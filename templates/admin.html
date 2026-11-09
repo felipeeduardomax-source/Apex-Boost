@@ -1,0 +1,279 @@
+{% extends "base.html" %}
+
+{% block title %}Painel Administrativo | Apex Boost Labs{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4" style="max-width: 1300px;">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <span class="badge bg-warning text-dark fw-bold mb-1" style="font-size: 0.72rem;">PAINEL DO PROPRIETÁRIO</span>
+            <h1 class="display-6 fw-black text-white mb-0">ADMIN DASHBOARD</h1>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('profile') }}" class="btn btn-sm btn-apex-outline"><i class="bi bi-person me-1"></i> Meu Perfil</a>
+            <a href="{{ url_for('index') }}" class="btn btn-sm btn-apex-primary"><i class="bi bi-shop me-1"></i> Ver Loja</a>
+        </div>
+    </div>
+
+    <!-- KPI Metric Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-3">
+            <div class="glass-card p-3 p-md-4">
+                <small class="text-secondary d-block mb-1 text-uppercase" style="font-size: 0.72rem;">FATURAMENTO TOTAL</small>
+                <div class="fs-3 fw-black text-heading glow-blue">R$ {{ "%.2f"|format(total_sales)|replace('.', ',') }}</div>
+                <small class="text-blue"><i class="bi bi-cash-stack"></i> Vendas aprovadas</small>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="glass-card p-3 p-md-4">
+                <small class="text-secondary d-block mb-1 text-uppercase" style="font-size: 0.72rem;">PEDIDOS REALIZADOS</small>
+                <div class="fs-3 fw-black text-heading">{{ total_orders }}</div>
+                <small class="text-blue"><i class="bi bi-receipt"></i> Histórico total</small>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="glass-card p-3 p-md-4">
+                <small class="text-secondary d-block mb-1 text-uppercase" style="font-size: 0.72rem;">USUÁRIOS CADASTRADOS</small>
+                <div class="fs-3 fw-black text-heading">{{ total_users }}</div>
+                <small class="text-warning"><i class="bi bi-people-fill"></i> Contas criadas</small>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="glass-card p-3 p-md-4">
+                <small class="text-secondary d-block mb-1 text-uppercase" style="font-size: 0.72rem;">PACKS ATIVOS</small>
+                <div class="fs-3 fw-black text-blue">{{ total_products }}</div>
+                <small class="text-blue"><i class="bi bi-box-seam-fill"></i> No catálogo</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Workspace with Dedicated Sidebar for Tabs -->
+    <div class="row g-4">
+        <!-- Admin Dedicated Sidebar -->
+        <div class="col-lg-3">
+            <div class="inner-page-sidebar">
+                <div class="sidebar-section-title px-2 pt-1 pb-2">Controles Administrativos</div>
+                <div class="nav flex-column nav-pills" id="adminSidebarTabs" role="tablist">
+                    <button class="inner-sidebar-btn active" data-bs-toggle="pill" data-bs-target="#adminOrders" type="button" role="tab">
+                        <i class="bi bi-cart-check-fill text-blue"></i>
+                        <span>Pedidos Recentes</span>
+                        <span class="badge rounded-pill badge-counter ms-auto">{{ recent_orders|length }}</span>
+                    </button>
+                    <button class="inner-sidebar-btn" data-bs-toggle="pill" data-bs-target="#adminProducts" type="button" role="tab">
+                        <i class="bi bi-boxes text-blue"></i>
+                        <span>Gerenciar Packs</span>
+                        <span class="badge rounded-pill badge-counter ms-auto">{{ products|length }}</span>
+                    </button>
+                    <button class="inner-sidebar-btn" data-bs-toggle="pill" data-bs-target="#adminCoupons" type="button" role="tab">
+                        <i class="bi bi-ticket-perforated-fill text-cyan"></i>
+                        <span>Cupons de Desconto</span>
+                        <span class="badge rounded-pill badge-counter ms-auto">{{ coupons|length }}</span>
+                    </button>
+                    <button class="inner-sidebar-btn" data-bs-toggle="pill" data-bs-target="#adminUsers" type="button" role="tab">
+                        <i class="bi bi-people-fill text-warning"></i>
+                        <span>Clientes Cadastrados</span>
+                        <span class="badge rounded-pill badge-counter ms-auto">{{ users|length }}</span>
+                    </button>
+                </div>
+
+                <hr class="border-secondary border-opacity-50 my-3">
+
+                <div class="p-3 rounded-3" style="background: var(--bg-surface-2); border: 1px solid var(--border-subtle);">
+                    <small class="text-secondary d-block" style="font-size: 0.75rem;">Status do Banco de Dados:</small>
+                    <div class="text-success small fw-bold mt-1"><i class="bi bi-database-check me-1"></i> SQLite Conectado</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Content Area -->
+        <div class="col-lg-9">
+            <div class="tab-content">
+                <!-- 1. Orders -->
+                <div class="tab-pane fade show active" id="adminOrders">
+                    <div class="glass-card p-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3 border-bottom border-secondary border-opacity-50 pb-2 flex-wrap gap-2">
+                            <h5 class="text-white fw-bold mb-0">
+                                <i class="bi bi-cart-check-fill text-blue me-2"></i> Vendas Concluídas no Sistema
+                            </h5>
+                            {% if recent_orders %}
+                            <form action="{{ url_for('admin_clear_orders') }}" method="POST" onsubmit="return confirm('Tem certeza que deseja zerar todo o histórico de vendas? Esta ação limpará os pedidos e zerará o faturamento.');">
+                                <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2" style="font-size: 0.8rem;">
+                                    <i class="bi bi-trash3 me-1"></i> Zerar Histórico
+                                </button>
+                            </form>
+                            {% endif %}
+                        </div>
+                        {% if not recent_orders %}
+                            <p class="text-secondary small">Nenhum pedido efetuado ainda.</p>
+                        {% else %}
+                            <div class="table-responsive">
+                                <table class="table custom-gamer-table align-middle mb-0">
+                                    <thead>
+                                        <tr class="text-secondary small border-bottom border-secondary border-opacity-50">
+                                            <th>Código</th>
+                                            <th>Cliente</th>
+                                            <th>E-mail</th>
+                                            <th>Valor</th>
+                                            <th>Pagamento</th>
+                                            <th>Data</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for o in recent_orders %}
+                                        <tr class="border-bottom border-secondary border-opacity-25">
+                                            <td><strong class="text-blue">{{ o.order_code }}</strong></td>
+                                            <td><strong class="text-heading">{{ o.customer_name or o.user_name }}</strong></td>
+                                            <td class="text-secondary small">{{ o.customer_email or o.user_email }}</td>
+                                            <td><strong class="text-heading fs-6">R$ {{ "%.2f"|format(o.total)|replace('.', ',') }}</strong></td>
+                                            <td><span class="badge bg-secondary" style="font-size: 0.72rem;">{{ o.payment_method }}</span></td>
+                                            <td class="text-secondary small">{{ o.created_at[:16] }}</td>
+                                            <td><span class="badge-fire">{{ o.status }}</span></td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- 2. Products -->
+                <div class="tab-pane fade" id="adminProducts">
+                    <div class="glass-card p-4">
+                        <h5 class="text-white fw-bold mb-3 border-bottom border-secondary border-opacity-50 pb-2">
+                            <i class="bi bi-boxes text-blue me-2"></i> Catálogo de Packs
+                        </h5>
+                        <div class="table-responsive">
+                            <table class="table custom-gamer-table align-middle mb-0">
+                                <thead>
+                                    <tr class="text-secondary small border-bottom border-secondary border-opacity-50">
+                                        <th>Nome</th>
+                                        <th>Preço Atual</th>
+                                        <th>Preço Antigo</th>
+                                        <th>Arquivo</th>
+                                        <th>Status</th>
+                                        <th>Ação</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for p in products %}
+                                    <tr class="border-bottom border-secondary border-opacity-25">
+                                        <td>
+                                            <strong class="text-heading">{{ p.name }}</strong>
+                                            <small class="text-blue d-block fw-semibold">{{ p.tag }}</small>
+                                        </td>
+                                        <td class="text-heading fw-bold">R$ {{ "%.2f"|format(p.price)|replace('.', ',') }}</td>
+                                        <td class="text-secondary">R$ {{ "%.2f"|format(p.old_price)|replace('.', ',') }}</td>
+                                        <td><code>{{ p.download_file }}</code></td>
+                                        <td>
+                                            {% if p.active %}
+                                                <span class="badge-cyan">Ativo</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">Oculto</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <a href="{{ url_for('admin_toggle_product', product_id=p.id) }}" class="btn btn-sm btn-apex-outline py-1">
+                                                Alternar Status
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. Coupons -->
+                <div class="tab-pane fade" id="adminCoupons">
+                    <div class="row g-4">
+                        <div class="col-lg-5">
+                            <div class="glass-card p-4">
+                                <h5 class="text-white fw-bold mb-3"><i class="bi bi-plus-circle text-cyan me-2"></i>Criar Novo Cupom</h5>
+                                <form method="POST" action="{{ url_for('admin_add_coupon') }}">
+                                    <div class="mb-3">
+                                        <label class="form-label">Código do Cupom</label>
+                                        <input type="text" name="code" class="form-control text-uppercase" placeholder="EX: MEUGAMER30" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Porcentagem (%)</label>
+                                        <input type="number" name="discount" class="form-control" placeholder="Ex: 20" min="1" max="90" required>
+                                    </div>
+                                    <button type="submit" class="btn btn-apex-primary w-100 py-2">Salvar Cupom</button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-7">
+                            <div class="glass-card p-4">
+                                <h5 class="text-white fw-bold mb-3"><i class="bi bi-ticket-perforated text-blue me-2"></i>Cupons Ativos</h5>
+                                <div class="table-responsive">
+                                    <table class="table custom-gamer-table align-middle mb-0">
+                                        <thead>
+                                            <tr class="text-secondary small border-bottom border-secondary border-opacity-50">
+                                                <th>Código</th>
+                                                <th>Desconto</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for c in coupons %}
+                                            <tr class="border-bottom border-secondary border-opacity-25">
+                                                <td><strong class="text-warning">{{ c.code }}</strong></td>
+                                                <td><span class="text-blue fw-bold">{{ c.discount_percent }}% OFF</span></td>
+                                                <td><span class="badge-cyan">Ativo</span></td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. Users -->
+                <div class="tab-pane fade" id="adminUsers">
+                    <div class="glass-card p-4">
+                        <h5 class="text-white fw-bold mb-3 border-bottom border-secondary border-opacity-50 pb-2">
+                            <i class="bi bi-people-fill text-warning me-2"></i> Clientes Cadastrados
+                        </h5>
+                        <div class="table-responsive">
+                            <table class="table custom-gamer-table align-middle mb-0">
+                                <thead>
+                                    <tr class="text-secondary small border-bottom border-secondary border-opacity-50">
+                                        <th>ID</th>
+                                        <th>Nome</th>
+                                        <th>E-mail</th>
+                                        <th>Tipo</th>
+                                        <th>Cadastro</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for u in users %}
+                                    <tr class="border-bottom border-secondary border-opacity-25">
+                                        <td class="text-secondary">#{{ u.id }}</td>
+                                        <td><strong class="text-heading">{{ u.name }}</strong></td>
+                                        <td class="text-secondary">{{ u.email }}</td>
+                                        <td>
+                                            {% if u.is_admin %}
+                                                <span class="badge bg-warning text-dark">Admin</span>
+                                            {% else %}
+                                                <span class="badge-gamer">Gamer</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-secondary small">{{ u.created_at[:16] }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

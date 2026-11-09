@@ -1,0 +1,1289 @@
+{% extends "base.html" %}
+
+{% block title %}Apex Boost Labs | Loja de Packs de Otimização para PC Gamer{% endblock %}
+
+{% block content %}
+
+<!-- TAB 1: INÍCIO & VITRINE -->
+<div class="store-tab-pane active" id="tab-home">
+    <!-- Hero Section -->
+    <section class="py-4 py-lg-5 position-relative overflow-hidden">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-7 text-center text-lg-start">
+                <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill mb-3 border border-secondary" style="background: rgba(0, 102, 255, 0.08);">
+                    <span class="badge-status-dot"></span>
+                    <span class="text-white small fw-bold">Atualizado para Windows 10 & 11 (24H2)</span>
+                    <span class="badge-fire ms-1">FPS BOOST v4.9</span>
+                </div>
+                
+                <h1 class="display-3 fw-black text-white mb-3" style="line-height: 1.1; font-weight: 900;">
+                    DESTRAVE O <span class="gradient-title">MÁXIMO FPS</span> E ZERE SEU INPUT LAG.
+                </h1>
+                
+                <p class="lead text-secondary mb-4" style="max-width: 600px; font-size: 1.15rem; line-height: 1.7;">
+                    Acabe com travamentos, stutters e mira pesada. Nossos scripts de otimização profissional reconfiguram timers, escalonamento de CPU e drivers da GPU para extrair 100% de performance do seu hardware.
+                </p>
+
+                <div class="d-flex flex-wrap gap-3 justify-content-center justify-content-lg-start mb-5">
+                    <a href="#tab-packs" class="btn btn-apex-primary btn-lg px-4 py-3" data-tab-target="tab-packs">
+                        <i class="bi bi-lightning-charge-fill me-1"></i> VER PACKS DISPONÍVEIS
+                    </a>
+                    <a href="#tab-assistente" class="btn btn-apex-outline btn-lg px-4 py-3" data-tab-target="tab-assistente">
+                        <i class="bi bi-magic me-1 text-blue"></i> QUAL PACK ESCOLHER?
+                    </a>
+                </div>
+
+                <!-- Live Metrics Row -->
+                <div class="row g-3 pt-4 border-top border-secondary border-opacity-50 text-center text-lg-start">
+                    <div class="col-4">
+                        <div class="fs-2 fw-black text-blue glow-blue">+75%</div>
+                        <small class="text-secondary fw-semibold text-uppercase" style="font-size: 0.75rem;">Ganho Médio de FPS</small>
+                    </div>
+                    <div class="col-4 border-start border-secondary border-opacity-50 ps-3">
+                        <div class="fs-2 fw-black text-cyan">0.5ms</div>
+                        <small class="text-secondary fw-semibold text-uppercase" style="font-size: 0.75rem;">Timer Resolution</small>
+                    </div>
+                    <div class="col-4 border-start border-secondary border-opacity-50 ps-3">
+                        <div class="fs-2 fw-black text-white">0% Ban</div>
+                        <small class="text-secondary fw-semibold text-uppercase" style="font-size: 0.75rem;">100% Anti-Cheat Safe</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hero Live Benchmark Card -->
+            <div class="col-lg-5">
+                <div class="glass-card p-4 position-relative border-2 shadow-lg" style="border-color: rgba(0, 102, 255, 0.4);">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge-status-dot"></span>
+                            <span class="text-white fw-bold small">MONITOR EM TEMPO REAL</span>
+                        </div>
+                        <span class="badge-gamer">CS2 & VALORANT</span>
+                    </div>
+
+                    <div class="p-3 rounded-3 mb-3" style="background: var(--color-black); color: #fff; font-family: 'SF Mono', Consolas, monospace; font-size: 0.85rem; border: 1px solid rgba(0, 102, 255, 0.4);">
+                        <div class="d-flex justify-content-between text-secondary py-1">
+                            <span>Processos em 2º plano:</span>
+                            <span class="text-danger fw-bold">186 &rarr; 41 ativos</span>
+                        </div>
+                        <div class="d-flex justify-content-between text-secondary py-1">
+                            <span>DPC Latency do Windows:</span>
+                            <span class="text-blue fw-bold">850µs &rarr; 14µs</span>
+                        </div>
+                        <div class="d-flex justify-content-between text-secondary py-1">
+                            <span>Plano de Energia:</span>
+                            <span class="text-blue fw-bold">Ultimate Performance</span>
+                        </div>
+                        <div class="d-flex justify-content-between text-secondary py-1">
+                            <span>Estabilidade 1% Low:</span>
+                            <span class="text-success fw-bold">+120% Fluidez</span>
+                        </div>
+                    </div>
+
+                    <div class="row g-2 text-center mb-3">
+                        <div class="col-6">
+                            <div class="p-3 rounded-3" style="background: rgba(0, 0, 0, 0.5); border: 1px solid rgba(255, 255, 255, 0.1);">
+                                <small class="text-muted d-block" style="font-size: 0.72rem;">ANTES DO PACK</small>
+                                <div class="fs-4 fw-black text-danger my-1">118 FPS</div>
+                                <small class="text-muted" style="font-size: 0.7rem;">Quedas constantes</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-3 rounded-3" style="background: rgba(0, 102, 255, 0.12); border: 1px solid var(--color-blue);">
+                                <small class="text-blue d-block fw-bold" style="font-size: 0.72rem;">COM APEX BOOST</small>
+                                <div class="fs-4 fw-black text-blue my-1">245 FPS</div>
+                                <small class="text-cyan fw-semibold" style="font-size: 0.7rem;">+107% Travado e Liso</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <a href="#tab-packs" class="btn btn-apex-primary w-100 py-3" data-tab-target="tab-packs">
+                        <i class="bi bi-rocket-takeoff-fill me-1"></i> Explorar Packs de Otimização
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick 3 Pillars Section -->
+        <div class="row g-4 mt-4 pt-4 border-top border-secondary border-opacity-25">
+            <div class="col-md-4">
+                <div class="glass-card p-4 h-100">
+                    <div class="d-flex align-items-center gap-3 mb-2">
+                        <i class="bi bi-shield-check text-blue fs-2"></i>
+                        <h6 class="text-white fw-bold mb-0">100% Anti-Cheat Safe</h6>
+                    </div>
+                    <p class="text-muted small mb-0">Totalmente aprovado para torneios de Valorant (Vanguard), CS2 (VAC) e Warzone (Ricochet). Zero risco de ban.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="glass-card p-4 h-100">
+                    <div class="d-flex align-items-center gap-3 mb-2">
+                        <i class="bi bi-arrow-repeat text-violet fs-2"></i>
+                        <h6 class="text-white fw-bold mb-0">Ponto de Restauração</h6>
+                    </div>
+                    <p class="text-muted small mb-0">O script 01 cria automaticamente um backup completo do seu Windows. Você pode desfazer em 1 clique a qualquer momento.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="glass-card p-4 h-100">
+                    <div class="d-flex align-items-center gap-3 mb-2">
+                        <i class="bi bi-lightning-charge-fill text-warning fs-2"></i>
+                        <h6 class="text-white fw-bold mb-0">Entrega Instantânea</h6>
+                    </div>
+                    <p class="text-muted small mb-0">Assim que o pagamento via PIX é confirmado, o download é liberado imediatamente com sua chave de licença vitalícia.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- INTERACTIVE BEFORE / AFTER COMPARATOR SECTION -->
+        <div class="mt-5 pt-4 border-top border-secondary border-opacity-25">
+            <div class="comparator-card">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+                    <div>
+                        <span class="badge-cyan mb-1 d-inline-block"><i class="bi bi-sliders2-vertical me-1"></i> SIMULADOR EM TEMPO REAL</span>
+                        <h3 class="text-white fw-black mb-1 fs-3">COMPARATIVO DE TELEMETRIA: ANTES VS DEPOIS</h3>
+                        <p class="text-secondary small mb-0">Veja como os micro-travamentos e o atraso de ponteiro desaparecem após aplicar os scripts.</p>
+                    </div>
+
+                    <!-- Interactive Mode Toggle -->
+                    <div class="d-inline-flex p-1 rounded-3 border border-secondary border-opacity-50" style="background: var(--color-black);">
+                        <button type="button" class="mode-switch-btn active" id="btnModeStandard" data-compare-mode="standard">
+                            <i class="bi bi-x-circle text-danger me-1"></i> Windows Padrão
+                        </button>
+                        <button type="button" class="mode-switch-btn" id="btnModeOptimized" data-compare-mode="optimized">
+                            <i class="bi bi-lightning-charge-fill text-blue me-1"></i> Com Apex Boost
+                        </button>
+                    </div>
+                </div>
+
+                <div class="row g-4 align-items-center">
+                    <div class="col-lg-6">
+                        <!-- Metric 1: 1% Low FPS -->
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="text-white fw-bold small"><i class="bi bi-graph-up text-blue me-1"></i> Estabilidade de 1% Low (Sem Micro-Stutters)</span>
+                                <span class="fw-black text-danger" id="val1PercentLow">48 FPS (Quedas Bruscas)</span>
+                            </div>
+                            <div class="metric-bar-bg">
+                                <div class="metric-bar-fill bg-danger" id="bar1PercentLow" style="width: 25%;"></div>
+                            </div>
+                            <small class="text-muted" style="font-size: 0.72rem;">Responsável pela sensação de engasgo e mira pesada em tiroteios intensos.</small>
+                        </div>
+
+                        <!-- Metric 2: Input Lag -->
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="text-white fw-bold small"><i class="bi bi-mouse text-cyan me-1"></i> Latência de Input do Mouse (Delay da Mira)</span>
+                                <span class="fw-black text-danger" id="valInputLag">16.8 ms (Atraso Alto)</span>
+                            </div>
+                            <div class="metric-bar-bg">
+                                <div class="metric-bar-fill bg-danger" id="barInputLag" style="width: 85%;"></div>
+                            </div>
+                            <small class="text-muted" style="font-size: 0.72rem;">Tempo que o clique ou movimento leva para ser processado pelo jogo.</small>
+                        </div>
+
+                        <!-- Metric 3: Timer Resolution -->
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="text-white fw-bold small"><i class="bi bi-stopwatch text-warning me-1"></i> Resolução de Timer do Kernel</span>
+                                <span class="fw-black text-secondary" id="valTimerRes">15.6 ms (Desperdiçando Clock)</span>
+                            </div>
+                            <div class="metric-bar-bg">
+                                <div class="metric-bar-fill bg-warning" id="barTimerRes" style="width: 80%;"></div>
+                            </div>
+                            <small class="text-muted" style="font-size: 0.72rem;">O Windows 10/11 por padrão atualiza os timers em ciclos lentos.</small>
+                        </div>
+
+                        <!-- Metric 4: Background Processes -->
+                        <div>
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="text-white fw-bold small"><i class="bi bi-layers text-primary me-1"></i> Processos e Serviços Fantasmas</span>
+                                <span class="fw-black text-danger" id="valProcesses">192 Processos Ativos</span>
+                            </div>
+                            <div class="metric-bar-bg">
+                                <div class="metric-bar-fill bg-danger" id="barProcesses" style="width: 90%;"></div>
+                            </div>
+                            <small class="text-muted" style="font-size: 0.72rem;">Telemetria, Xbox DVR em 2º plano e serviços inúteis roubando CPU.</small>
+                        </div>
+                    </div>
+
+                    <!-- Right Telemetry Summary Card -->
+                    <div class="col-lg-6">
+                        <div class="p-4 rounded-4 border border-secondary border-opacity-50" style="background: var(--color-black); color: #fff;">
+                            <div class="d-flex align-items-center gap-2 mb-3">
+                                <span class="badge-status-dot"></span>
+                                <span class="text-uppercase small fw-bold text-cyan" id="boxCompareStatus">Status: Computador com Configuração Padrão do Windows</span>
+                            </div>
+
+                            <div class="display-5 fw-black mb-2" id="boxCompareMainMetric" style="color: #ef4444;">
+                                115 FPS Médio
+                            </div>
+                            <p class="text-secondary small mb-4" id="boxCompareDesc">
+                                O processador tem núcleos adormecidos (Core Parking), o timer oscila em 15ms e serviços do Windows disputam ciclos com a sua GPU.
+                            </p>
+
+                            <div class="row g-2 text-center pt-3 border-top border-secondary border-opacity-25">
+                                <div class="col-4">
+                                    <small class="text-muted d-block" style="font-size: 0.72rem;">SMOOTHNESS</small>
+                                    <strong class="fs-6" id="metricSmooth" style="color: #ef4444;">Irregular</strong>
+                                </div>
+                                <div class="col-4 border-start border-secondary border-opacity-50">
+                                    <small class="text-muted d-block" style="font-size: 0.72rem;">DPC LATENCY</small>
+                                    <strong class="fs-6 text-warning" id="metricDpc">850 µs</strong>
+                                </div>
+                                <div class="col-4 border-start border-secondary border-opacity-50">
+                                    <small class="text-muted d-block" style="font-size: 0.72rem;">RAM LIVRE</small>
+                                    <strong class="fs-6 text-white" id="metricRam">3.2 GB</strong>
+                                </div>
+                            </div>
+
+                            <div class="mt-4">
+                                <a href="#tab-packs" class="btn btn-apex-primary w-100 py-3" data-tab-target="tab-packs">
+                                    <i class="bi bi-lightning-charge-fill me-1"></i> Desbloquear Performance Máxima
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- HARDWARE SAVINGS ROI BOX & 7-DAY GUARANTEE -->
+        <div class="row g-4 mt-2 mb-2">
+            <!-- Hardware Savings ROI -->
+            <div class="col-lg-7">
+                <div class="savings-box h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                        <span class="savings-badge"><i class="bi bi-piggy-bank-fill"></i> ECONOMIA INTELIGENTE</span>
+                        <span class="text-secondary small"><i class="bi bi-shield-check text-success"></i> 100% Legal & Seguro</span>
+                    </div>
+
+                    <h4 class="text-white fw-black mb-2 fs-4">NÃO GASTE R$ 2.500 EM PEÇAS NOVAS ANTES DE OTIMIZAR</h4>
+                    <p class="text-secondary small mb-4">
+                        A maioria dos PCs gamers tem até <strong>40% do seu poder de fogo bloqueado</strong> por limites energéticos conservadores, agendamento de GPU desativado e bloatwares da Microsoft.
+                    </p>
+
+                    <div class="p-3 rounded-3 mb-3 border border-secondary border-opacity-25" style="background: rgba(255, 255, 255, 0.04);">
+                        <div class="d-flex justify-content-between align-items-center py-1 border-bottom border-secondary border-opacity-25 text-secondary small">
+                            <span>Troca de Placa de Vídeo / Processador:</span>
+                            <span class="text-danger fw-bold fs-6">R$ 2.400,00 a R$ 4.500,00</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center py-2 text-white small">
+                            <span>Pack Apex Boost Labs (Acesso Vitalício):</span>
+                            <span class="text-blue fw-black fs-5">A partir de R$ 9,90</span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-2 text-success fw-bold small">
+                        <i class="bi bi-check-circle-fill fs-5"></i>
+                        <span>Você economiza mais de R$ 2.300 extraindo tudo o que seu hardware atual tem a oferecer!</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIP Technical Support & Anti-Cheat Safe Card -->
+            <div class="col-lg-5">
+                <div class="guarantee-card h-100 d-flex flex-column justify-content-between">
+                    <div>
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <div class="rounded-circle p-3 text-white d-flex align-items-center justify-content-center" style="width: 54px; height: 54px; background: var(--grad-primary); box-shadow: 0 0 20px rgba(0, 102, 255, 0.4);">
+                                <i class="bi bi-shield-check fs-3"></i>
+                            </div>
+                            <div>
+                                <span class="badge-cyan" style="font-size: 0.68rem;">SUPORTE VIP</span>
+                                <h5 class="text-white fw-black mb-0 fs-5">SUPORTE & ATUALIZAÇÕES</h5>
+                            </div>
+                        </div>
+
+                        <p class="text-secondary small mb-3 leading-relaxed">
+                            Nossos scripts são desenvolvidos dentro das diretrizes oficiais do Windows. Você conta com <strong>suporte técnico humanizado no Discord</strong> e acesso a todas as futuras atualizações de scripts para novos patches e drivers de jogos.
+                        </p>
+                    </div>
+
+                    <div class="p-3 rounded-3 border border-secondary border-opacity-25" style="background: var(--color-black); color: #fff;">
+                        <div class="d-flex align-items-center justify-content-between text-secondary small">
+                            <span><i class="bi bi-patch-check-fill text-blue me-1"></i> 100% Seguro Anti-Cheat</span>
+                            <strong class="text-cyan">Acesso Permanente</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FREE APEX QUICK-CHECK TERMINAL (LEAD MAGNET) -->
+        <div class="mt-4 p-4 rounded-4 border border-secondary border-opacity-25 glass-card">
+            <div class="row g-3 align-items-center">
+                <div class="col-lg-6">
+                    <span class="badge-gamer text-white mb-2"><i class="bi bi-terminal-fill text-blue me-1"></i> TESTE GRÁTIS NO SEU COMPUTADOR</span>
+                    <h4 class="text-white fw-black mb-1 fs-5">QUER UMA PROVA REAL NO SEU SETUP AGORA?</h4>
+                    <p class="text-secondary small mb-0">
+                        Abra o PowerShell no seu PC e execute este comando nativo de 1 linha. Ele limpa instantaneamente a fila de cache de DNS e descarta arquivos temporários sem instalar nada:
+                    </p>
+                </div>
+                <div class="col-lg-6">
+                    <div class="terminal-box-code">
+                        <span class="text-truncate me-2 small text-cyan" id="quickTestCmd">ipconfig /flushdns; Write-Host 'Apex Boost Labs: Cache liberado com sucesso!' -ForegroundColor Cyan</span>
+                        <button type="button" class="btn btn-sm btn-apex-primary btn-copy-clip text-nowrap" data-copy-target="quickTestCmd">
+                            <i class="bi bi-copy"></i> Copiar
+                        </button>
+                    </div>
+                    <small class="text-secondary d-block mt-2" style="font-size: 0.75rem;">
+                        <i class="bi bi-shield-check text-success me-1"></i> 100% Seguro. Execução nativa do próprio Windows.
+                    </small>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- TAB 2: PACKS DE OTIMIZAÇÃO -->
+<div class="store-tab-pane" id="tab-packs">
+    <section class="py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+            <div>
+                <span class="badge-gamer mb-2 d-inline-block"><i class="bi bi-lightning-charge-fill text-blue"></i> CATÁLOGO OFICIAL</span>
+                <h2 class="display-6 fw-black text-white mb-1">ESCOLHA SEU PACK DE PERFORMANCE</h2>
+                <p class="text-secondary small mb-0">Acesso vitalício aos scripts, chave de licença única e suporte prioritário no Discord.</p>
+            </div>
+            <div>
+                <a href="#tab-assistente" class="btn btn-sm btn-apex-outline" data-tab-target="tab-assistente">
+                    <i class="bi bi-magic text-cyan me-1"></i> Dúvida sobre qual escolher?
+                </a>
+            </div>
+        </div>
+
+        <!-- Live Search & Filter Bar -->
+        <div class="pack-search-wrapper mb-4">
+            <div class="row g-3 align-items-center">
+                <div class="col-lg-5">
+                    <div class="input-group">
+                        <span class="input-group-text bg-transparent border-end-0 border-secondary border-opacity-50 text-blue">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input type="text" id="packSearchInput" class="form-control border-start-0" placeholder="Buscar por jogo ou recurso (ex: CS2, Valorant, Mouse, RAM, Ping)...">
+                    </div>
+                </div>
+                <div class="col-lg-7">
+                    <div class="d-flex flex-wrap gap-2 align-items-center justify-content-lg-end" id="packFilterPills">
+                        <span class="text-secondary small fw-bold me-1 d-none d-md-inline"><i class="bi bi-funnel text-blue me-1"></i> Filtrar:</span>
+                        <button type="button" class="filter-pill active" data-filter="all">Todos (4)</button>
+                        <button type="button" class="filter-pill" data-filter="cs2">CS2 & Val</button>
+                        <button type="button" class="filter-pill" data-filter="popular">Mais Vendido ⭐</button>
+                        <button type="button" class="filter-pill" data-filter="ping">Rede & Ping</button>
+                        <button type="button" class="filter-pill" data-filter="basic">PC Fraco</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4" id="packsGrid">
+            {% for prod in products %}
+            <div class="col-md-6 col-xl-3 pack-item-col" data-slug="{{ prod.slug }}" data-name="{{ prod.name|lower }}" data-desc="{{ prod.short_desc|lower }} {{ prod.description|lower }}" data-tag="{{ prod.tag|lower }}" data-popular="{{ 1 if prod.popular else 0 }}">
+                <div class="product-card {% if prod.popular %}popular-pack{% endif %}">
+                    {% if prod.badge %}
+                        <div class="popular-banner-top">{{ prod.badge }}</div>
+                    {% endif %}
+
+                    <div class="pack-icon-glow">
+                        <i class="bi {{ prod.icon }}"></i>
+                    </div>
+
+                    <span class="badge-cyan mb-2" style="font-size: 0.72rem; align-self: flex-start;">{{ prod.tag }}</span>
+                    <h4 class="text-white fw-bold mb-2 fs-5">{{ prod.name }}</h4>
+                    <p class="text-secondary small mb-3" style="min-height: 48px; line-height: 1.5;">{{ prod.short_desc }}</p>
+
+                    <div class="d-flex gap-2 mb-3">
+                        <span class="badge-gamer text-white" style="font-size: 0.75rem;">
+                            <i class="bi bi-graph-up-arrow text-blue me-1"></i> {{ prod.fps_gain }}
+                        </span>
+                        <span class="badge-cyan" style="font-size: 0.75rem;">
+                            <i class="bi bi-stopwatch me-1"></i> {{ prod.latency_drop }}
+                        </span>
+                    </div>
+
+                    <div class="mb-3">
+                        {% if prod.old_price %}
+                            <div class="price-old">De R$ {{ "%.2f"|format(prod.old_price)|replace('.', ',') }}</div>
+                        {% endif %}
+                        <div class="d-flex align-items-baseline gap-1">
+                            <span class="text-secondary small">R$</span>
+                            <span class="price-main text-white">{{ "%.2f"|format(prod.price)|replace('.', ',') }}</span>
+                            <span class="text-secondary small">/ vitalício</span>
+                        </div>
+                    </div>
+
+                    <hr class="border-secondary border-opacity-50 my-1">
+
+                    <ul class="feature-list flex-grow-1">
+                        {% for feat in prod.features_list %}
+                            <li>
+                                <i class="bi bi-check-circle-fill text-blue"></i>
+                                <span>{{ feat }}</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+
+                    <div class="d-flex flex-column gap-2 mt-auto">
+                        <a href="{{ url_for('add_to_cart', product_id=prod.id) }}" class="btn btn-apex-primary w-100 py-2">
+                            <i class="bi bi-lightning-fill me-1"></i> Comprar Agora
+                        </a>
+                        <button type="button" class="btn btn-apex-outline btn-add-cart-ajax w-100 py-2" data-product-id="{{ prod.id }}">
+                            <i class="bi bi-cart-plus me-1"></i> Adicionar ao Carrinho
+                        </button>
+                        <button type="button" class="btn btn-link text-secondary small text-decoration-none text-center py-0" data-bs-toggle="modal" data-bs-target="#modalPackPeek{{ prod.id }}">
+                            <i class="bi bi-eye text-blue me-1"></i> Espiar Conteúdo do .ZIP
+                        </button>
+                        <a href="{{ url_for('product_detail', slug=prod.slug) }}" class="btn btn-link text-secondary small text-decoration-none text-center py-0">
+                            Ver detalhes do pacote <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Quick Peek Modals -->
+        {% for prod in products %}
+        <div class="modal fade" id="modalPackPeek{{ prod.id }}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content glass-card border-2" style="border-color: var(--color-blue); background: var(--bg-card);">
+                    <div class="modal-header border-bottom border-secondary border-opacity-25 pb-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi {{ prod.icon }} text-blue fs-4"></i>
+                            <div>
+                                <h5 class="modal-title text-white fw-bold mb-0">{{ prod.name }}</h5>
+                                <small class="text-secondary">{{ prod.download_file }} &bull; Licença Vitalícia</small>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="badge-cyan"><i class="bi bi-folder-check me-1"></i> ARQUIVOS & SCRIPTS INCLUSOS NO .ZIP</span>
+                            <span class="text-blue fw-black fs-5">R$ {{ "%.2f"|format(prod.price)|replace('.', ',') }}</span>
+                        </div>
+                        <p class="text-secondary small mb-3">Todos os scripts possuem código aberto e documentado, executando automaticamente com 1 clique:</p>
+                        
+                        <div class="p-3 rounded-3 mb-3 border border-secondary border-opacity-25" style="background: var(--color-black); color: #fff; font-family: 'SF Mono', Consolas, monospace; font-size: 0.85rem;">
+                            <div class="text-success small fw-bold mb-2"><i class="bi bi-terminal"></i> Conteúdo descompactado:</div>
+                            <ul class="list-unstyled mb-0 d-flex flex-column gap-1">
+                                {% if prod.slug == 'ultimate_extreme_suite' %}
+                                    <li class="text-warning"><i class="bi bi-file-earmark-play-fill text-warning me-1"></i> 00_APEX_OTIMIZADOR_MASTER_PRO.bat (Painel Interativo c/ 9 Menus)</li>
+                                    <li><i class="bi bi-file-earmark-code text-blue me-1"></i> 01_CRIAR_PONTO_RESTAURACAO.bat</li>
+                                    <li><i class="bi bi-file-earmark-code text-blue me-1"></i> 02_BACKUP_REGISTRO_WINDOWS.bat</li>
+                                    <li><i class="bi bi-file-earmark-code text-blue me-1"></i> 03_CPU_CORE_UNPARK_MAX_THREADS.bat</li>
+                                    <li><i class="bi bi-file-earmark-code text-blue me-1"></i> 04_TIMER_RESOLUTION_05MS_HPET_OFF.bat</li>
+                                    <li><i class="bi bi-file-earmark-code text-blue me-1"></i> 05_GPU_HAGS_SCHEDULING_DIRECTX.bat</li>
+                                    <li><i class="bi bi-file-earmark-code text-blue me-1"></i> 06_INPUT_LAG_MOUSE_RAW_KEYBOARD.bat</li>
+                                    <li><i class="bi bi-file-earmark-code text-blue me-1"></i> 07_TCPIP_AUTOTUNING_OFFLOAD.bat</li>
+                                    <li><i class="bi bi-file-earmark-code text-blue me-1"></i> 08_DESATIVAR_NAGLE_ALGORITHM.bat</li>
+                                    <li><i class="bi bi-file-earmark-code text-blue me-1"></i> 09_CONFIGURAR_DNS_GAMER_CLOUDFLARE.bat</li>
+                                    <li><i class="bi bi-file-earmark-code text-blue me-1"></i> 10_NETWORK_THROTTLING_INDEX_OFF.bat</li>
+                                    <li><i class="bi bi-file-earmark-code text-blue me-1"></i> 11_LIMPEZA_PROFUNDA_TEMP_RAM.bat</li>
+                                    <li><i class="bi bi-file-earmark-code text-blue me-1"></i> 12_DESATIVAR_TELEMETRIA_BLOAT.bat</li>
+                                    <li><i class="bi bi-file-earmark-code text-blue me-1"></i> 13_PLANO_ENERGIA_ULTIMATE_PERF.bat</li>
+                                    <li><i class="bi bi-arrow-counterclockwise text-danger me-1"></i> 99_REVERTER_CONFIGURACOES.bat</li>
+                                    <li class="text-secondary"><i class="bi bi-file-earmark-text text-secondary me-1"></i> Manuais de CS2, Valorant, Warzone, Fortnite, GTA V e BIOS.txt</li>
+                                {% elif prod.slug == 'ultra_fps_pack' %}
+                                    <li class="text-warning"><i class="bi bi-file-earmark-play-fill text-warning me-1"></i> 00_APEX_OTIMIZADOR_AUTOMATICO.bat</li>
+                                    <li><i class="bi bi-file-earmark-code text-blue me-1"></i> 01_CRIAR_PONTO_RESTAURACAO.bat</li>
+                                    <li><i class="bi bi-file-earmark-code text-blue me-1"></i> 02_CPU_CORE_UNPARK_MAX_THREADS.bat</li>
+                                    <li><i class="bi bi-file-earmark-code text-blue me-1"></i> 03_TIMER_RESOLUTION_05MS_HPET_OFF.bat</li>
+                                    <li><i class="bi bi-file-earmark-code text-blue me-1"></i> 04_GPU_HAGS_SCHEDULING_DIRECTX.bat</li>
+                                    <li><i class="bi bi-file-earmark-code text-blue me-1"></i> 05_INPUT_LAG_MOUSE_RAW_KEYBOARD.bat</li>
+                                    <li><i class="bi bi-file-earmark-code text-blue me-1"></i> 06_LIMPEZA_PROFUNDA_TEMP_RAM.bat</li>
+                                    <li><i class="bi bi-file-earmark-code text-blue me-1"></i> 07_DESATIVAR_TELEMETRIA_BLOAT.bat</li>
+                                    <li><i class="bi bi-file-earmark-code text-blue me-1"></i> 08_PLANO_ENERGIA_ULTIMATE_PERF.bat</li>
+                                    <li><i class="bi bi-arrow-counterclockwise text-danger me-1"></i> 99_REVERTER_CONFIGURACOES.bat</li>
+                                    <li class="text-secondary"><i class="bi bi-file-earmark-text text-secondary me-1"></i> GUIA_CONFIGURACOES_JOGOS.txt & GUIA_BIOS_XMP.txt</li>
+                                {% elif prod.slug == 'network_pro_pack' %}
+                                    <li class="text-warning"><i class="bi bi-file-earmark-play-fill text-warning me-1"></i> 00_APEX_OTIMIZADOR_AUTOMATICO.bat</li>
+                                    <li><i class="bi bi-file-earmark-code text-blue me-1"></i> 01_CRIAR_PONTO_RESTAURACAO.bat</li>
+                                    <li><i class="bi bi-file-earmark-code text-blue me-1"></i> 02_TCPIP_AUTOTUNING_OFFLOAD.bat</li>
+                                    <li><i class="bi bi-file-earmark-code text-blue me-1"></i> 03_DESATIVAR_NAGLE_ALGORITHM.bat</li>
+                                    <li><i class="bi bi-file-earmark-code text-blue me-1"></i> 04_CONFIGURAR_DNS_GAMER_CLOUDFLARE.bat</li>
+                                    <li><i class="bi bi-file-earmark-code text-blue me-1"></i> 05_NETWORK_THROTTLING_INDEX_OFF.bat</li>
+                                    <li><i class="bi bi-file-earmark-code text-blue me-1"></i> 06_LIMPEZA_PROFUNDA_TEMP_RAM.bat</li>
+                                    <li><i class="bi bi-file-earmark-code text-blue me-1"></i> 07_PLANO_ENERGIA_ULTIMATE_PERF.bat</li>
+                                    <li><i class="bi bi-arrow-counterclockwise text-danger me-1"></i> 99_REVERTER_CONFIGURACOES.bat</li>
+                                    <li class="text-secondary"><i class="bi bi-file-earmark-text text-secondary me-1"></i> LEIA-ME_PRIMEIROS_PASSOS.txt</li>
+                                {% else %}
+                                    <li class="text-warning"><i class="bi bi-file-earmark-play-fill text-warning me-1"></i> 00_APEX_INICIAR_AQUI.bat</li>
+                                    <li><i class="bi bi-file-earmark-code text-blue me-1"></i> 01_CRIAR_PONTO_RESTAURACAO.bat</li>
+                                    <li><i class="bi bi-file-earmark-code text-blue me-1"></i> 02_LIMPEZA_PROFUNDA_TEMP_RAM.bat</li>
+                                    <li><i class="bi bi-file-earmark-code text-blue me-1"></i> 03_DESATIVAR_TELEMETRIA_BLOAT.bat</li>
+                                    <li><i class="bi bi-file-earmark-code text-blue me-1"></i> 04_PLANO_ENERGIA_ULTIMATE_PERF.bat</li>
+                                    <li><i class="bi bi-arrow-counterclockwise text-danger me-1"></i> 99_REVERTER_CONFIGURACOES.bat</li>
+                                    <li class="text-secondary"><i class="bi bi-file-earmark-text text-secondary me-1"></i> LEIA-ME_PRIMEIROS_PASSOS.txt</li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-top border-secondary border-opacity-25">
+                        <button type="button" class="btn btn-apex-outline" data-bs-dismiss="modal">Fechar</button>
+                        <a href="{{ url_for('add_to_cart', product_id=prod.id) }}" class="btn btn-apex-primary">
+                            <i class="bi bi-cart-plus-fill me-1"></i> Adicionar Pack ao Carrinho
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+
+        <!-- DETALHAMENTO DE TWEAKS E OTIMIZAÇÕES INCLUSAS -->
+        <div class="mt-5 pt-4 border-top border-secondary border-opacity-25">
+            <div class="text-center mb-5">
+                <span class="badge-fire mb-2 d-inline-block"><i class="bi bi-cpu-fill me-1"></i> ARSENAL DE OTIMIZAÇÃO</span>
+                <h3 class="display-6 fw-black text-white">O QUE NOSSOS PACKS OTIMIZAM NO SEU PC</h3>
+                <p class="text-secondary mx-auto" style="max-width: 700px;">
+                    Mais de 40 ajustes profissionais desenvolvidos e testados em bancada para extrair 100% de estabilidade, máximo FPS e menor latência.
+                </p>
+            </div>
+
+            <!-- 6 Grid de Módulos de Otimização -->
+            <div class="row g-4 mb-5">
+                <div class="col-md-6 col-lg-4">
+                    <div class="glass-card p-4 h-100 border border-primary border-opacity-25">
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <div class="pack-icon-glow mb-0" style="width: 46px; height: 46px; font-size: 1.3rem;">
+                                <i class="bi bi-cpu-fill text-blue"></i>
+                            </div>
+                            <div>
+                                <h5 class="text-white fw-bold mb-0">Processador & CPU</h5>
+                                <small class="text-blue">Desbloqueio de Potência</small>
+                            </div>
+                        </div>
+                        <ul class="list-unstyled small text-secondary mb-0 d-flex flex-column gap-2">
+                            <li><i class="bi bi-check2 text-cyan me-1"></i> <strong>CPU Core Unparking:</strong> 100% dos núcleos ativos sem entrar em repouso.</li>
+                            <li><i class="bi bi-check2 text-cyan me-1"></i> <strong>Timer Resolution:</strong> Clock do sistema travado em 0.5ms para resposta instantânea.</li>
+                            <li><i class="bi bi-check2 text-cyan me-1"></i> <strong>Desativação de HPET:</strong> Fim dos gargalos de clock sintético.</li>
+                            <li><i class="bi bi-check2 text-cyan me-1"></i> <strong>Thread Priority:</strong> Escalonamento em tempo real para jogos.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-lg-4">
+                    <div class="glass-card p-4 h-100 border border-primary border-opacity-25">
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <div class="pack-icon-glow mb-0" style="width: 46px; height: 46px; font-size: 1.3rem;">
+                                <i class="bi bi-gpu-card text-blue"></i>
+                            </div>
+                            <div>
+                                <h5 class="text-white fw-bold mb-0">Placa de Vídeo & GPU</h5>
+                                <small class="text-blue">FPS & Frame Pacing</small>
+                            </div>
+                        </div>
+                        <ul class="list-unstyled small text-secondary mb-0 d-flex flex-column gap-2">
+                            <li><i class="bi bi-check2 text-blue me-1"></i> <strong>HAGS Ativado:</strong> Agendamento de GPU acelerado por hardware.</li>
+                            <li><i class="bi bi-check2 text-blue me-1"></i> <strong>Fullscreen Fix:</strong> Fim dos atrasos de tela inteira do Windows.</li>
+                            <li><i class="bi bi-check2 text-blue me-1"></i> <strong>DPC Latency Fix:</strong> Elimina micro-travadas e stutters em jogos.</li>
+                            <li><i class="bi bi-check2 text-blue me-1"></i> <strong>GPU Priority 8:</strong> Prioridade máxima para pipelines DirectX/Vulkan.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-lg-4">
+                    <div class="glass-card p-4 h-100 border border-primary border-opacity-25">
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <div class="pack-icon-glow mb-0" style="width: 46px; height: 46px; font-size: 1.3rem;">
+                                <i class="bi bi-mouse-fill text-cyan"></i>
+                            </div>
+                            <div>
+                                <h5 class="text-white fw-bold mb-0">Zero Input Lag</h5>
+                                <small class="text-cyan">Mira Precisa 1:1</small>
+                            </div>
+                        </div>
+                        <ul class="list-unstyled small text-secondary mb-0 d-flex flex-column gap-2">
+                            <li><i class="bi bi-check2 text-cyan me-1"></i> <strong>Raw Input Direto:</strong> Remoção completa da aceleração do Windows.</li>
+                            <li><i class="bi bi-check2 text-cyan me-1"></i> <strong>Buffer de Teclado:</strong> Repetição instantânea de teclas sem atraso.</li>
+                            <li><i class="bi bi-check2 text-cyan me-1"></i> <strong>Filtros Desativados:</strong> Desativação de StickyKeys e FilterKeys.</li>
+                            <li><i class="bi bi-check2 text-cyan me-1"></i> <strong>Polling Rate USB:</strong> Resposta do mouse com consistência total.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-lg-4">
+                    <div class="glass-card p-4 h-100 border border-primary border-opacity-25">
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <div class="pack-icon-glow mb-0" style="width: 46px; height: 46px; font-size: 1.3rem;">
+                                <i class="bi bi-wifi text-blue"></i>
+                            </div>
+                            <div>
+                                <h5 class="text-white fw-bold mb-0">Rede, Ping & Streaming</h5>
+                                <small class="text-blue">Sem Packet Loss</small>
+                            </div>
+                        </div>
+                        <ul class="list-unstyled small text-secondary mb-0 d-flex flex-column gap-2">
+                            <li><i class="bi bi-check2 text-cyan me-1"></i> <strong>Desativar Nagle:</strong> TcpAckFrequency=1 para resposta instantânea.</li>
+                            <li><i class="bi bi-check2 text-cyan me-1"></i> <strong>DNS Gamer:</strong> Cloudflare 1.1.1.1 e Google configurados automaticamente.</li>
+                            <li><i class="bi bi-check2 text-cyan me-1"></i> <strong>UDP Priority:</strong> Pacotes de jogos com rota e prioridade máxima.</li>
+                            <li><i class="bi bi-check2 text-cyan me-1"></i> <strong>OBS Studio Preset:</strong> Streaming em 1080p sem roubar FPS do jogo.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-lg-4">
+                    <div class="glass-card p-4 h-100 border border-primary border-opacity-25">
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <div class="pack-icon-glow mb-0" style="width: 46px; height: 46px; font-size: 1.3rem;">
+                                <i class="bi bi-memory text-cyan"></i>
+                            </div>
+                            <div>
+                                <h5 class="text-white fw-bold mb-0">Memória RAM & SSD</h5>
+                                <small class="text-cyan">Limpeza Inteligente</small>
+                            </div>
+                        </div>
+                        <ul class="list-unstyled small text-secondary mb-0 d-flex flex-column gap-2">
+                            <li><i class="bi bi-check2 text-cyan me-1"></i> <strong>Standby List Cleaner:</strong> Libera memória RAM presa por processos do Windows.</li>
+                            <li><i class="bi bi-check2 text-cyan me-1"></i> <strong>Limpeza Profunda:</strong> Exclusão de %temp%, prefetch e caches mortos.</li>
+                            <li><i class="bi bi-check2 text-cyan me-1"></i> <strong>Comando TRIM Forçado:</strong> Restaura velocidade máxima de leitura em SSDs.</li>
+                            <li><i class="bi bi-check2 text-cyan me-1"></i> <strong>Zero Fragmentação:</strong> Paginação otimizada para jogos pesados.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-lg-4">
+                    <div class="glass-card p-4 h-100 border border-primary border-opacity-25">
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <div class="pack-icon-glow mb-0" style="width: 46px; height: 46px; font-size: 1.3rem;">
+                                <i class="bi bi-shield-check text-success"></i>
+                            </div>
+                            <div>
+                                <h5 class="text-white fw-bold mb-0">Segurança & Bloatware</h5>
+                                <small class="text-success">100% Reversível</small>
+                            </div>
+                        </div>
+                        <ul class="list-unstyled small text-secondary mb-0 d-flex flex-column gap-2">
+                            <li><i class="bi bi-check2 text-success me-1"></i> <strong>Zero Telemetria:</strong> Rastreamento e diagnósticos da Microsoft desativados.</li>
+                            <li><i class="bi bi-check2 text-success me-1"></i> <strong>Game Bar DVR Off:</strong> Desativa gravação secreta de fundo que consome FPS.</li>
+                            <li><i class="bi bi-check2 text-success me-1"></i> <strong>Ponto de Restauração:</strong> Criado automaticamente antes de qualquer alteração.</li>
+                            <li><i class="bi bi-check2 text-success me-1"></i> <strong>Script de Reversão:</strong> Botão de desfazer caso queira voltar ao padrão.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabela Comparativa de Recursos dos Packs -->
+            <div class="glass-card p-4 p-md-5">
+                <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                    <div>
+                        <span class="badge-cyan mb-1 d-inline-block">COMPARATIVO OFICIAL</span>
+                        <h4 class="text-white fw-bold mb-0">Tabela de Otimizações por Pacote</h4>
+                    </div>
+                    <span class="text-muted small"><i class="bi bi-info-circle me-1"></i> Todos os packs possuem licença vitalícia e suporte técnico dedicado</span>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover align-middle mb-0" style="background: transparent;">
+                        <thead>
+                            <tr class="border-secondary text-uppercase small">
+                                <th style="width: 36%;">Módulo / Recurso de Otimização</th>
+                                <th class="text-center" style="width: 16%;">Starter<br><span class="text-blue fw-bold">R$ 9,90</span></th>
+                                <th class="text-center" style="width: 16%;">FPS Ultra<br><span class="text-blue fw-bold">R$ 19,90</span></th>
+                                <th class="text-center" style="width: 16%;">Network Pro<br><span class="text-cyan fw-bold">R$ 24,90</span></th>
+                                <th class="text-center bg-primary bg-opacity-10" style="width: 16%;">Extreme Suite<br><span class="text-warning fw-bold">R$ 34,90 👑</span></th>
+                            </tr>
+                        </thead>
+                        <tbody class="border-secondary border-opacity-25 small">
+                            <tr>
+                                <td><i class="bi bi-shield-check text-success me-2"></i> Ponto de Restauração & Undo</td>
+                                <td class="text-center text-success"><i class="bi bi-check-circle-fill"></i> Incluso</td>
+                                <td class="text-center text-success"><i class="bi bi-check-circle-fill"></i> Incluso</td>
+                                <td class="text-center text-success"><i class="bi bi-check-circle-fill"></i> Incluso</td>
+                                <td class="text-center text-success bg-primary bg-opacity-10 fw-bold"><i class="bi bi-check-circle-fill text-warning"></i> Completo</td>
+                            </tr>
+                            <tr>
+                                <td><i class="bi bi-trash3 text-blue me-2"></i> Limpeza Profunda de Cache & Temp</td>
+                                <td class="text-center text-success"><i class="bi bi-check-circle-fill"></i> Incluso</td>
+                                <td class="text-center text-success"><i class="bi bi-check-circle-fill"></i> Incluso</td>
+                                <td class="text-center text-success"><i class="bi bi-check-circle-fill"></i> Incluso</td>
+                                <td class="text-center text-success bg-primary bg-opacity-10 fw-bold"><i class="bi bi-check-circle-fill text-warning"></i> Completo</td>
+                            </tr>
+                            <tr>
+                                <td><i class="bi bi-eye-slash text-warning me-2"></i> Desativar Telemetria & Bloatwares</td>
+                                <td class="text-center text-success"><i class="bi bi-check-circle-fill"></i> Incluso</td>
+                                <td class="text-center text-success"><i class="bi bi-check-circle-fill"></i> Incluso</td>
+                                <td class="text-center text-success"><i class="bi bi-check-circle-fill"></i> Incluso</td>
+                                <td class="text-center text-success bg-primary bg-opacity-10 fw-bold"><i class="bi bi-check-circle-fill text-warning"></i> Completo</td>
+                            </tr>
+                            <tr>
+                                <td><i class="bi bi-lightning-charge text-danger me-2"></i> Plano Ultimate Performance Apex</td>
+                                <td class="text-center text-success"><i class="bi bi-check-circle-fill"></i> Incluso</td>
+                                <td class="text-center text-success"><i class="bi bi-check-circle-fill"></i> Incluso</td>
+                                <td class="text-center text-success"><i class="bi bi-check-circle-fill"></i> Incluso</td>
+                                <td class="text-center text-success bg-primary bg-opacity-10 fw-bold"><i class="bi bi-check-circle-fill text-warning"></i> Completo</td>
+                            </tr>
+                            <tr>
+                                <td><i class="bi bi-cpu text-blue me-2"></i> CPU Core Unparking (100% Núcleos)</td>
+                                <td class="text-center text-secondary"><i class="bi bi-dash-lg"></i></td>
+                                <td class="text-center text-success"><i class="bi bi-check-circle-fill"></i> Incluso</td>
+                                <td class="text-center text-secondary"><i class="bi bi-dash-lg"></i></td>
+                                <td class="text-center text-success bg-primary bg-opacity-10 fw-bold"><i class="bi bi-check-circle-fill text-warning"></i> Completo</td>
+                            </tr>
+                            <tr>
+                                <td><i class="bi bi-stopwatch text-cyan me-2"></i> Timer Resolution 0.5ms & HPET Off</td>
+                                <td class="text-center text-secondary"><i class="bi bi-dash-lg"></i></td>
+                                <td class="text-center text-success"><i class="bi bi-check-circle-fill"></i> Incluso</td>
+                                <td class="text-center text-secondary"><i class="bi bi-dash-lg"></i></td>
+                                <td class="text-center text-success bg-primary bg-opacity-10 fw-bold"><i class="bi bi-check-circle-fill text-warning"></i> Completo</td>
+                            </tr>
+                            <tr>
+                                <td><i class="bi bi-gpu-card text-blue me-2"></i> GPU Tuning (HAGS & DPC Latency Fix)</td>
+                                <td class="text-center text-secondary"><i class="bi bi-dash-lg"></i></td>
+                                <td class="text-center text-success"><i class="bi bi-check-circle-fill"></i> Incluso</td>
+                                <td class="text-center text-secondary"><i class="bi bi-dash-lg"></i></td>
+                                <td class="text-center text-success bg-primary bg-opacity-10 fw-bold"><i class="bi bi-check-circle-fill text-warning"></i> Completo</td>
+                            </tr>
+                            <tr>
+                                <td><i class="bi bi-mouse text-blue me-2"></i> Zero Input Lag (Mouse Raw Input & Teclado)</td>
+                                <td class="text-center text-secondary">Básico</td>
+                                <td class="text-center text-success"><i class="bi bi-check-circle-fill"></i> Avançado</td>
+                                <td class="text-center text-secondary">Básico</td>
+                                <td class="text-center text-success bg-primary bg-opacity-10 fw-bold"><i class="bi bi-check-circle-fill text-warning"></i> Ultra Pro</td>
+                            </tr>
+                            <tr>
+                                <td><i class="bi bi-wifi text-cyan me-2"></i> Desativação do Algoritmo de Nagle & TCP</td>
+                                <td class="text-center text-secondary"><i class="bi bi-dash-lg"></i></td>
+                                <td class="text-center text-secondary"><i class="bi bi-dash-lg"></i></td>
+                                <td class="text-center text-success"><i class="bi bi-check-circle-fill"></i> Incluso</td>
+                                <td class="text-center text-success bg-primary bg-opacity-10 fw-bold"><i class="bi bi-check-circle-fill text-warning"></i> Completo</td>
+                            </tr>
+                            <tr>
+                                <td><i class="bi bi-globe text-primary me-2"></i> DNS Gamer Cloudflare 1.1.1.1 Automático</td>
+                                <td class="text-center text-secondary"><i class="bi bi-dash-lg"></i></td>
+                                <td class="text-center text-secondary"><i class="bi bi-dash-lg"></i></td>
+                                <td class="text-center text-success"><i class="bi bi-check-circle-fill"></i> Incluso</td>
+                                <td class="text-center text-success bg-primary bg-opacity-10 fw-bold"><i class="bi bi-check-circle-fill text-warning"></i> Completo</td>
+                            </tr>
+                            <tr>
+                                <td><i class="bi bi-controller text-warning me-2"></i> Guias Específicos para Jogos (CS2, Val, Fortnite)</td>
+                                <td class="text-center text-secondary"><i class="bi bi-dash-lg"></i></td>
+                                <td class="text-center text-success"><i class="bi bi-check-circle-fill"></i> Incluso</td>
+                                <td class="text-center text-secondary"><i class="bi bi-dash-lg"></i></td>
+                                <td class="text-center text-success bg-primary bg-opacity-10 fw-bold"><i class="bi bi-check-circle-fill text-warning"></i> Todos os Jogos</td>
+                            </tr>
+                            <tr>
+                                <td><i class="bi bi-gear-wide-connected text-info me-2"></i> Guia Avançado de BIOS, XMP/EXPO & ReBAR</td>
+                                <td class="text-center text-secondary"><i class="bi bi-dash-lg"></i></td>
+                                <td class="text-center text-secondary"><i class="bi bi-dash-lg"></i></td>
+                                <td class="text-center text-secondary"><i class="bi bi-dash-lg"></i></td>
+                                <td class="text-center text-success bg-primary bg-opacity-10 fw-bold"><i class="bi bi-check-circle-fill text-warning"></i> Incluso VIP</td>
+                            </tr>
+                            <tr>
+                                <td><i class="bi bi-terminal-fill text-blue me-2"></i> Painel Master Interativo 1-Clique</td>
+                                <td class="text-center text-secondary">Básico</td>
+                                <td class="text-center text-success"><i class="bi bi-check-circle-fill"></i> Incluso</td>
+                                <td class="text-center text-success"><i class="bi bi-check-circle-fill"></i> Incluso</td>
+                                <td class="text-center text-success bg-primary bg-opacity-10 fw-bold"><i class="bi bi-check-circle-fill text-warning"></i> Master Pro</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- TAB 3: DIAGNÓSTICO & SCANNER DE GARGALOS DO PC -->
+<div class="store-tab-pane" id="tab-assistente">
+    <section class="py-4">
+        <div class="text-center mb-4">
+            <span class="badge-cyan mb-2 d-inline-block"><i class="bi bi-cpu-fill text-blue me-1"></i> SCANNER DE GARGALOS DO WINDOWS</span>
+            <h2 class="display-6 fw-black text-white">DIAGNÓSTICO TÉCNICO DO SEU COMPUTADOR</h2>
+            <p class="text-secondary">Identifique em segundos o que está travando o seu FPS e receba a prescrição exata para o seu hardware.</p>
+        </div>
+
+        <div class="scanner-card mx-auto" style="max-width: 1000px;">
+            <div class="row g-4">
+                <!-- Left: Configuration & Symptoms -->
+                <div class="col-lg-6">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <span class="scanner-step-badge">1</span>
+                        <h6 class="text-white fw-bold mb-0">Informações do seu Setup</h6>
+                    </div>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label text-secondary small mb-1">Sistema Operacional:</label>
+                            <select id="scanOsSelect" class="form-select form-select-sm">
+                                <option value="win11" selected>Windows 11 (23H2 / 24H2)</option>
+                                <option value="win10">Windows 10 Pro / Home</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-secondary small mb-1">Processador (CPU):</label>
+                            <select id="scanCpuSelect" class="form-select form-select-sm">
+                                <option value="amd_ryzen" selected>AMD Ryzen (Zen 2/3/4/5)</option>
+                                <option value="intel_core">Intel Core (i3/i5/i7/i9)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-2 mb-2 mt-4">
+                        <span class="scanner-step-badge">2</span>
+                        <h6 class="text-white fw-bold mb-0">Principais Problemas Percebidos</h6>
+                    </div>
+                    <p class="text-secondary small mb-3">Marque o que você mais nota ao jogar CS2, Valorant, Warzone ou Fortnite:</p>
+
+                    <div class="d-flex flex-column gap-2 mb-4">
+                        <label class="p-2 rounded border border-secondary border-opacity-25 d-flex align-items-center gap-2 text-white small" style="background: rgba(0,0,0,0.25); cursor: pointer;">
+                            <input type="checkbox" class="form-check-input mt-0 scan-symptom" value="stutters" checked>
+                            <span>Micro-travamentos e quedas bruscas de FPS em tiroteios</span>
+                        </label>
+                        <label class="p-2 rounded border border-secondary border-opacity-25 d-flex align-items-center gap-2 text-white small" style="background: rgba(0,0,0,0.25); cursor: pointer;">
+                            <input type="checkbox" class="form-check-input mt-0 scan-symptom" value="mouse_delay" checked>
+                            <span>Mira pesada / delay de resposta nos movimentos do mouse</span>
+                        </label>
+                        <label class="p-2 rounded border border-secondary border-opacity-25 d-flex align-items-center gap-2 text-white small" style="background: rgba(0,0,0,0.25); cursor: pointer;">
+                            <input type="checkbox" class="form-check-input mt-0 scan-symptom" value="ping_loss">
+                            <span>Oscilação de ping, perda de pacotes ou hits que não registram</span>
+                        </label>
+                        <label class="p-2 rounded border border-secondary border-opacity-25 d-flex align-items-center gap-2 text-white small" style="background: rgba(0,0,0,0.25); cursor: pointer;">
+                            <input type="checkbox" class="form-check-input mt-0 scan-symptom" value="ram_cpu">
+                            <span>Memória RAM lotando e uso de CPU alto em segundo plano</span>
+                        </label>
+                    </div>
+
+                    <button type="button" class="btn btn-apex-primary w-100 py-3" id="btnStartScan">
+                        <i class="bi bi-cpu-fill me-2"></i> EXECUTAR VARREDURA DE GARGALOS
+                    </button>
+                </div>
+
+                <!-- Right: Scan Terminal & Diagnostic Report -->
+                <div class="col-lg-6 border-start border-secondary border-opacity-25 ps-lg-4">
+                    <!-- State 1: Idle Screen -->
+                    <div id="scanIdleState" class="h-100 d-flex flex-column justify-content-center align-items-center text-center p-4">
+                        <div class="rounded-circle p-4 mb-3" style="background: rgba(0, 102, 255, 0.08); border: 1px dashed var(--color-blue);">
+                            <i class="bi bi-radar text-blue fs-1"></i>
+                        </div>
+                        <h5 class="text-white fw-bold mb-1">Aguardando Parâmetros</h5>
+                        <p class="text-secondary small mb-0">Selecione o seu setup e clique no botão para testar os 4 subsistemas do Windows.</p>
+                    </div>
+
+                    <!-- State 2: Running Progress Console -->
+                    <div id="scanRunningState" class="d-none h-100 flex-column justify-content-center">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-cyan small fw-bold"><i class="bi bi-gear-wide-connected me-1"></i> ESCANEANDO SUBSISTEMAS...</span>
+                            <span id="scanPercentText" class="text-white fw-bold small">0%</span>
+                        </div>
+                        <div class="progress mb-3" style="height: 8px; background: #090a0f;">
+                            <div id="scanProgressBar" class="progress-bar progress-bar-striped progress-bar-animated bg-primary" role="progressbar" style="width: 0%;"></div>
+                        </div>
+
+                        <div class="scanner-log-terminal" id="scanTerminalLogs">
+                            <div class="scanner-log-line active"><i class="bi bi-chevron-right text-blue"></i> Inicializando telemetria de kernel...</div>
+                        </div>
+                    </div>
+
+                    <!-- State 3: Diagnostic Report Card -->
+                    <div id="scanResultState" class="d-none">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="badge-fire"><i class="bi bi-exclamation-triangle-fill me-1"></i> GARGALO DETECTADO</span>
+                            <span class="text-secondary small">ID: #DX-{{ (range(1000, 9999) | random) }}</span>
+                        </div>
+
+                        <div class="scanner-score-box mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div>
+                                    <small class="text-muted text-uppercase" style="font-size: 0.7rem;">Índice de Eficiência Atual</small>
+                                    <div class="display-6 fw-black text-danger" id="scanScoreText">54%</div>
+                                </div>
+                                <div class="text-end">
+                                    <small class="text-muted text-uppercase" style="font-size: 0.7rem;">Ganho Potencial</small>
+                                    <div class="fs-4 fw-black text-cyan" id="scanGainText">+80% FPS</div>
+                                </div>
+                            </div>
+                            <div class="progress" style="height: 6px; background: rgba(255,255,255,0.1);">
+                                <div class="progress-bar bg-danger" style="width: 54%;"></div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <small class="text-uppercase fw-bold text-secondary mb-2 d-block" style="font-size: 0.72rem;">Gargalos Críticos Identificados no seu PC:</small>
+                            <ul class="list-unstyled mb-0 d-flex flex-column gap-1 small" id="scanBottleneckList">
+                                <li class="text-light"><i class="bi bi-x-circle-fill text-danger me-2"></i> <strong>CPU Core Parking Ativo:</strong> Núcleos adormecendo durante o jogo</li>
+                                <li class="text-light"><i class="bi bi-x-circle-fill text-danger me-2"></i> <strong>Timer Resolution Dessincronizado:</strong> Atraso de 15.6ms na mira</li>
+                                <li class="text-light"><i class="bi bi-x-circle-fill text-danger me-2"></i> <strong>Telemetria & DVR Ocultos:</strong> Roubo de ciclos preciosos da GPU</li>
+                            </ul>
+                        </div>
+
+                        <div class="p-3 rounded-3 border border-primary border-opacity-50" style="background: rgba(0, 102, 255, 0.08);">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="badge-cyan" id="diagRecTag">PRESCRIÇÃO EXATA</span>
+                                <span class="text-white fw-bold" id="diagRecPrice">R$ 19,90</span>
+                            </div>
+                            <h6 class="text-white fw-bold mb-1" id="diagRecName">Competitive FPS Ultra Pack</h6>
+                            <p class="text-secondary small mb-3" id="diagRecDesc">
+                                Corrige a resolução do timer para 0.5ms cravado, acorda todos os núcleos da CPU e elimina stutters no CS2 e Valorant.
+                            </p>
+                            <a href="{{ url_for('add_to_cart', product_id=2) }}" id="diagRecBtn" class="btn btn-apex-primary w-100 py-2">
+                                <i class="bi bi-lightning-fill me-1"></i> Desbloquear Performance Máxima
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- TAB 4: CALCULADORA DE FPS -->
+<div class="store-tab-pane" id="tab-calculadora">
+    <section class="py-4">
+        <div class="text-center mb-4">
+            <span class="badge-cyan mb-2 d-inline-block"><i class="bi bi-cpu text-blue"></i> SIMULADOR INTELIGENTE</span>
+            <h2 class="display-6 fw-black text-white">CALCULE SEU GANHO DE FPS</h2>
+            <p class="text-secondary">Simule o impacto real dos nossos scripts de otimização no seu computador.</p>
+        </div>
+
+        <div class="calc-box mx-auto" style="max-width: 950px;">
+            <div class="row g-4 align-items-center">
+                <div class="col-lg-6">
+                    <div class="mb-3">
+                        <label class="form-label text-white" for="calcGame"><i class="bi bi-controller text-blue me-1"></i> Escolha o Jogo:</label>
+                        <select id="calcGame" class="form-select">
+                            <option value="valorant">Valorant (Riot Games)</option>
+                            <option value="cs2" selected>Counter-Strike 2 (CS2)</option>
+                            <option value="fortnite">Fortnite (Epic Games)</option>
+                            <option value="warzone">Call of Duty: Warzone</option>
+                            <option value="fivem">GTA V / FiveM Roleplay</option>
+                            <option value="apex">Apex Legends</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-white" for="calcGpu"><i class="bi bi-gpu-card text-blue me-1"></i> Seu Nível de PC:</label>
+                        <select id="calcGpu" class="form-select">
+                            <option value="0">PC Básico / Low-End (ex: i3 / GTX 1050/1650 / Gráfico Integrado)</option>
+                            <option value="1" selected>PC Intermediário (ex: i5 / Ryzen 5 + RTX 2060/3060 / RX 6600)</option>
+                            <option value="2">PC Avançado (ex: i7/i9 / Ryzen 7 + RTX 3080/4070+)</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-white" for="calcPack"><i class="bi bi-box-seam text-blue me-1"></i> Escolha o Pack:</label>
+                        <select id="calcPack" class="form-select">
+                            <option value="starter">Starter Tweak Pack</option>
+                            <option value="ultra" selected>Competitive FPS Ultra Pack (Mais Vendido ⭐)</option>
+                            <option value="network">Zero Latency & Network Pro</option>
+                            <option value="extreme">Ultimate Extreme Suite (All-In-One)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col-lg-6">
+                    <div class="fps-meter-card text-center">
+                        <div class="row g-3 mb-3">
+                            <div class="col-6">
+                                <span class="text-secondary small d-block">FPS PADRÃO:</span>
+                                <div class="fps-counter-display text-danger" id="calcBeforeFps">160</div>
+                                <small class="text-muted">Windows sem tweak</small>
+                            </div>
+                            <div class="col-6 border-start border-secondary border-opacity-50">
+                                <span class="text-blue small d-block fw-bold">FPS COM TWEAK:</span>
+                                <div class="fps-counter-display text-white glow-blue" id="calcAfterFps">248</div>
+                                <span class="badge-fire" id="calcPercentBoost">+55% FPS</span>
+                            </div>
+                        </div>
+
+                        <div class="p-2 rounded-3 text-start mb-3" style="background: var(--color-black); color: #fff; border: 1px solid rgba(0, 102, 255, 0.3);">
+                            <div class="d-flex justify-content-between text-secondary small">
+                                <span><i class="bi bi-mouse text-blue me-1"></i> Latência de Input Reduzida para:</span>
+                                <strong class="text-blue" id="calcLatencyDrop">4ms</strong>
+                            </div>
+                        </div>
+
+                        <a href="#tab-packs" class="btn btn-apex-primary w-100 py-3" data-tab-target="tab-packs">
+                            <i class="bi bi-lightning-charge-fill me-1"></i> GARANTIR ESSA PERFORMANCE
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- TAB 5: BENCHMARKS REAIS -->
+<div class="store-tab-pane" id="tab-benchmarks">
+    <section class="py-4">
+        <div class="text-center mb-4">
+            <span class="badge-gamer mb-2 d-inline-block"><i class="bi bi-bar-chart-fill text-blue"></i> BENCHMARKS OFICIAIS</span>
+            <h2 class="display-6 fw-black text-white">RESULTADOS COMPROVADOS EM JOGO</h2>
+            <p class="text-secondary">Média de testes realizados em computadores de clientes antes e depois de aplicar os packs.</p>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-3">
+                <div class="benchmark-row text-center">
+                    <h5 class="text-white fw-bold mb-3"><i class="bi bi-bullseye text-blue me-1"></i> CS2</h5>
+                    <div class="d-flex justify-content-center align-items-center gap-2 mb-2">
+                        <span class="text-danger fw-bold fs-5">130 FPS</span>
+                        <span class="text-muted">&rarr;</span>
+                        <span class="text-white fw-black fs-3 glow-blue">245 FPS</span>
+                    </div>
+                    <span class="badge-cyan small">+88% &bull; Smokes sem lag</span>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-3">
+                <div class="benchmark-row text-center">
+                    <h5 class="text-white fw-bold mb-3"><i class="bi bi-crosshair text-danger me-1"></i> Valorant</h5>
+                    <div class="d-flex justify-content-center align-items-center gap-2 mb-2">
+                        <span class="text-danger fw-bold fs-5">160 FPS</span>
+                        <span class="text-muted">&rarr;</span>
+                        <span class="text-white fw-black fs-3 glow-blue">295 FPS</span>
+                    </div>
+                    <span class="badge-cyan small">+84% &bull; Mira ultra leve</span>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-3">
+                <div class="benchmark-row text-center">
+                    <h5 class="text-white fw-bold mb-3"><i class="bi bi-airplane text-blue me-1"></i> Warzone</h5>
+                    <div class="d-flex justify-content-center align-items-center gap-2 mb-2">
+                        <span class="text-danger fw-bold fs-5">65 FPS</span>
+                        <span class="text-muted">&rarr;</span>
+                        <span class="text-white fw-black fs-3 glow-blue">115 FPS</span>
+                    </div>
+                    <span class="badge-cyan small">+76% &bull; Sem travadas</span>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-3">
+                <div class="benchmark-row text-center">
+                    <h5 class="text-white fw-bold mb-3"><i class="bi bi-car-front text-cyan me-1"></i> FiveM / GTA</h5>
+                    <div class="d-flex justify-content-center align-items-center gap-2 mb-2">
+                        <span class="text-danger fw-bold fs-5">58 FPS</span>
+                        <span class="text-muted">&rarr;</span>
+                        <span class="text-white fw-black fs-3 glow-blue">108 FPS</span>
+                    </div>
+                    <span class="badge-cyan small">+86% &bull; Cidade fluida</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-4">
+            <a href="#tab-packs" class="btn btn-apex-primary px-4 py-2" data-tab-target="tab-packs">
+                <i class="bi bi-lightning-charge me-1"></i> Escolher Meu Pack Agora
+            </a>
+        </div>
+    </section>
+</div>
+
+<!-- TAB 6: AVALIAÇÕES -->
+<div class="store-tab-pane" id="tab-depoimentos">
+    <section class="py-4">
+        <div class="text-center mb-4">
+            <span class="badge-cyan mb-2 d-inline-block"><i class="bi bi-star-fill text-warning"></i> AVALIAÇÕES DE CLIENTES</span>
+            <h2 class="display-6 fw-black text-white">QUEM TESTOU, RECOMENDA</h2>
+            <p class="text-secondary">Mais de 50.000 jogadores satisfeitos que transformaram seu PC gamer.</p>
+        </div>
+
+        <div class="row g-4">
+            {% for rev in reviews %}
+            <div class="col-md-6 col-lg-4">
+                <div class="glass-card p-4 h-100 d-flex flex-column justify-content-between">
+                    <div>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="text-warning">
+                                {% for i in range(rev.rating) %}
+                                    <i class="bi bi-star-fill"></i>
+                                {% endfor %}
+                            </div>
+                            <span class="badge-gamer"><i class="bi bi-patch-check-fill text-blue"></i> Verificado</span>
+                        </div>
+                        <p class="text-light mb-3" style="line-height: 1.6; font-size: 0.95rem;">"{{ rev.text }}"</p>
+                    </div>
+
+                    <div class="border-top border-secondary border-opacity-50 pt-3 mt-3 d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong class="text-white d-block">{{ rev.author }}</strong>
+                            <small class="text-blue">{{ rev.game }} Player</small>
+                        </div>
+                        {% if rev.fps_before and rev.fps_after %}
+                        <div class="text-end">
+                            <span class="text-white fw-bold">{{ rev.fps_before }} &rarr; <span class="text-blue fw-black">{{ rev.fps_after }} FPS</span></span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Discord Community Live Feed Widget -->
+        <div class="mt-5">
+            <div class="discord-feed-card">
+                <div class="discord-feed-header">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-discord text-primary fs-5"></i>
+                        <span class="text-white fw-bold">#feedbacks-fps</span>
+                        <span class="text-secondary small">&bull; Comunidade Oficial Apex Boost</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge-status-dot"></span>
+                        <small class="text-success fw-bold" style="font-size: 0.75rem;">1.420 Gamers Online</small>
+                    </div>
+                </div>
+
+                <div class="discord-feed-body">
+                    <!-- Message 1 -->
+                    <div class="discord-msg-row">
+                        <div class="discord-avatar" style="background: linear-gradient(135deg, #0052cc, #00d2ff);">L</div>
+                        <div class="flex-grow-1">
+                            <div class="d-flex align-items-center gap-2 mb-1">
+                                <strong class="text-white small">Lucas_CS2</strong>
+                                <span class="discord-badge-role"><i class="bi bi-patch-check-fill"></i> Extreme VIP</span>
+                                <small class="text-secondary" style="font-size: 0.72rem;">Hoje às 11:42</small>
+                            </div>
+                            <p class="text-light small mb-2" style="line-height: 1.5;">
+                                Mano, acabei de rodar o Extreme Suite no meu Ryzen 5 5600 + RTX 2060. Meu CS2 não passava de 160 fps e caía pra 80 em smokes. Agora fica cravado em 280+ FPS liso sem nenhum micro-stutter! A mira parece que tá colada no mouse 🎯
+                            </p>
+                            <div class="p-2 rounded border border-secondary border-opacity-25 d-inline-flex align-items-center gap-2 small text-secondary" style="background: rgba(0,0,0,0.3);">
+                                <i class="bi bi-graph-up-arrow text-success"></i>
+                                <span class="text-white">Frametime: <strong>14.2ms &rarr; 3.8ms</strong></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Message 2 -->
+                    <div class="discord-msg-row">
+                        <div class="discord-avatar" style="background: linear-gradient(135deg, #7928ca, #ff0080);">G</div>
+                        <div class="flex-grow-1">
+                            <div class="d-flex align-items-center gap-2 mb-1">
+                                <strong class="text-white small">Guihzx_Val</strong>
+                                <span class="discord-badge-role"><i class="bi bi-patch-check-fill"></i> Ultra Member</span>
+                                <small class="text-secondary" style="font-size: 0.72rem;">Ontem às 21:15</small>
+                            </div>
+                            <p class="text-light small mb-0" style="line-height: 1.5;">
+                                Aquele script que desativa o Nagle Algorithm e mexe no TCPIP reduziu meu ping no servidor de SP de 34ms pra 18ms cravado. Nunca mais tomei tiro atrás de parede no Valorant. Valeu cada centavo!
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Message 3 -->
+                    <div class="discord-msg-row">
+                        <div class="discord-avatar" style="background: linear-gradient(135deg, #10b981, #00d2ff);">M</div>
+                        <div class="flex-grow-1">
+                            <div class="d-flex align-items-center gap-2 mb-1">
+                                <strong class="text-white small">Matheus_Warzone</strong>
+                                <span class="discord-badge-role"><i class="bi bi-patch-check-fill"></i> VIP Member</span>
+                                <small class="text-secondary" style="font-size: 0.72rem;">Ontem às 18:30</small>
+                            </div>
+                            <p class="text-light small mb-0" style="line-height: 1.5;">
+                                O script automático de 1 clique é muito bom. Eu não manjo nada de computador, apertei uma tecla e o painel fez tudo sozinho em 3 minutos. Warzone parou de engasgar no carregamento de texturas.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- TAB 7: PERGUNTAS FREQUENTES -->
+<div class="store-tab-pane" id="tab-faq">
+    <section class="py-4">
+        <div class="text-center mb-4">
+            <span class="badge-gamer mb-2 d-inline-block"><i class="bi bi-patch-question-fill text-blue"></i> DÚVIDAS COMUNS</span>
+            <h2 class="display-6 fw-black text-white">PERGUNTAS FREQUENTES</h2>
+            <p class="text-secondary">Tudo o que você precisa saber sobre segurança, entrega e funcionamento.</p>
+        </div>
+
+        <div class="accordion accordion-flush mx-auto" id="faqAccordion" style="max-width: 860px;">
+            <div class="accordion-item glass-card mb-3 border-0 rounded-3 overflow-hidden">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed bg-transparent text-white fw-bold shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                        <i class="bi bi-shield-check text-blue me-2"></i> Dá ban em jogos com anti-cheat como Vanguard ou Ricochet?
+                    </button>
+                </h2>
+                <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                    <div class="accordion-body text-secondary">
+                        <strong>NÃO, risco 0% de ban!</strong> Nossos scripts trabalham exclusivamente com configurações internas do próprio sistema operacional Windows, otimizações de drivers da placa de vídeo e serviços de energia. Nenhum arquivo dos jogos é modificado, sendo 100% legal em campeonatos.
+                    </div>
+                </div>
+            </div>
+
+            <div class="accordion-item glass-card mb-3 border-0 rounded-3 overflow-hidden">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed bg-transparent text-white fw-bold shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                        <i class="bi bi-lightning-charge text-blue me-2"></i> Como e quando eu recebo os arquivos após o pagamento?
+                    </button>
+                </h2>
+                <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                    <div class="accordion-body text-secondary">
+                        O envio é <strong>100% automático e instantâneo</strong>. Logo após a confirmação do PIX ou Cartão, a tela carrega imediatamente os links de download direto dos arquivos <code>.zip</code> e as chaves de licença, ficando salvas para sempre no seu painel.
+                    </div>
+                </div>
+            </div>
+
+            <div class="accordion-item glass-card mb-3 border-0 rounded-3 overflow-hidden">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed bg-transparent text-white fw-bold shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                        <i class="bi bi-arrow-counterclockwise text-cyan me-2"></i> Posso reverter as configurações se eu quiser?
+                    </button>
+                </h2>
+                <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                    <div class="accordion-body text-secondary">
+                        Sim! O primeiro script do pacote cria automaticamente um <strong>Ponto de Restauração do Windows</strong>. Se por qualquer motivo você quiser desfazer, basta restaurar seu sistema em 1 clique.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- MYSTERY DROP GAMER LOOTBOX MODAL -->
+<div class="modal fade" id="modalMysteryDrop" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content glass-card border-2" style="border-color: var(--color-blue); background: var(--bg-card);">
+            <div class="modal-header border-bottom border-secondary border-opacity-25 pb-3">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-gift-fill text-warning fs-4"></i>
+                    <div>
+                        <h5 class="modal-title text-white fw-bold mb-0">Caixa de Suprimentos Gamer</h5>
+                        <small class="text-secondary">Drop Exclusivo da Comunidade</small>
+                    </div>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body p-4 text-center">
+                <div id="lootboxClosedState">
+                    <div class="lootbox-vault mb-3" id="lootboxTrigger">
+                        <i class="bi bi-box2-fill"></i>
+                    </div>
+                    <h5 class="text-white fw-black mb-1">VOCÊ TEM 1 DROP DISPONÍVEL!</h5>
+                    <p class="text-secondary small mb-3">Clique na caixa para abrir seu bônus especial de boas-vindas.</p>
+                    <button type="button" class="btn btn-apex-primary px-4 py-2" id="btnOpenLootbox">
+                        <i class="bi bi-key-fill me-1"></i> Abrir Caixa de Suprimentos
+                    </button>
+                </div>
+
+                <div id="lootboxOpenedState" class="d-none">
+                    <div class="rounded-circle d-inline-flex p-3 mb-3 text-warning" style="background: rgba(255, 193, 7, 0.15); box-shadow: 0 0 30px rgba(255, 193, 7, 0.5);">
+                        <i class="bi bi-trophy-fill display-4"></i>
+                    </div>
+                    <span class="badge-fire mb-2 d-inline-block">DROP LENDÁRIO DESBLOQUEADO</span>
+                    <h4 class="text-white fw-black mb-1">CUPOM VIP: 20% DE DESCONTO!</h4>
+                    <p class="text-secondary small mb-3">Você destravou 20% OFF imediato para aplicar em qualquer pack da loja.</p>
+                    
+                    <div class="p-3 rounded-3 mb-3 border border-warning border-opacity-50" style="background: rgba(0,0,0,0.4);">
+                        <span class="text-secondary small d-block mb-1">Código do seu cupom:</span>
+                        <div class="d-flex justify-content-center align-items-center gap-2">
+                            <span class="fs-4 fw-black text-warning" id="lootboxCouponCode">PRIMEIRACOMPRA</span>
+                            <button type="button" class="btn btn-sm btn-apex-outline btn-copy-clip py-1 px-2" data-copy-target="lootboxCouponCode">
+                                <i class="bi bi-copy"></i> Copiar
+                            </button>
+                        </div>
+                    </div>
+
+                    <a href="{{ url_for('index') }}#tab-packs" class="btn btn-apex-primary w-100 py-3" data-bs-dismiss="modal" data-tab-target="tab-packs">
+                        <i class="bi bi-cart-check-fill me-1"></i> Usar Cupom no Catálogo de Packs
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

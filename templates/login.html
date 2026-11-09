@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Entrar na Conta | Apex Boost Labs{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="glass-card p-4 p-md-5 mx-auto" style="max-width: 450px;">
+        <div class="text-center mb-4">
+            <div class="rounded-circle d-inline-flex p-3 text-white mb-2" style="background: var(--grad-primary); box-shadow: 0 0 20px rgba(0, 102, 255, 0.4);">
+                <i class="bi bi-person-lock fs-2"></i>
+            </div>
+            <h2 class="text-white fw-black fs-4">ENTRAR NA CONTA</h2>
+            <p class="text-secondary small">Acesse seus downloads, licenças e histórico de pedidos.</p>
+        </div>
+
+        <form method="POST" action="{{ url_for('login', next=request.args.get('next')) }}">
+            <div class="mb-3">
+                <label class="form-label" for="loginEmail">E-mail</label>
+                <input type="email" id="loginEmail" name="email" class="form-control" placeholder="seuemail@exemplo.com" value="{{ email or '' }}" required autofocus>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label" for="loginPassword">Senha</label>
+                <input type="password" id="loginPassword" name="password" class="form-control" placeholder="••••••••" required>
+            </div>
+
+            <button type="submit" class="btn btn-apex-primary w-100 py-3 mb-3">
+                <i class="bi bi-box-arrow-in-right me-1"></i> Acessar Minha Conta
+            </button>
+        </form>
+
+        <!-- Quick Demo Credentials Box -->
+        <div class="p-3 rounded-3 border border-secondary border-opacity-50 mb-3 small" style="background: rgba(0, 102, 255, 0.08);">
+            <div class="text-blue fw-bold mb-1"><i class="bi bi-info-circle-fill"></i> Contas de Demonstração:</div>
+            <div class="text-secondary" style="font-size: 0.82rem;">
+                &bull; <strong>Gamer:</strong> <code>gamer@teste.com</code> | Senha: <code>123456</code><br>
+                &bull; <strong>Admin:</strong> <code>admin@apexboost.com</code> | Senha: <code>admin123</code>
+            </div>
+        </div>
+
+        <div class="text-center mt-3 border-top border-secondary border-opacity-50 pt-3">
+            <span class="text-secondary small">Ainda não possui uma conta?</span>
+            <a href="{{ url_for('register') }}" class="text-blue fw-bold small text-decoration-none ms-1">Cadastre-se</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

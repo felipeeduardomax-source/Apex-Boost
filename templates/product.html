@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block title %}{{ product.name }} | Apex Boost Labs{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="{{ url_for('index') }}" class="text-secondary text-decoration-none">Início</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('index') }}#packs" class="text-secondary text-decoration-none">Packs</a></li>
+            <li class="breadcrumb-item active text-blue" aria-current="page">{{ product.name }}</li>
+        </ol>
+    </nav>
+
+    <div class="row g-5">
+        <!-- Left Product Presentation -->
+        <div class="col-lg-7">
+            <div class="glass-card p-4 p-md-5 mb-4">
+                <div class="d-flex align-items-center gap-3 mb-4">
+                    <div class="pack-icon-glow mb-0" style="width: 58px; height: 58px; font-size: 1.7rem;">
+                        <i class="bi {{ product.icon }}"></i>
+                    </div>
+                    <div>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge-cyan">{{ product.tag }}</span>
+                            {% if product.badge %}
+                                <span class="badge-fire">{{ product.badge }}</span>
+                            {% endif %}
+                        </div>
+                        <h1 class="text-white fw-black mt-1 mb-0 fs-3">{{ product.name }}</h1>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-3 my-4">
+                    <div class="p-3 rounded-3 flex-grow-1 text-center" style="background: rgba(0, 102, 255, 0.08); border: 1px solid var(--color-blue);">
+                        <small class="text-secondary d-block" style="font-size: 0.75rem;">GANHO ESTIMADO DE FPS</small>
+                        <strong class="text-blue fs-4">{{ product.fps_gain }}</strong>
+                    </div>
+                    <div class="p-3 rounded-3 flex-grow-1 text-center" style="background: rgba(0, 210, 255, 0.08); border: 1px solid var(--color-cyan);">
+                        <small class="text-secondary d-block" style="font-size: 0.75rem;">REDUÇÃO DE LATÊNCIA</small>
+                        <strong class="text-cyan fs-4">{{ product.latency_drop }}</strong>
+                    </div>
+                </div>
+
+                <h5 class="text-white fw-bold mb-2 fs-6 text-uppercase text-secondary">Detalhes Técnicos do Pacote</h5>
+                <p class="text-light leading-relaxed" style="line-height: 1.7;">
+                    {{ product.description }}
+                </p>
+
+                <hr class="border-secondary border-opacity-50 my-4">
+
+                <h5 class="text-white fw-bold mb-3 fs-6"><i class="bi bi-check-circle-fill text-blue me-2"></i> O que está incluso no pack:</h5>
+                <ul class="feature-list mb-4">
+                    {% for feat in product.features_list %}
+                        <li>
+                            <i class="bi bi-check-circle-fill text-blue fs-5"></i>
+                            <span class="text-light">{{ feat }}</span>
+                        </li>
+                    {% endfor %}
+                </ul>
+
+                <div class="row g-2 mb-4">
+                    <div class="col-6 col-md-3">
+                        <div class="p-2 rounded text-center" style="background: rgba(0, 102, 255, 0.08); border: 1px solid rgba(0, 102, 255, 0.3);">
+                            <i class="bi bi-lightning-charge-fill text-blue fs-5 d-block mb-1"></i>
+                            <span class="text-white fw-bold small d-block" style="font-size: 0.76rem;">1-Clique Auto</span>
+                            <small class="text-secondary" style="font-size: 0.68rem;">Execução Rápida</small>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="p-2 rounded text-center" style="background: rgba(0, 210, 255, 0.1); border: 1px solid rgba(0, 210, 255, 0.3);">
+                            <i class="bi bi-shield-check text-cyan fs-5 d-block mb-1"></i>
+                            <span class="text-white fw-bold small d-block" style="font-size: 0.76rem;">100% Seguro</span>
+                            <small class="text-secondary" style="font-size: 0.68rem;">Ponto de Restauro</small>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="p-2 rounded text-center" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3);">
+                            <i class="bi bi-arrow-counterclockwise text-success fs-5 d-block mb-1"></i>
+                            <span class="text-white fw-bold small d-block" style="font-size: 0.76rem;">Reversível</span>
+                            <small class="text-secondary" style="font-size: 0.68rem;">Script Undo Total</small>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="p-2 rounded text-center" style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3);">
+                            <i class="bi bi-gem text-warning fs-5 d-block mb-1"></i>
+                            <span class="text-white fw-bold small d-block" style="font-size: 0.76rem;">Vitalício</span>
+                            <small class="text-secondary" style="font-size: 0.68rem;">Chave VIP Única</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-3 rounded-3 border border-secondary border-opacity-25" style="background: var(--bg-surface-2);">
+                    <div class="d-flex align-items-center gap-2 text-warning mb-2 small fw-bold">
+                        <i class="bi bi-info-circle-fill"></i>
+                        <span>Requisitos do Sistema:</span>
+                    </div>
+                    <ul class="small text-secondary mb-0 ps-3">
+                        <li>Sistema Operacional: Windows 10 ou 11 (64-bit)</li>
+                        <li>Processador: Intel Core ou AMD Ryzen</li>
+                        <li>Placa de Vídeo: Nvidia GeForce, AMD Radeon ou Intel ARC/HD Graphics</li>
+                        <li>Espaço em disco: Menos de 50 MB</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Purchase Box -->
+        <div class="col-lg-5">
+            <div class="glass-card p-4 sticky-top" style="top: 90px;">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="text-secondary small text-uppercase">Acesso Vitalício</span>
+                    <span class="badge-fire"><i class="bi bi-lightning-charge"></i> Envio Imediato</span>
+                </div>
+
+                <div class="mb-4">
+                    {% if product.old_price %}
+                        <div class="price-old mb-1">De R$ {{ "%.2f"|format(product.old_price)|replace('.', ',') }}</div>
+                    {% endif %}
+                    <div class="d-flex align-items-baseline gap-2">
+                        <span class="text-secondary">R$</span>
+                        <span class="display-4 fw-black text-white glow-blue">{{ "%.2f"|format(product.price)|replace('.', ',') }}</span>
+                    </div>
+                    <small class="text-secondary">Pagamento único via PIX ou Cartão (em até 12x)</small>
+                </div>
+
+                <div class="d-flex flex-column gap-3 mb-4">
+                    <a href="{{ url_for('add_to_cart', product_id=product.id) }}" class="btn btn-apex-primary btn-lg py-3 text-center">
+                        <i class="bi bi-lightning-charge-fill me-1"></i> Comprar Agora
+                    </a>
+                    <button type="button" class="btn btn-apex-outline btn-lg py-3 btn-add-cart-ajax" data-product-id="{{ product.id }}">
+                        <i class="bi bi-cart-plus me-1"></i> Adicionar ao Carrinho
+                    </button>
+                </div>
+
+                <!-- Guarantee & Safety Icons -->
+                <div class="p-3 rounded-3 border border-secondary border-opacity-50" style="background: rgba(255, 255, 255, 0.02);">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <i class="bi bi-shield-check text-blue fs-3"></i>
+                        <div>
+                            <strong class="text-white d-block small">100% Anti-Cheat Safe</strong>
+                            <span class="text-secondary" style="font-size: 0.75rem;">Aprovado em torneios de CS2 e Valorant sem risco de banimento.</span>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-3">
+                        <i class="bi bi-arrow-repeat text-violet fs-3"></i>
+                        <div>
+                            <strong class="text-white d-block small">Totalmente Reversível</strong>
+                            <span class="text-secondary" style="font-size: 0.75rem;">Criação automática de Ponto de Restauração antes de aplicar.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

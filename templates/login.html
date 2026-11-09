@@ -6,14 +6,16 @@
 <div class="auth-card mx-auto">
     <!-- Brand & Portal Logo -->
     <div class="text-center mb-4">
-        <div class="brand-icon-box mx-auto mb-3" style="width: 58px; height: 58px; font-size: 1.8rem; box-shadow: 0 0 35px rgba(0, 102, 255, 0.5);">
+        <div class="brand-icon-box mx-auto mb-3"
+            style="width: 58px; height: 58px; font-size: 1.8rem; box-shadow: 0 0 35px rgba(0, 102, 255, 0.5);">
             <i class="bi bi-lightning-charge-fill"></i>
         </div>
         <div class="d-flex justify-content-center align-items-baseline gap-1">
             <span class="brand-title-white fs-3 fw-black">APEX</span>
             <span class="brand-title-blue fs-3 fw-black">BOOST</span>
         </div>
-        <div class="text-uppercase tracking-wider text-cyan fw-bold mt-1" style="font-size: 0.75rem; letter-spacing: 0.1em;">
+        <div class="text-uppercase tracking-wider text-cyan fw-bold mt-1"
+            style="font-size: 0.75rem; letter-spacing: 0.1em;">
             Portal de Acesso VIP &bull; Performance Labs
         </div>
     </div>
@@ -35,15 +37,17 @@
 
     <!-- Flash Alerts -->
     {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show rounded-3 py-2 px-3 small mb-3" role="alert">
-                    <i class="bi {% if category == 'success' %}bi-check-circle-fill text-success{% else %}bi-exclamation-triangle-fill text-warning{% endif %} me-2"></i>
-                    {{ message }}
-                    <button type="button" class="btn-close py-2 px-3" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            {% endfor %}
-        {% endif %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show rounded-3 py-2 px-3 small mb-3"
+        role="alert">
+        <i
+            class="bi {% if category == 'success' %}bi-check-circle-fill text-success{% else %}bi-exclamation-triangle-fill text-warning{% endif %} me-2"></i>
+        {{ message }}
+        <button type="button" class="btn-close py-2 px-3" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endfor %}
+    {% endif %}
     {% endwith %}
 
     <!-- Login Form -->
@@ -52,18 +56,22 @@
             <label class="form-label text-secondary small" for="loginEmail">E-mail de Acesso</label>
             <div class="auth-input-group">
                 <i class="bi bi-envelope-fill auth-input-icon"></i>
-                <input type="email" id="loginEmail" name="email" class="form-control auth-input-field" placeholder="seuemail@exemplo.com" value="{{ email or '' }}" required autofocus>
+                <input type="email" id="loginEmail" name="email" class="form-control auth-input-field"
+                    placeholder="seuemail@exemplo.com" value="{{ email or '' }}" required autofocus>
             </div>
         </div>
 
         <div class="mb-3">
             <div class="d-flex justify-content-between align-items-center mb-1">
                 <label class="form-label text-secondary small mb-0" for="loginPassword">Sua Senha</label>
-                <a href="javascript:void(0)" onclick="alert('Para testar o acesso à loja, use um dos botões de 1-Clique abaixo ou crie uma conta em Criar Conta!')" class="text-cyan text-decoration-none" style="font-size: 0.78rem;">Esqueceu a senha?</a>
+                <a href="javascript:void(0)"
+                    onclick="alert('Para testar o acesso à loja, use um dos botões de 1-Clique abaixo ou crie uma conta em Criar Conta!')"
+                    class="text-cyan text-decoration-none" style="font-size: 0.78rem;">Esqueceu a senha?</a>
             </div>
             <div class="auth-input-group">
                 <i class="bi bi-shield-lock-fill auth-input-icon"></i>
-                <input type="password" id="loginPassword" name="password" class="form-control auth-input-field" placeholder="••••••••" required>
+                <input type="password" id="loginPassword" name="password" class="form-control auth-input-field"
+                    placeholder="••••••••" required>
                 <button type="button" class="auth-toggle-pwd" id="toggleLoginPasswordBtn" title="Mostrar/Ocultar Senha">
                     <i class="bi bi-eye-fill" id="toggleLoginPasswordIcon"></i>
                 </button>
@@ -77,7 +85,8 @@
                     Lembrar neste navegador
                 </label>
             </div>
-            <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-50 small" style="font-size: 0.72rem;">
+            <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-50 small"
+                style="font-size: 0.72rem;">
                 <i class="bi bi-shield-check me-1"></i>Protegido
             </span>
         </div>
@@ -90,15 +99,18 @@
     <!-- 1-Click Fast Demo Credentials for Client/Reviewer -->
     <div class="auth-quick-login-box">
         <div class="d-flex align-items-center justify-content-between mb-2">
-            <span class="text-blue fw-bold small"><i class="bi bi-lightning-charge-fill"></i> Acesso Rápido de Teste:</span>
+            <span class="text-blue fw-bold small"><i class="bi bi-lightning-charge-fill"></i> Acesso Rápido de
+                Teste:</span>
             <span class="text-muted" style="font-size: 0.72rem;">(1-Clique)</span>
         </div>
         <div class="d-flex gap-2 flex-wrap">
-            <button type="button" class="auth-demo-pill flex-grow-1" onclick="autoFillLogin('gamer@teste.com', '123456')">
+            <button type="button" class="auth-demo-pill flex-grow-1"
+                onclick="autoFillLogin('gamer@teste.com', '123456')">
                 <i class="bi bi-controller text-cyan"></i>
                 <span><strong>Gamer</strong> (Felipe)</span>
             </button>
-            <button type="button" class="auth-demo-pill flex-grow-1" onclick="autoFillLogin('admin@apexboost.com', 'admin123')">
+            <button type="button" class="auth-demo-pill flex-grow-1"
+                onclick="autoFillLogin('admin@apexboost.com', 'admin123')">
                 <i class="bi bi-shield-lock-fill text-warning"></i>
                 <span><strong>Admin</strong> Apex</span>
             </button>
@@ -106,7 +118,8 @@
     </div>
 
     <!-- Security & Guarantees Row -->
-    <div class="d-flex justify-content-center align-items-center gap-3 text-secondary pt-3 mt-3 border-top border-secondary border-opacity-25" style="font-size: 0.76rem;">
+    <div class="d-flex justify-content-center align-items-center gap-3 text-secondary pt-3 mt-3 border-top border-secondary border-opacity-25"
+        style="font-size: 0.76rem;">
         <span><i class="bi bi-lock-fill text-cyan me-1"></i>SSL 256-Bit</span>
         <span>&bull;</span>
         <span><i class="bi bi-lightning-fill text-warning me-1"></i>Liberação Instantânea</span>
@@ -118,30 +131,30 @@
 
 {% block extra_scripts %}
 <script>
-// Toggle Password Visibility
-const toggleBtn = document.getElementById('toggleLoginPasswordBtn');
-const pwdInput = document.getElementById('loginPassword');
-const pwdIcon = document.getElementById('toggleLoginPasswordIcon');
+    // Toggle Password Visibility
+    const toggleBtn = document.getElementById('toggleLoginPasswordBtn');
+    const pwdInput = document.getElementById('loginPassword');
+    const pwdIcon = document.getElementById('toggleLoginPasswordIcon');
 
-if (toggleBtn && pwdInput && pwdIcon) {
-    toggleBtn.addEventListener('click', () => {
-        const isPassword = pwdInput.type === 'password';
-        pwdInput.type = isPassword ? 'text' : 'password';
-        pwdIcon.className = isPassword ? 'bi bi-eye-slash-fill text-cyan' : 'bi bi-eye-fill';
-    });
-}
-
-// 1-Click Auto Fill and Submit
-function autoFillLogin(email, password) {
-    const emailField = document.getElementById('loginEmail');
-    const pwdField = document.getElementById('loginPassword');
-    const form = document.getElementById('loginForm');
-    
-    if (emailField && pwdField && form) {
-        emailField.value = email;
-        pwdField.value = password;
-        form.submit();
+    if (toggleBtn && pwdInput && pwdIcon) {
+        toggleBtn.addEventListener('click', () => {
+            const isPassword = pwdInput.type === 'password';
+            pwdInput.type = isPassword ? 'text' : 'password';
+            pwdIcon.className = isPassword ? 'bi bi-eye-slash-fill text-cyan' : 'bi bi-eye-fill';
+        });
     }
-}
+
+    // 1-Click Auto Fill and Submit
+    function autoFillLogin(email, password) {
+        const emailField = document.getElementById('loginEmail');
+        const pwdField = document.getElementById('loginPassword');
+        const form = document.getElementById('loginForm');
+
+        if (emailField && pwdField && form) {
+            emailField.value = email;
+            pwdField.value = password;
+            form.submit();
+        }
+    }
 </script>
 {% endblock %}

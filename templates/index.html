@@ -24,7 +24,7 @@
                     Acabe com travamentos, stutters e mira pesada. Nossos scripts de otimização profissional reconfiguram timers, escalonamento de CPU e drivers da GPU para extrair 100% de performance do seu hardware.
                 </p>
 
-                <div class="d-flex flex-wrap gap-3 justify-content-center justify-content-lg-start mb-5">
+                <div class="d-flex flex-wrap gap-3 justify-content-center justify-content-lg-start mb-5 hero-action-btns">
                     <a href="#tab-packs" class="btn btn-apex-primary btn-lg px-4 py-3" data-tab-target="tab-packs">
                         <i class="bi bi-lightning-charge-fill me-1"></i> VER PACKS DISPONÍVEIS
                     </a>
@@ -34,7 +34,7 @@
                 </div>
 
                 <!-- Live Metrics Row -->
-                <div class="row g-3 pt-4 border-top border-secondary border-opacity-50 text-center text-lg-start">
+                <div class="row g-2 pt-4 border-top border-secondary border-opacity-50 text-center text-lg-start hero-stats-row">
                     <div class="col-4">
                         <div class="fs-2 fw-black text-blue glow-blue">+75%</div>
                         <small class="text-secondary fw-semibold text-uppercase" style="font-size: 0.75rem;">Ganho Médio de FPS</small>
@@ -146,7 +146,7 @@
                     </div>
 
                     <!-- Interactive Mode Toggle -->
-                    <div class="d-inline-flex p-1 rounded-3 border border-secondary border-opacity-50" style="background: var(--color-black);">
+                    <div class="d-inline-flex p-1 rounded-3 border border-secondary border-opacity-50 comparator-mode-switch" style="background: var(--color-black);">
                         <button type="button" class="mode-switch-btn active" id="btnModeStandard" data-compare-mode="standard">
                             <i class="bi bi-x-circle text-danger me-1"></i> Windows Padrão
                         </button>
@@ -160,7 +160,7 @@
                     <div class="col-lg-6">
                         <!-- Metric 1: 1% Low FPS -->
                         <div class="mb-4">
-                            <div class="d-flex justify-content-between align-items-center mb-1">
+                            <div class="d-flex justify-content-between align-items-center mb-1 comparator-metric-header">
                                 <span class="text-white fw-bold small"><i class="bi bi-graph-up text-blue me-1"></i> Estabilidade de 1% Low (Sem Micro-Stutters)</span>
                                 <span class="fw-black text-danger" id="val1PercentLow">48 FPS (Quedas Bruscas)</span>
                             </div>
@@ -172,7 +172,7 @@
 
                         <!-- Metric 2: Input Lag -->
                         <div class="mb-4">
-                            <div class="d-flex justify-content-between align-items-center mb-1">
+                            <div class="d-flex justify-content-between align-items-center mb-1 comparator-metric-header">
                                 <span class="text-white fw-bold small"><i class="bi bi-mouse text-cyan me-1"></i> Latência de Input do Mouse (Delay da Mira)</span>
                                 <span class="fw-black text-danger" id="valInputLag">16.8 ms (Atraso Alto)</span>
                             </div>
@@ -184,7 +184,7 @@
 
                         <!-- Metric 3: Timer Resolution -->
                         <div class="mb-4">
-                            <div class="d-flex justify-content-between align-items-center mb-1">
+                            <div class="d-flex justify-content-between align-items-center mb-1 comparator-metric-header">
                                 <span class="text-white fw-bold small"><i class="bi bi-stopwatch text-warning me-1"></i> Resolução de Timer do Kernel</span>
                                 <span class="fw-black text-secondary" id="valTimerRes">15.6 ms (Desperdiçando Clock)</span>
                             </div>
@@ -196,7 +196,7 @@
 
                         <!-- Metric 4: Background Processes -->
                         <div>
-                            <div class="d-flex justify-content-between align-items-center mb-1">
+                            <div class="d-flex justify-content-between align-items-center mb-1 comparator-metric-header">
                                 <span class="text-white fw-bold small"><i class="bi bi-layers text-primary me-1"></i> Processos e Serviços Fantasmas</span>
                                 <span class="fw-black text-danger" id="valProcesses">192 Processos Ativos</span>
                             </div>

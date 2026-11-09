@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
     <title>{% block title %}Apex Boost Labs | Otimização de Alta Performance para PC Gamer{% endblock %}</title>
     <!-- Fonts: Plus Jakarta Sans & Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -439,20 +439,69 @@
             }
 
             // Mobile drawer handlers
+            const bottomMenuBtn = document.getElementById('bottomNavMenuBtn');
+
             function openDrawer() {
                 if (sidebar) sidebar.classList.add('show');
                 if (overlay) overlay.classList.add('show');
+                document.body.style.overflow = 'hidden';
             }
             function closeDrawer() {
                 if (sidebar) sidebar.classList.remove('show');
                 if (overlay) overlay.classList.remove('show');
+                document.body.style.overflow = '';
             }
 
             if (openBtn) openBtn.addEventListener('click', openDrawer);
+            if (bottomMenuBtn) bottomMenuBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                openDrawer();
+            });
             if (closeBtn) closeBtn.addEventListener('click', closeDrawer);
             if (overlay) overlay.addEventListener('click', closeDrawer);
+
+            // Close on escape
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') closeDrawer();
+            });
+
+            // Close drawer when any link is clicked on mobile
+            if (sidebar) {
+                sidebar.querySelectorAll('a').forEach(link => {
+                    link.addEventListener('click', () => {
+                        if (window.innerWidth < 992) closeDrawer();
+                    });
+                });
+            }
         });
     </script>
+
+    <!-- Mobile Bottom App Dock (Sticky Navigation for Mobile Phones) -->
+    <nav class="mobile-bottom-nav d-lg-none" id="mobileBottomNav" aria-label="Navegação Mobile">
+        <a href="{{ url_for('index') }}#tab-home" class="mobile-bottom-item active" data-tab-target="tab-home" id="bottomNavHome">
+            <i class="bi bi-house-door-fill"></i>
+            <span>Início</span>
+        </a>
+        <a href="{{ url_for('index') }}#tab-packs" class="mobile-bottom-item" data-tab-target="tab-packs" id="bottomNavPacks">
+            <i class="bi bi-boxes"></i>
+            <span>Packs</span>
+        </a>
+        <a href="{{ url_for('index') }}#tab-assistente" class="mobile-bottom-item" data-tab-target="tab-assistente" id="bottomNavQuiz">
+            <i class="bi bi-cpu-fill"></i>
+            <span>Scanner</span>
+        </a>
+        <a href="{{ url_for('view_cart') }}" class="mobile-bottom-item position-relative" id="bottomNavCart">
+            <i class="bi bi-bag-fill"></i>
+            <span>Carrinho</span>
+            <span class="bottom-cart-badge badge rounded-pill bg-danger {% if cart_count == 0 %}d-none{% endif %}" id="bottomCartBadge">
+                {{ cart_count }}
+            </span>
+        </a>
+        <button type="button" class="mobile-bottom-item" id="bottomNavMenuBtn">
+            <i class="bi bi-grid-fill"></i>
+            <span>Menu</span>
+        </button>
+    </nav>
 
     <!-- Floating Quick Support & Help Widget -->
     <a href="{{ url_for('index') }}#tab-faq" class="floating-support-pill" data-tab-target="tab-faq"

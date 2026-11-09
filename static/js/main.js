@@ -97,6 +97,7 @@ const ApexSound = (function() {
 document.addEventListener('DOMContentLoaded', () => {
     initThemeToggle();
     initSoundToggle();
+    initSidebarDrawer();
     initSidebarTabs();
     initTelemetryComparator();
     initPackSearchAndFilters();
@@ -110,6 +111,71 @@ document.addEventListener('DOMContentLoaded', () => {
     initCheckoutEnhancements();
     initGlobalSoundEffects();
 });
+
+// Mobile & Desktop Sidebar Drawer Navigation
+function initSidebarDrawer() {
+    const sidebar = document.getElementById('appSidebar');
+    const overlay = document.getElementById('mobileSidebarOverlay');
+    const openBtn = document.getElementById('openSidebarBtn');
+    const closeBtn = document.getElementById('closeSidebarBtn');
+    const bottomMenuBtn = document.getElementById('bottomNavMenuBtn');
+    const collapseBtn = document.getElementById('collapseSidebarBtn');
+    const expandBtn = document.getElementById('expandSidebarBtn');
+    const navToggleBtn = document.getElementById('navToggleSidebarBtn');
+
+    function openMobileDrawer() {
+        if (sidebar) sidebar.classList.add('show');
+        if (overlay) overlay.classList.add('show');
+        document.body.style.overflow = 'hidden';
+        ApexSound.playClick();
+    }
+
+    function closeMobileDrawer() {
+        if (sidebar) sidebar.classList.remove('show');
+        if (overlay) overlay.classList.remove('show');
+        document.body.style.overflow = '';
+    }
+
+    if (openBtn) openBtn.addEventListener('click', openMobileDrawer);
+    if (bottomMenuBtn) bottomMenuBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        openMobileDrawer();
+    });
+    if (closeBtn) closeBtn.addEventListener('click', closeMobileDrawer);
+    if (overlay) overlay.addEventListener('click', closeMobileDrawer);
+
+    // Escape key closes drawer
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeMobileDrawer();
+    });
+
+    // Close drawer when clicking any link in sidebar on mobile
+    if (sidebar) {
+        sidebar.querySelectorAll('a, .sidebar-nav-item').forEach(el => {
+            el.addEventListener('click', () => {
+                if (window.innerWidth < 992) closeMobileDrawer();
+            });
+        });
+    }
+
+    // Desktop Collapse / Expand Handlers
+    function toggleDesktopSidebar() {
+        const isHidden = document.body.classList.toggle('sidebar-hidden');
+        localStorage.setItem('apex_sidebar_hidden', isHidden ? 'true' : 'false');
+        if (expandBtn) expandBtn.style.setProperty('display', isHidden ? 'inline-flex' : 'none', 'important');
+        ApexSound.playClick();
+    }
+
+    if (collapseBtn) collapseBtn.addEventListener('click', toggleDesktopSidebar);
+    if (expandBtn) expandBtn.addEventListener('click', toggleDesktopSidebar);
+    if (navToggleBtn) navToggleBtn.addEventListener('click', toggleDesktopSidebar);
+
+    // Initial desktop state from localStorage
+    if (window.innerWidth >= 992 && localStorage.getItem('apex_sidebar_hidden') === 'true') {
+        document.body.classList.add('sidebar-hidden');
+        if (expandBtn) expandBtn.style.setProperty('display', 'inline-flex', 'important');
+    }
+}
 
 // Sound Toggle Handler
 function initSoundToggle() {
@@ -214,6 +280,16 @@ function initSidebarTabs() {
 
             // Update active state in sidebar
             sidebarNavItems.forEach(item => {
+                const target = item.getAttribute('data-tab-target');
+                if (target === tabId || ('tab-' + target) === tabId) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+
+            // Update active state in mobile bottom dock
+            document.querySelectorAll('.mobile-bottom-item[data-tab-target]').forEach(item => {
                 const target = item.getAttribute('data-tab-target');
                 if (target === tabId || ('tab-' + target) === tabId) {
                     item.classList.add('active');
@@ -592,7 +668,7 @@ function initAjaxAddToCart() {
                 this.classList.remove('btn-apex-primary');
                 this.classList.add('btn-success');
 
-                ['sidebarCartBadge', 'mobileCartBadge', 'navbarCartBadge'].forEach(id => {
+                ['sidebarCartBadge', 'mobileCartBadge', 'navbarCartBadge', 'bottomCartBadge'].forEach(id => {
                     const badge = document.getElementById(id);
                     if (badge) {
                         badge.textContent = data.cart_count;

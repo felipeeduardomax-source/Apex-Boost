@@ -165,6 +165,312 @@ body:not(.theme-dark) .app-main .text-light {
   color: #334155 !important;
 }
 
+/* ==========================================================================
+   GLOBAL HIGH-CONTRAST TYPOGRAPHY & LEGIBILITY OVERRIDES FOR DARK MODE
+   Ensures 100% crisp, readable text across the entire site in Dark Mode
+   ========================================================================== */
+body.theme-dark,
+html.theme-dark,
+[data-bs-theme="dark"] {
+  --bs-body-color: #f1f5f9;
+  --bs-body-color-rgb: 241, 245, 249;
+  --bs-body-bg: #090a0f;
+  --bs-secondary-color: #94a3b8;
+  --bs-secondary-color-rgb: 148, 163, 184;
+  --bs-tertiary-color: #64748b;
+  --bs-tertiary-color-rgb: 100, 116, 139;
+  --bs-emphasis-color: #ffffff;
+  --bs-emphasis-color-rgb: 255, 255, 255;
+  --bs-secondary-rgb: 203, 213, 225;
+  --bs-light-rgb: 241, 245, 249;
+  --bs-dark-rgb: 248, 250, 252;
+  --bs-border-color: rgba(255, 255, 255, 0.12);
+  --bs-border-color-translucent: rgba(255, 255, 255, 0.12);
+  --bs-card-bg: #11141c;
+  --bs-card-color: #f1f5f9;
+  color: #f1f5f9 !important;
+}
+
+/* Secondary text in dark mode - high-contrast clean silver */
+body.theme-dark .text-secondary,
+body.theme-dark p.text-secondary,
+body.theme-dark span.text-secondary,
+body.theme-dark small.text-secondary,
+body.theme-dark div.text-secondary,
+body.theme-dark label.text-secondary,
+body.theme-dark a.text-secondary,
+body.theme-dark td.text-secondary,
+body.theme-dark th.text-secondary,
+body.theme-dark strong.text-secondary,
+body.theme-dark .text-body-secondary,
+html.theme-dark .text-secondary,
+[data-bs-theme="dark"] .text-secondary,
+[data-bs-theme="dark"] .text-body-secondary {
+  color: #cbd5e1 !important;
+}
+
+/* Muted text in dark mode - bright readable slate silver */
+body.theme-dark .text-muted,
+body.theme-dark small.text-muted,
+body.theme-dark span.text-muted,
+body.theme-dark p.text-muted,
+body.theme-dark div.text-muted,
+body.theme-dark label.text-muted,
+body.theme-dark td.text-muted,
+body.theme-dark th.text-muted,
+body.theme-dark i.text-muted,
+body.theme-dark .text-body-tertiary,
+html.theme-dark .text-muted,
+[data-bs-theme="dark"] .text-muted,
+[data-bs-theme="dark"] .text-body-tertiary {
+  color: #94a3b8 !important;
+}
+
+/* Light text in dark mode - crisp white */
+body.theme-dark .text-light,
+body.theme-dark small.text-light,
+body.theme-dark span.text-light,
+body.theme-dark p.text-light,
+body.theme-dark li.text-light,
+body.theme-dark div.text-light,
+html.theme-dark .text-light,
+[data-bs-theme="dark"] .text-light {
+  color: #f8fafc !important;
+}
+
+/* Dark text utility inside dark mode - turn white except inside colored buttons/badges */
+body.theme-dark .text-dark:not(.badge):not(.badge *):not(.btn-warning):not(.btn-warning *):not(.badge-warning):not(.badge-warning *) {
+  color: #f8fafc !important;
+}
+
+/* Headings and generic typography inside cards and main area */
+body.theme-dark .app-main h1,
+body.theme-dark .app-main h2,
+body.theme-dark .app-main h3,
+body.theme-dark .app-main h4,
+body.theme-dark .app-main h5,
+body.theme-dark .app-main h6,
+body.theme-dark .app-main .text-white {
+  color: #ffffff !important;
+}
+
+body.theme-dark .app-main p:not([class*="text-"]),
+body.theme-dark .glass-card p:not([class*="text-"]),
+body.theme-dark .comparator-card p:not([class*="text-"]),
+body.theme-dark .savings-box p:not([class*="text-"]),
+body.theme-dark .product-card p:not([class*="text-"]),
+body.theme-dark .scanner-card p:not([class*="text-"]),
+body.theme-dark .guarantee-card p:not([class*="text-"]) {
+  color: #cbd5e1 !important;
+}
+
+/* Cards & containers specific text rules */
+body.theme-dark .glass-card,
+body.theme-dark .comparator-card,
+body.theme-dark .product-card,
+body.theme-dark .scanner-card,
+body.theme-dark .guarantee-card,
+body.theme-dark .calc-box,
+body.theme-dark .benchmark-row {
+  background-color: var(--bg-card);
+  color: #f1f5f9;
+}
+
+body.theme-dark .glass-card p.text-muted,
+body.theme-dark .glass-card small.text-muted,
+body.theme-dark .comparator-card small.text-muted,
+body.theme-dark .comparator-card p.text-secondary,
+body.theme-dark .savings-box p.text-secondary,
+body.theme-dark .product-card p.text-secondary {
+  color: #cbd5e1 !important;
+}
+
+/* Telemetry Comparator in dark mode */
+body.theme-dark #boxCompareDesc {
+  color: #cbd5e1 !important;
+}
+
+body.theme-dark .comparator-card .text-muted {
+  color: #94a3b8 !important;
+}
+
+body.theme-dark .mode-switch-btn:not(.active) {
+  color: #cbd5e1 !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+/* Product Cards Catalog in dark mode */
+body.theme-dark .product-card h4 {
+  color: #ffffff !important;
+}
+
+body.theme-dark .product-card .price-main {
+  color: #ffffff !important;
+}
+
+body.theme-dark .product-card .feature-list li {
+  color: #cbd5e1 !important;
+}
+
+body.theme-dark .product-card .btn-link.text-secondary {
+  color: #94a3b8 !important;
+}
+body.theme-dark .product-card .btn-link.text-secondary:hover {
+  color: #00d2ff !important;
+}
+
+/* Filter pills in dark mode */
+body.theme-dark .filter-pill:not(.active) {
+  color: #cbd5e1 !important;
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+body.theme-dark .filter-pill:not(.active):hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff !important;
+  border-color: var(--color-blue);
+}
+
+/* Form Controls & Labels in dark mode */
+body.theme-dark .form-label,
+body.theme-dark label {
+  color: #cbd5e1 !important;
+}
+
+body.theme-dark .form-control,
+body.theme-dark .form-select {
+  background-color: #11141c !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  color: #f8fafc !important;
+}
+
+body.theme-dark .form-control:focus,
+body.theme-dark .form-select:focus {
+  background-color: #161a24 !important;
+  border-color: var(--color-blue) !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 0 0.25rem rgba(0, 102, 255, 0.25) !important;
+}
+
+body.theme-dark .form-control::placeholder,
+body.theme-dark input::placeholder,
+body.theme-dark textarea::placeholder {
+  color: #64748b !important;
+  opacity: 1 !important;
+}
+
+/* Accordion in dark mode */
+body.theme-dark .accordion-item {
+  background-color: var(--bg-card) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+body.theme-dark .accordion-button {
+  background-color: transparent !important;
+  color: #ffffff !important;
+}
+
+body.theme-dark .accordion-button:not(.collapsed) {
+  background-color: rgba(0, 102, 255, 0.12) !important;
+  color: #00d2ff !important;
+}
+
+body.theme-dark .accordion-body {
+  color: #cbd5e1 !important;
+}
+
+/* Tables in dark mode */
+body.theme-dark .table,
+body.theme-dark table {
+  color: #cbd5e1 !important;
+  --bs-table-color: #cbd5e1;
+  --bs-table-bg: transparent;
+  --bs-table-border-color: rgba(255, 255, 255, 0.1);
+}
+
+body.theme-dark table th,
+body.theme-dark table td {
+  color: #cbd5e1 !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+body.theme-dark table th {
+  color: #ffffff !important;
+}
+
+body.theme-dark table tr:hover td {
+  color: #ffffff !important;
+  background-color: rgba(255, 255, 255, 0.03) !important;
+}
+
+/* Modals in dark mode */
+body.theme-dark .modal-content {
+  background-color: #11141c !important;
+  color: #f1f5f9 !important;
+  border-color: rgba(0, 102, 255, 0.4) !important;
+}
+
+body.theme-dark .modal-header,
+body.theme-dark .modal-footer {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+body.theme-dark .modal-title {
+  color: #ffffff !important;
+}
+
+/* Breadcrumbs in dark mode */
+body.theme-dark .breadcrumb-item a {
+  color: #94a3b8 !important;
+}
+body.theme-dark .breadcrumb-item a:hover {
+  color: #00d2ff !important;
+}
+body.theme-dark .breadcrumb-item.active {
+  color: #00d2ff !important;
+}
+
+/* Borders in dark mode */
+body.theme-dark .border-secondary {
+  border-color: rgba(255, 255, 255, 0.14) !important;
+}
+
+/* Sidebar in dark mode */
+body.theme-dark .sidebar-section-title {
+  color: #94a3b8 !important;
+}
+
+body.theme-dark .sidebar-nav-item:not(.active) {
+  color: #cbd5e1 !important;
+}
+
+/* Top bar banner in dark mode */
+body.theme-dark .top-announcement-bar .text-muted {
+  color: #94a3b8 !important;
+}
+
+/* Footer in dark mode */
+body.theme-dark footer .text-muted {
+  color: #94a3b8 !important;
+}
+
+body.theme-dark footer .text-secondary {
+  color: #cbd5e1 !important;
+}
+
+body.theme-dark footer p {
+  color: #94a3b8 !important;
+}
+
+/* Social Toast in dark mode */
+body.theme-dark .live-sales-toast {
+  background: rgba(17, 20, 28, 0.95);
+  border-color: rgba(0, 102, 255, 0.4);
+}
+body.theme-dark .live-sales-toast .text-muted {
+  color: #94a3b8 !important;
+}
+
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 7px;

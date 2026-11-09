@@ -142,9 +142,9 @@ function initThemeToggle() {
     function updateIcons(isDark) {
         icons.forEach(icon => {
             if (isDark) {
-                icon.className = 'bi bi-sun-fill text-warning';
+                icon.className = 'bi bi-sun-fill text-warning theme-icon';
             } else {
-                icon.className = 'bi bi-moon-stars-fill';
+                icon.className = 'bi bi-moon-stars-fill theme-icon';
             }
         });
         labels.forEach(label => {
@@ -152,27 +152,31 @@ function initThemeToggle() {
         });
     }
 
-    const currentTheme = localStorage.getItem('apex_theme') || 'light';
-    const isDark = currentTheme === 'dark';
-    if (isDark) {
-        document.body.classList.add('theme-dark');
-    } else {
-        document.body.classList.remove('theme-dark');
+    function applyTheme(isDark) {
+        if (isDark) {
+            document.body.classList.add('theme-dark');
+            document.documentElement.classList.add('theme-dark');
+            document.body.setAttribute('data-bs-theme', 'dark');
+            document.documentElement.setAttribute('data-bs-theme', 'dark');
+            localStorage.setItem('apex_theme', 'dark');
+        } else {
+            document.body.classList.remove('theme-dark');
+            document.documentElement.classList.remove('theme-dark');
+            document.body.setAttribute('data-bs-theme', 'light');
+            document.documentElement.setAttribute('data-bs-theme', 'light');
+            localStorage.setItem('apex_theme', 'light');
+        }
+        updateIcons(isDark);
     }
-    updateIcons(isDark);
+
+    const currentTheme = localStorage.getItem('apex_theme') || 'light';
+    applyTheme(currentTheme === 'dark');
 
     toggleBtns.forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.preventDefault();
             const willBeDark = !document.body.classList.contains('theme-dark');
-            if (willBeDark) {
-                document.body.classList.add('theme-dark');
-                localStorage.setItem('apex_theme', 'dark');
-            } else {
-                document.body.classList.remove('theme-dark');
-                localStorage.setItem('apex_theme', 'light');
-            }
-            updateIcons(willBeDark);
+            applyTheme(willBeDark);
             ApexSound.playClick();
         });
     });

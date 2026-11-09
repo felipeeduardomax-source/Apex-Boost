@@ -248,84 +248,112 @@ function initThemeToggle() {
 }
 
 // ==========================================================================
-// Dynamic Sidebar Tab Switching (Zero page jumping - SPA feel)
+// Unified Landing Page Smooth Scrolling & ScrollSpy
 // ==========================================================================
 function initSidebarTabs() {
     const tabTriggers = document.querySelectorAll('[data-tab-target]');
     const tabPanes = document.querySelectorAll('.store-tab-pane');
     const sidebarNavItems = document.querySelectorAll('.sidebar-nav-item[data-tab-target]');
+    const mobileBottomItems = document.querySelectorAll('.mobile-bottom-item[data-tab-target]');
 
-    function activateTab(tabId) {
-        if (!tabId) tabId = 'tab-home';
-        if (!tabId.startsWith('tab-')) {
-            tabId = 'tab-' + tabId;
-        }
+    function updateActiveNav(targetId) {
+        if (!targetId) targetId = 'tab-home';
+        const clean = targetId.replace(/^#/, '');
+        const idWithTab = clean.startsWith('tab-') ? clean : 'tab-' + clean;
 
-        if (tabPanes.length > 0) {
-            let found = false;
-            tabPanes.forEach(pane => {
-                if (pane.id === tabId) {
-                    pane.classList.add('active');
-                    found = true;
-                } else {
-                    pane.classList.remove('active');
-                }
-            });
-
-            if (!found && tabPanes[0]) {
-                tabPanes[0].classList.add('active');
-                tabId = tabPanes[0].id;
+        sidebarNavItems.forEach(item => {
+            const t = item.getAttribute('data-tab-target') || '';
+            const tClean = t.replace(/^#/, '');
+            const tWithTab = tClean.startsWith('tab-') ? tClean : 'tab-' + tClean;
+            if (tWithTab === idWithTab) {
+                item.classList.add('active');
+            } else {
+                item.classList.remove('active');
             }
+        });
 
-            // Update active state in sidebar
-            sidebarNavItems.forEach(item => {
-                const target = item.getAttribute('data-tab-target');
-                if (target === tabId || ('tab-' + target) === tabId) {
-                    item.classList.add('active');
-                } else {
-                    item.classList.remove('active');
-                }
-            });
+        mobileBottomItems.forEach(item => {
+            const t = item.getAttribute('data-tab-target') || '';
+            const tClean = t.replace(/^#/, '');
+            const tWithTab = tClean.startsWith('tab-') ? tClean : 'tab-' + tClean;
+            if (tWithTab === idWithTab) {
+                item.classList.add('active');
+            } else {
+                item.classList.remove('active');
+            }
+        });
+    }
 
-            // Update active state in mobile bottom dock
-            document.querySelectorAll('.mobile-bottom-item[data-tab-target]').forEach(item => {
-                const target = item.getAttribute('data-tab-target');
-                if (target === tabId || ('tab-' + target) === tabId) {
-                    item.classList.add('active');
-                } else {
-                    item.classList.remove('active');
-                }
-            });
+    function scrollToSection(targetId) {
+        if (!targetId) return;
+        const clean = targetId.replace(/^#/, '');
+        const targetEl = document.getElementById(clean) 
+                      || document.getElementById('tab-' + clean)
+                      || document.getElementById(clean.replace(/^tab-/, ''));
 
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+        if (targetEl) {
+            const yOffset = -75;
+            const y = targetEl.getBoundingClientRect().top + window.pageYOffset + yOffset;
+            window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
+            updateActiveNav(clean);
         }
     }
 
     tabTriggers.forEach(trigger => {
         trigger.addEventListener('click', function(e) {
-            const targetId = this.getAttribute('data-tab-target');
-            if (tabPanes.length > 0) {
-                e.preventDefault();
-                activateTab(targetId);
-                try {
-                    window.history.pushState(null, '', '#' + targetId);
-                } catch(err) {}
+            const targetId = this.getAttribute('data-tab-target') || this.getAttribute('href');
+            if (targetId && tabPanes.length > 0) {
+                const clean = targetId.replace(/^#/, '').replace(/^tab-/, '');
+                const targetEl = document.getElementById(targetId.replace(/^#/, '')) 
+                              || document.getElementById('tab-' + clean)
+                              || document.getElementById(clean);
 
-                // Close mobile sidebar if open
-                const sidebar = document.getElementById('appSidebar');
-                const overlay = document.getElementById('mobileSidebarOverlay');
-                if (sidebar) sidebar.classList.remove('show');
-                if (overlay) overlay.classList.remove('show');
+                if (targetEl) {
+                    e.preventDefault();
+                    scrollToSection(targetId);
+                    try {
+                        const newHash = clean.startsWith('tab-') ? clean : 'tab-' + clean;
+                        window.history.pushState(null, '', '#' + newHash);
+                    } catch(err) {}
+
+                    // Close mobile sidebar if open
+                    const sidebar = document.getElementById('appSidebar');
+                    const overlay = document.getElementById('mobileSidebarOverlay');
+                    if (sidebar) sidebar.classList.remove('show');
+                    if (overlay) overlay.classList.remove('show');
+                }
             }
         });
     });
 
+    // ScrollSpy to track user position and highlight corresponding menu item
     if (tabPanes.length > 0) {
+        let isScrollingTimeout = null;
+        window.addEventListener('scroll', () => {
+            if (isScrollingTimeout) return;
+            isScrollingTimeout = setTimeout(() => {
+                isScrollingTimeout = null;
+                const scrollPos = window.scrollY + 140;
+                let currentId = 'tab-home';
+
+                tabPanes.forEach(pane => {
+                    const top = pane.offsetTop;
+                    const height = pane.offsetHeight;
+                    if (scrollPos >= top && scrollPos < top + height) {
+                        currentId = pane.id;
+                    }
+                });
+
+                updateActiveNav(currentId);
+            }, 60);
+        }, { passive: true });
+
+        // Smooth scroll on direct link with hash
         const hash = window.location.hash.replace('#', '');
         if (hash) {
-            activateTab(hash);
-        } else {
-            activateTab('tab-home');
+            setTimeout(() => {
+                scrollToSection(hash);
+            }, 120);
         }
     }
 }

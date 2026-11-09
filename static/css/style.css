@@ -730,19 +730,27 @@ body.sidebar-hidden .floating-sidebar-toggle,
   background: var(--bg-deep);
 }
 
-/* Tab Pane Views */
+/* All Store Sections Flowing Landing Page */
 .store-tab-pane {
-  display: none;
-  animation: fadeInTabPane 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  display: block !important;
+  opacity: 1 !important;
+  transform: none !important;
+  margin-bottom: 3.5rem;
+  scroll-margin-top: 85px;
+  position: relative;
+}
+
+.store-tab-pane:not(:last-child)::after {
+  content: '';
+  display: block;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0, 102, 255, 0.22), rgba(0, 210, 255, 0.22), transparent);
+  margin-top: 3.5rem;
 }
 
 .store-tab-pane.active {
   display: block;
-}
-
-@keyframes fadeInTabPane {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
 }
 
 /* Mobile Header (< 992px) */
@@ -1698,8 +1706,13 @@ body.theme-dark .inner-sidebar-btn.active {
   gap: 14px;
   z-index: 1060;
   transform: translateY(140%);
-  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), left 0.3s ease;
   max-width: 360px;
+}
+
+body.sidebar-hidden .live-sales-toast,
+.app-wrapper.sidebar-hidden .live-sales-toast {
+  left: 24px !important;
 }
 
 @media (max-width: 991.98px) {

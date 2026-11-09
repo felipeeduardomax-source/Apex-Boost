@@ -59,10 +59,31 @@ def is_using_postgres():
 if is_using_postgres():
     try:
         import psycopg2
+        import psycopg2.extensions
         from psycopg2.extras import RealDictCursor
+
+        # Registra conversor de NUMERIC para float automaticamente no psycopg2
+        DEC2FLOAT = psycopg2.extensions.new_type(
+            psycopg2.extensions.DECIMAL.values,
+            'DEC2FLOAT',
+            lambda value, curs: float(value) if value is not None else None
+        )
+        psycopg2.extensions.register_type(DEC2FLOAT)
     except ImportError:
         print("[DB] AVISO: psycopg2-binary não encontrado. Rodando em modo SQLite.")
         DATABASE_URL = None
+
+def _normalize_row(row):
+    """Garante conversão segura de Decimals para float em respostas do PostgreSQL"""
+    if not row:
+        return row
+    try:
+        from decimal import Decimal
+        if isinstance(row, dict):
+            return {k: float(v) if isinstance(v, Decimal) else v for k, v in row.items()}
+    except Exception:
+        pass
+    return row
 
 class PostgresCursorWrapper:
     def __init__(self, cursor):
@@ -106,16 +127,23 @@ class PostgresCursorWrapper:
         return self
 
     def fetchone(self):
-        return self._cursor.fetchone()
+        return _normalize_row(self._cursor.fetchone())
 
     def fetchall(self):
-        return self._cursor.fetchall()
+        rows = self._cursor.fetchall()
+        if not rows:
+            return []
+        return [_normalize_row(r) for r in rows]
 
     def fetchmany(self, size=None):
-        return self._cursor.fetchmany(size)
+        rows = self._cursor.fetchmany(size) if size is not None else self._cursor.fetchmany()
+        if not rows:
+            return []
+        return [_normalize_row(r) for r in rows]
 
     def __iter__(self):
-        return iter(self._cursor)
+        for r in self._cursor:
+            yield _normalize_row(r)
 
     def __getattr__(self, name):
         return getattr(self._cursor, name)

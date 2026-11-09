@@ -35,11 +35,27 @@ def format_datetime_filter(value, fmt='%d/%m/%Y %H:%M'):
 def format_date_filter(value, fmt='%d/%m/%Y'):
     return format_datetime_filter(value, fmt=fmt)
 
+def get_cart():
+    """Retorna o carrinho da sessão formatado de forma sanitizada como dict {prod_id_str: qty}"""
+    raw_cart = session.get('cart', {})
+    if isinstance(raw_cart, dict):
+        return raw_cart
+    elif isinstance(raw_cart, (list, tuple, set)):
+        normalized = {}
+        for item in raw_cart:
+            normalized[str(item)] = 1
+        session['cart'] = normalized
+        session.modified = True
+        return normalized
+    session['cart'] = {}
+    session.modified = True
+    return {}
+
 # Context processor for templates
 @app.context_processor
 def inject_global_data():
-    cart = session.get('cart', {})
-    cart_count = sum(cart.values())
+    cart = get_cart()
+    cart_count = sum(cart.values()) if isinstance(cart, dict) else 0
     logged_user = None
     if 'user_id' in session:
         conn = get_db()
@@ -91,10 +107,13 @@ def index():
     products = conn.execute("SELECT * FROM products WHERE active = 1 ORDER BY popular DESC, price ASC").fetchall()
     reviews = conn.execute("SELECT * FROM reviews ORDER BY id DESC").fetchall()
     
-    # Parse features json for each product
+    # Parse features json for each product and guarantee float prices
     prods_list = []
     for p in products:
         item = dict(p)
+        item['price'] = float(item.get('price') or 0.0)
+        if item.get('old_price') is not None:
+            item['old_price'] = float(item['old_price'])
         item['features_list'] = json.loads(item['features']) if item['features'] else []
         prods_list.append(item)
         
@@ -110,12 +129,22 @@ def product_detail(slug):
         abort(404)
         
     p_dict = dict(product)
+    p_dict['price'] = float(p_dict.get('price') or 0.0)
+    if p_dict.get('old_price') is not None:
+        p_dict['old_price'] = float(p_dict['old_price'])
     p_dict['features_list'] = json.loads(p_dict['features']) if p_dict['features'] else []
     
     # Related products
-    other_products = conn.execute(
+    other_products_raw = conn.execute(
         "SELECT * FROM products WHERE id != ? AND active = 1 LIMIT 3", (product['id'],)
     ).fetchall()
+    other_products = []
+    for op in other_products_raw:
+        op_dict = dict(op)
+        op_dict['price'] = float(op_dict.get('price') or 0.0)
+        if op_dict.get('old_price') is not None:
+            op_dict['old_price'] = float(op_dict['old_price'])
+        other_products.append(op_dict)
     
     # Product reviews
     reviews = conn.execute("SELECT * FROM reviews ORDER BY id DESC LIMIT 4").fetchall()
@@ -285,26 +314,34 @@ def profile():
 
 @app.route('/cart')
 def view_cart():
-    cart = session.get('cart', {})
+    cart = get_cart()
     cart_items = []
     subtotal = 0.0
 
     if cart:
         conn = get_db()
-        for prod_id_str, qty in cart.items():
-            prod = conn.execute("SELECT * FROM products WHERE id = ?", (int(prod_id_str),)).fetchone()
+        for prod_id_str, qty in list(cart.items()):
+            try:
+                p_id = int(prod_id_str)
+                p_qty = int(qty)
+            except (ValueError, TypeError):
+                continue
+            prod = conn.execute("SELECT * FROM products WHERE id = ?", (p_id,)).fetchone()
             if prod:
                 p_dict = dict(prod)
-                p_dict['quantity'] = qty
-                p_dict['item_total'] = prod['price'] * qty
+                price = float(p_dict.get('price') or 0.0)
+                p_dict['price'] = price
+                p_dict['quantity'] = p_qty
+                p_dict['item_total'] = round(price * p_qty, 2)
                 subtotal += p_dict['item_total']
                 cart_items.append(p_dict)
         conn.close()
 
-    discount_percent = session.get('discount_percent', 0)
+    subtotal = round(subtotal, 2)
+    discount_percent = float(session.get('discount_percent', 0) or 0)
     coupon_code = session.get('coupon_code', '')
-    discount_amount = (subtotal * discount_percent) / 100.0
-    total = max(0.0, subtotal - discount_amount)
+    discount_amount = round((subtotal * discount_percent) / 100.0, 2)
+    total = max(0.0, round(subtotal - discount_amount, 2))
 
     return render_template(
         'cart.html',
@@ -328,9 +365,8 @@ def add_to_cart(product_id):
         flash('Produto não encontrado.', 'danger')
         return redirect(url_for('index'))
 
-    cart = session.get('cart', {})
+    cart = get_cart()
     str_id = str(product_id)
-    # Digital products usually 1 per pack
     cart[str_id] = 1
     session['cart'] = cart
     session.modified = True
@@ -347,7 +383,7 @@ def add_to_cart(product_id):
 
 @app.route('/cart/remove/<int:product_id>')
 def remove_from_cart(product_id):
-    cart = session.get('cart', {})
+    cart = get_cart()
     str_id = str(product_id)
     if str_id in cart:
         del cart[str_id]
@@ -382,7 +418,7 @@ def apply_coupon():
 
     if coupon:
         session['coupon_code'] = coupon['code']
-        session['discount_percent'] = coupon['discount_percent']
+        session['discount_percent'] = float(coupon['discount_percent'])
         flash(f'Cupom {coupon["code"]} aplicado! Desconto de {coupon["discount_percent"]}% concedido.', 'success')
     else:
         flash('Cupom inválido ou expirado. Tente FPSBOOST ou PRIMEIRACOMPRA.', 'danger')
@@ -391,7 +427,7 @@ def apply_coupon():
 
 @app.route('/checkout', methods=['GET', 'POST'])
 def checkout():
-    cart = session.get('cart', {})
+    cart = get_cart()
     if not cart:
         flash('Seu carrinho está vazio. Adicione um pack antes de finalizar.', 'warning')
         return redirect(url_for('index'))
@@ -400,19 +436,27 @@ def checkout():
     conn = get_db()
     cart_items = []
     subtotal = 0.0
-    for prod_id_str, qty in cart.items():
-        prod = conn.execute("SELECT * FROM products WHERE id = ?", (int(prod_id_str),)).fetchone()
+    for prod_id_str, qty in list(cart.items()):
+        try:
+            p_id = int(prod_id_str)
+            p_qty = int(qty)
+        except (ValueError, TypeError):
+            continue
+        prod = conn.execute("SELECT * FROM products WHERE id = ?", (p_id,)).fetchone()
         if prod:
             p_dict = dict(prod)
-            p_dict['quantity'] = qty
-            p_dict['item_total'] = prod['price'] * qty
+            price = float(p_dict.get('price') or 0.0)
+            p_dict['price'] = price
+            p_dict['quantity'] = p_qty
+            p_dict['item_total'] = round(price * p_qty, 2)
             subtotal += p_dict['item_total']
             cart_items.append(p_dict)
 
-    discount_percent = session.get('discount_percent', 0)
+    subtotal = round(subtotal, 2)
+    discount_percent = float(session.get('discount_percent', 0) or 0)
     coupon_code = session.get('coupon_code', None)
-    discount_amount = (subtotal * discount_percent) / 100.0
-    total = max(0.0, subtotal - discount_amount)
+    discount_amount = round((subtotal * discount_percent) / 100.0, 2)
+    total = max(0.0, round(subtotal - discount_amount, 2))
 
     if request.method == 'POST':
         # Process order
@@ -495,7 +539,12 @@ def order_success(order_code):
         conn.close()
         abort(404)
 
-    items = conn.execute("""
+    o_dict = dict(order)
+    o_dict['total'] = float(o_dict.get('total') or 0.0)
+    if o_dict.get('discount') is not None:
+        o_dict['discount'] = float(o_dict['discount'])
+
+    raw_items = conn.execute("""
         SELECT oi.*, p.download_file, p.slug as prod_slug, p.icon
         FROM order_items oi
         JOIN products p ON oi.product_id = p.id
@@ -503,7 +552,13 @@ def order_success(order_code):
     """, (order['id'],)).fetchall()
     conn.close()
 
-    return render_template('order_success.html', order=order, items=items)
+    items = []
+    for it in raw_items:
+        it_dict = dict(it)
+        it_dict['price'] = float(it_dict.get('price') or 0.0)
+        items.append(it_dict)
+
+    return render_template('order_success.html', order=o_dict, items=items)
 
 # ----------------- DOWNLOAD HANDLER ----------------- #
 

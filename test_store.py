@@ -282,5 +282,19 @@ class StoreTestCase(unittest.TestCase):
         self.assertTrue(data_valid['success'])
         self.assertTrue(data_valid['redirect_url'])
 
+    def test_16_anti_leak_password_policy(self):
+        """Verifica bloqueio de senhas que constam em vazamentos conhecidos"""
+        # 1. Tentar cadastrar com senha vazada comum '123456' deve ser bloqueado
+        res_weak = self.client.post('/register', headers={'X-Requested-With': 'XMLHttpRequest'}, data={
+            'name': 'Hacker Tester',
+            'email': 'hacker@teste.com',
+            'password': '123456',
+            'confirm_password': '123456'
+        })
+        self.assertEqual(res_weak.status_code, 400)
+        data_weak = json.loads(res_weak.data)
+        self.assertFalse(data_weak['success'])
+        self.assertIn('vazamentos', data_weak['message'].lower())
+
 if __name__ == '__main__':
     unittest.main()

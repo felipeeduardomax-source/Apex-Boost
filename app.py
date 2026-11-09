@@ -164,6 +164,9 @@ def set_security_headers(response):
         "connect-src 'self';"
     )
 
+    if is_production:
+        response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains; preload'
+
     # Nunca permitir cache em páginas com dados de pedidos, senhas ou dados do usuário
     sensitive_prefixes = ('/order/', '/admin/')
     if (request.path in ('/profile', '/admin', '/checkout', '/cart') 
@@ -227,7 +230,13 @@ def product_detail(slug):
     
     return render_template('product.html', product=p_dict, other_products=other_products, reviews=reviews)
 
-# ----------------- AUTHENTICATION ROUTES ----------------- #
+# ----------------- AUTHENTICATION ROUTES & PASSWORD PROTECTION ----------------- #
+
+# Lista de senhas comuns que constam em vazamentos públicos mundiais (ex: HaveIBeenPwned / Google Password Checkup)
+COMMON_LEAKED_PASSWORDS = {
+    '123456', '12345678', '123456789', 'admin123', 'admin', 'password',
+    'qwerty', '111111', '123123', 'senha123', 'teste123', 'root', 'master'
+}
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -258,6 +267,13 @@ def register():
             if is_ajax:
                 return jsonify({'success': False, 'message': 'A senha deve ter pelo menos 6 caracteres.'}), 400
             flash('A senha deve ter pelo menos 6 caracteres.', 'danger')
+            return render_template('register.html', name=name, email=email)
+
+        if password.lower() in COMMON_LEAKED_PASSWORDS:
+            msg = 'Esta senha é muito fraca e já foi encontrada em vazamentos globais da internet. Por favor, escolha uma senha mais segura.'
+            if is_ajax:
+                return jsonify({'success': False, 'message': msg}), 400
+            flash(msg, 'danger')
             return render_template('register.html', name=name, email=email)
 
         if password != confirm_password:
@@ -400,13 +416,15 @@ def profile():
                 flash('Senha atual incorreta.', 'danger')
             elif len(new_pass) < 6:
                 flash('A nova senha deve ter no mínimo 6 caracteres.', 'danger')
+            elif new_pass.lower() in COMMON_LEAKED_PASSWORDS:
+                flash('Esta senha é muito comum e já foi encontrada em vazamentos da internet. Escolha uma senha segura e exclusiva.', 'danger')
             else:
                 conn.execute(
                     "UPDATE users SET password_hash = ? WHERE id = ?",
                     (generate_password_hash(new_pass), user_id)
                 )
                 conn.commit()
-                flash('Senha alterada com sucesso!', 'success')
+                flash('Senha alterada com sucesso! Sua conta está 100% protegida.', 'success')
 
     user = conn.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
     

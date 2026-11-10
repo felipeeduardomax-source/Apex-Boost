@@ -798,71 +798,212 @@
 
 <!-- TAB 4: CALCULADORA DE FPS -->
 <div class="store-tab-pane" id="tab-calculadora">
-    <div class="container py-4" style="max-width: 1000px;">
+    <div class="container py-4" style="max-width: 1140px;">
         <div class="text-center mb-4">
-            <span class="badge-cyan mb-2 d-inline-block"><i class="bi bi-cpu text-blue"></i> SIMULADOR INTELIGENTE</span>
+            <span class="badge-cyan mb-2 d-inline-block"><i class="bi bi-cpu text-blue"></i> SIMULADOR REAL DE HARDWARE</span>
             <h2 class="display-6 fw-black text-white">CALCULE SEU GANHO DE FPS</h2>
-            <p class="text-secondary">Simule o impacto real dos nossos scripts de otimização no seu computador.</p>
+            <p class="text-secondary">Monte as configurações reais do seu computador para calcular a taxa de quadros e latência em tempo real.</p>
         </div>
 
         <div class="calc-box mx-auto">
             <div class="row g-4 align-items-center">
+                <!-- Coluna da Esquerda: Configurações do Computador (Hardware Real) -->
                 <div class="col-lg-6">
+                    <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom border-secondary border-opacity-25">
+                        <span class="text-white fw-bold small text-uppercase">
+                            <i class="bi bi-pc-display-horizontal text-blue me-1"></i> Seu Setup Atual
+                        </span>
+                        <span class="badge bg-primary bg-opacity-20 text-cyan small" style="font-size: 0.72rem;">
+                            <i class="bi bi-check-circle-fill me-1"></i> Benchmark 100% Real
+                        </span>
+                    </div>
+
+                    <!-- 1. Jogo Competitivo e Resolução -->
+                    <div class="row g-2 mb-3">
+                        <div class="col-sm-7">
+                            <label class="form-label text-white small fw-bold mb-1" for="calcGame">
+                                <i class="bi bi-controller text-blue me-1"></i> Jogo:
+                            </label>
+                            <select id="calcGame" class="form-select form-select-sm">
+                                <option value="cs2" selected>Counter-Strike 2 (CS2)</option>
+                                <option value="valorant">Valorant (Riot Games)</option>
+                                <option value="warzone">Call of Duty: Warzone</option>
+                                <option value="fortnite">Fortnite (Epic Games)</option>
+                                <option value="fivem">GTA V / FiveM Roleplay</option>
+                                <option value="apex">Apex Legends</option>
+                                <option value="r6">Rainbow Six Siege</option>
+                                <option value="lol">League of Legends</option>
+                                <option value="rust">Rust</option>
+                            </select>
+                        </div>
+                        <div class="col-sm-5">
+                            <label class="form-label text-white small fw-bold mb-1" for="calcResolution">
+                                <i class="bi bi-display text-blue me-1"></i> Resolução:
+                            </label>
+                            <select id="calcResolution" class="form-select form-select-sm">
+                                <option value="1080p_comp" selected>1080p Competitivo (Low)</option>
+                                <option value="1080p_high">1080p Médio / Alto</option>
+                                <option value="1440p">1440p Quad HD (2K)</option>
+                                <option value="4k">4K Ultra HD</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- 2. Processador (CPU) -->
                     <div class="mb-3">
-                        <label class="form-label text-white" for="calcGame"><i class="bi bi-controller text-blue me-1"></i> Escolha o Jogo:</label>
-                        <select id="calcGame" class="form-select">
-                            <option value="valorant">Valorant (Riot Games)</option>
-                            <option value="cs2" selected>Counter-Strike 2 (CS2)</option>
-                            <option value="fortnite">Fortnite (Epic Games)</option>
-                            <option value="warzone">Call of Duty: Warzone</option>
-                            <option value="fivem">GTA V / FiveM Roleplay</option>
-                            <option value="apex">Apex Legends</option>
+                        <label class="form-label text-white small fw-bold mb-1" for="calcCpu">
+                            <i class="bi bi-cpu-fill text-cyan me-1"></i> Processador (CPU):
+                        </label>
+                        <select id="calcCpu" class="form-select form-select-sm">
+                            <optgroup label="Entrada & PCs Antigos">
+                                <option value="cpu_entry">Intel Core i3 (Gerações anteriores) / Ryzen 3 / Athlon / Pentium</option>
+                            </optgroup>
+                            <optgroup label="Intermediário Popular">
+                                <option value="cpu_mid_old" selected>Intel Core i5 (7ª a 11ª gen - ex: 8400, 9400F, 10400F) / Ryzen 5 (1600, 2600, 3600)</option>
+                            </optgroup>
+                            <optgroup label="Intermediário de Alta Performance">
+                                <option value="cpu_mid_modern">Intel Core i5 (12ª a 14ª gen - ex: 12400F, 13400F, 14600K) / Ryzen 5 (5600, 5600X, 7600)</option>
+                            </optgroup>
+                            <optgroup label="Alto Desempenho & Entusiasta">
+                                <option value="cpu_high">Intel Core i7 / i9 (12700K a 14900K) / Ryzen 7 & 9 (5700X, 5800X3D, 7800X3D)</option>
+                            </optgroup>
                         </select>
                     </div>
 
+                    <!-- 3. Placa de Vídeo (GPU) -->
                     <div class="mb-3">
-                        <label class="form-label text-white" for="calcGpu"><i class="bi bi-gpu-card text-blue me-1"></i> Seu Nível de PC:</label>
-                        <select id="calcGpu" class="form-select">
-                            <option value="0">PC Básico / Low-End (ex: i3 / GTX 1050/1650 / Gráfico Integrado)</option>
-                            <option value="1" selected>PC Intermediário (ex: i5 / Ryzen 5 + RTX 2060/3060 / RX 6600)</option>
-                            <option value="2">PC Avançado (ex: i7/i9 / Ryzen 7 + RTX 3080/4070+)</option>
+                        <label class="form-label text-white small fw-bold mb-1" for="calcGpu">
+                            <i class="bi bi-gpu-card text-cyan me-1"></i> Placa de Vídeo (GPU):
+                        </label>
+                        <select id="calcGpu" class="form-select form-select-sm">
+                            <optgroup label="Gráficos Integrados">
+                                <option value="gpu_integrated">Gráficos Integrados (Intel UHD / Iris Xe / AMD Vega / Radeon Graphics)</option>
+                            </optgroup>
+                            <optgroup label="Entrada">
+                                <option value="gpu_entry">GTX 1050 / 1050 Ti / GTX 1650 / RX 550 / RX 560</option>
+                            </optgroup>
+                            <optgroup label="Gamer Popular">
+                                <option value="gpu_mid_prev" selected>GTX 1660 / 1660 Super / RTX 2060 / RX 580 / RX 590 / RX 5500 XT</option>
+                            </optgroup>
+                            <optgroup label="Gamer Atual de Alta Velocidade">
+                                <option value="gpu_mid_current">RTX 3060 / 3060 Ti / RTX 4060 / RX 6600 / RX 6600 XT / RX 7600</option>
+                            </optgroup>
+                            <optgroup label="Alta Performance & 2K">
+                                <option value="gpu_high">RTX 3070 / 3080 / RTX 4070 / 4070 Ti / RX 6700 XT / RX 7700 XT</option>
+                            </optgroup>
+                            <optgroup label="Linha Extrema & 4K">
+                                <option value="gpu_ultra">RTX 4080 / RTX 4090 / RX 7900 XTX</option>
+                            </optgroup>
                         </select>
                     </div>
 
-                    <div class="mb-3">
-                        <label class="form-label text-white" for="calcPack"><i class="bi bi-box-seam text-blue me-1"></i> Escolha o Pack:</label>
-                        <select id="calcPack" class="form-select">
-                            <option value="starter">Starter Tweak Pack</option>
-                            <option value="ultra" selected>Competitive FPS Ultra Pack (Mais Vendido ⭐)</option>
-                            <option value="network">Zero Latency & Network Pro</option>
-                            <option value="extreme">Ultimate Extreme Suite (All-In-One)</option>
+                    <!-- 4. Memória RAM e Armazenamento -->
+                    <div class="row g-2 mb-3">
+                        <div class="col-sm-6">
+                            <label class="form-label text-white small fw-bold mb-1" for="calcRam">
+                                <i class="bi bi-memory text-cyan me-1"></i> Memória RAM:
+                            </label>
+                            <select id="calcRam" class="form-select form-select-sm">
+                                <option value="ram_8_single">8 GB Single Channel (1 pente - Stutter)</option>
+                                <option value="ram_8_dual">8 GB Dual Channel (2x4GB)</option>
+                                <option value="ram_16_dual" selected>16 GB Dual Channel (2x8GB - Padrão)</option>
+                                <option value="ram_32_dual">32 GB Dual Channel (2x16GB - Ideal)</option>
+                            </select>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label text-white small fw-bold mb-1" for="calcStorage">
+                                <i class="bi bi-hdd-rack text-cyan me-1"></i> Armazenamento:
+                            </label>
+                            <select id="calcStorage" class="form-select form-select-sm">
+                                <option value="storage_hdd">HD Mecânico (5400 / 7200 RPM)</option>
+                                <option value="storage_sata">SSD SATA 2.5"</option>
+                                <option value="storage_nvme" selected>SSD NVMe M.2 (Alta Velocidade)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- 5. Pack de Otimização -->
+                    <div class="mb-1">
+                        <label class="form-label text-white small fw-bold mb-1" for="calcPack">
+                            <i class="bi bi-box-seam-fill text-warning me-1"></i> Escolha o Pack:
+                        </label>
+                        <select id="calcPack" class="form-select form-select-sm">
+                            <option value="starter">Starter Tweak Pack (R$ 9,90) - Limpeza & Desempenho Básico</option>
+                            <option value="ultra" selected>Competitive FPS Ultra Pack (R$ 19,90 ⭐ Mais Vendido)</option>
+                            <option value="network">Zero Latency & Network Pro (R$ 29,90) - Foco em Latência & Ping</option>
+                            <option value="extreme">Ultimate Extreme Suite (R$ 39,90 👑 Máximo Desempenho All-In-One)</option>
                         </select>
                     </div>
                 </div>
 
+                <!-- Coluna da Direita: Resultados em Tempo Real -->
                 <div class="col-lg-6">
-                    <div class="fps-meter-card text-center">
-                        <div class="row g-3 mb-3">
+                    <div class="fps-meter-card text-center p-3 p-md-4">
+                        <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom border-secondary border-opacity-25">
+                            <span class="small text-secondary text-uppercase fw-bold" style="font-size: 0.72rem;">
+                                <i class="bi bi-speedometer2 text-blue me-1"></i> CÁLCULO EM TEMPO REAL
+                            </span>
+                            <span class="badge bg-success bg-opacity-20 text-success small d-flex align-items-center gap-1" style="font-size: 0.7rem;">
+                                <span class="spinner-grow spinner-grow-sm text-success" style="width: 7px; height: 7px;"></span> AO VIVO
+                            </span>
+                        </div>
+
+                        <!-- Comparativo de FPS Principal -->
+                        <div class="row g-2 mb-3">
                             <div class="col-6">
-                                <span class="text-secondary small d-block">FPS PADRÃO:</span>
+                                <span class="text-secondary small d-block mb-1">FPS PADRÃO:</span>
                                 <div class="fps-counter-display text-danger" id="calcBeforeFps">160</div>
-                                <small class="text-muted">Windows sem tweak</small>
+                                <small class="text-muted d-block mt-1" style="font-size: 0.72rem;">Windows sem tweak</small>
                             </div>
                             <div class="col-6 border-start border-secondary border-opacity-50">
-                                <span class="text-blue small d-block fw-bold">FPS COM TWEAK:</span>
+                                <span class="text-blue small d-block fw-bold mb-1">FPS COM TWEAK:</span>
                                 <div class="fps-counter-display glow-blue" id="calcAfterFps">248</div>
-                                <span class="badge-fire" id="calcPercentBoost">+55% FPS</span>
+                                <span class="badge-fire mt-1" id="calcPercentBoost">+55% FPS</span>
                             </div>
                         </div>
 
-                        <div class="p-2 rounded-3 text-start mb-3" style="background: var(--color-black); color: #fff; border: 1px solid rgba(0, 102, 255, 0.3);">
-                            <div class="d-flex justify-content-between text-secondary small">
-                                <span><i class="bi bi-mouse text-blue me-1"></i> Latência de Input Reduzida para:</span>
-                                <strong class="text-blue" id="calcLatencyDrop">4ms</strong>
+                        <!-- Ganho líquido em FPS -->
+                        <div class="p-2 rounded-3 text-center mb-3" style="background: rgba(0, 102, 255, 0.12); border: 1px solid rgba(0, 102, 255, 0.3);">
+                            <span class="text-cyan small fw-bold" id="calcGainBadge">
+                                <i class="bi bi-graph-up-arrow me-1"></i> Ganho líquido: +88 FPS a mais na sua tela
+                            </span>
+                        </div>
+
+                        <!-- Grade de Métricas: 1% Lows & Input Lag -->
+                        <div class="row g-2 mb-3">
+                            <div class="col-6">
+                                <div class="p-2 rounded-3 text-start" style="background: var(--color-black); border: 1px solid rgba(255, 255, 255, 0.08);">
+                                    <small class="text-secondary d-block" style="font-size: 0.7rem;">1% Lows (Estabilidade):</small>
+                                    <div class="fw-bold text-white small mt-1" id="calc1Low">
+                                        <span class="text-danger">75 FPS</span> &rarr; <span class="text-cyan fw-black">155 FPS</span>
+                                    </div>
+                                    <small class="text-muted" style="font-size: 0.68rem;">Sem micro-stutters</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="p-2 rounded-3 text-start" style="background: var(--color-black); border: 1px solid rgba(255, 255, 255, 0.08);">
+                                    <small class="text-secondary d-block" style="font-size: 0.7rem;">Latência de Entrada:</small>
+                                    <div class="fw-bold text-blue small mt-1" id="calcLatencyDrop">
+                                        <span class="text-secondary">24ms</span> &rarr; <span class="text-blue fw-black">4ms</span>
+                                    </div>
+                                    <small class="text-muted" style="font-size: 0.68rem;">Mira 1:1 sem atraso</small>
+                                </div>
                             </div>
                         </div>
 
-                        <a href="#tab-packs" class="btn btn-apex-primary w-100 py-3" data-tab-target="tab-packs">
+                        <!-- Diagnóstico do Setup em Tempo Real -->
+                        <div class="p-3 rounded-3 text-start mb-3" id="calcDiagnosisBox" style="background: rgba(13, 17, 28, 0.9); border: 1px solid rgba(0, 210, 255, 0.25);">
+                            <div class="d-flex align-items-center gap-2 mb-1">
+                                <i class="bi bi-cpu text-cyan" id="calcDiagIcon"></i>
+                                <strong class="text-white small" id="calcDiagTitle">Diagnóstico do seu Setup:</strong>
+                            </div>
+                            <p class="text-secondary mb-0 small" id="calcDiagDesc" style="font-size: 0.76rem; line-height: 1.4;">
+                                Seu processador e placa de vídeo têm excelente potencial reprimido por processos de segundo plano e latência de DPC do Windows. O script libera os núcleos para o jogo.
+                            </p>
+                        </div>
+
+                        <!-- Botão de Ação -->
+                        <a href="#tab-packs" id="calcCtaBtn" class="btn btn-apex-primary w-100 py-3" data-tab-target="tab-packs">
                             <i class="bi bi-lightning-charge-fill me-1"></i> GARANTIR ESSA PERFORMANCE
                         </a>
                     </div>

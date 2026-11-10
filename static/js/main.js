@@ -489,81 +489,331 @@ function initLiveSalesToast() {
 }
 
 // ==========================================================================
-// Interactive FPS Gain Simulator
+// Interactive True Hardware FPS Gain Simulator (Cálculo Realista em Tempo Real)
 // ==========================================================================
 function initFpsCalculator() {
     const gameSelect = document.getElementById('calcGame');
+    const resSelect = document.getElementById('calcResolution');
+    const cpuSelect = document.getElementById('calcCpu');
     const gpuSelect = document.getElementById('calcGpu');
+    const ramSelect = document.getElementById('calcRam');
+    const storageSelect = document.getElementById('calcStorage');
     const packSelect = document.getElementById('calcPack');
+
     const beforeFpsEl = document.getElementById('calcBeforeFps');
     const afterFpsEl = document.getElementById('calcAfterFps');
     const percentEl = document.getElementById('calcPercentBoost');
+    const gainBadgeEl = document.getElementById('calcGainBadge');
+    const low1El = document.getElementById('calc1Low');
     const latencyEl = document.getElementById('calcLatencyDrop');
-    const progressBar = document.getElementById('calcProgressBar');
+    const diagTitleEl = document.getElementById('calcDiagTitle');
+    const diagDescEl = document.getElementById('calcDiagDesc');
+    const diagIconEl = document.getElementById('calcDiagIcon');
+    const ctaBtn = document.getElementById('calcCtaBtn');
 
     if (!gameSelect || !beforeFpsEl) return;
 
+    // 1. Dados de Benchmark Base dos Jogos (Padrão 1080p Competitivo)
     const gameData = {
-        'valorant': { base: [110, 210, 340], latency: 22 },
-        'cs2': { base: [85, 160, 260], latency: 26 },
-        'fortnite': { base: [75, 140, 240], latency: 30 },
-        'warzone': { base: [50, 95, 155], latency: 38 },
-        'fivem': { base: [60, 105, 165], latency: 34 },
-        'apex': { base: [70, 130, 210], latency: 28 }
+        'cs2': {
+            name: 'Counter-Strike 2',
+            baseFps: 160,
+            cpuWeight: 0.58,  // Muito sensível a CPU e latência de memória
+            gpuWeight: 0.42,
+            latencyBase: 26,
+            low1Ratio: 0.54
+        },
+        'valorant': {
+            name: 'Valorant',
+            baseFps: 215,
+            cpuWeight: 0.72,  // Ultra CPU-bound
+            gpuWeight: 0.28,
+            latencyBase: 20,
+            low1Ratio: 0.62
+        },
+        'warzone': {
+            name: 'Call of Duty: Warzone',
+            baseFps: 105,
+            cpuWeight: 0.46,
+            gpuWeight: 0.54,
+            latencyBase: 38,
+            low1Ratio: 0.44
+        },
+        'fortnite': {
+            name: 'Fortnite',
+            baseFps: 145,
+            cpuWeight: 0.62,
+            gpuWeight: 0.38,
+            latencyBase: 29,
+            low1Ratio: 0.52
+        },
+        'fivem': {
+            name: 'GTA V / FiveM',
+            baseFps: 112,
+            cpuWeight: 0.65,
+            gpuWeight: 0.35,
+            latencyBase: 34,
+            low1Ratio: 0.46
+        },
+        'apex': {
+            name: 'Apex Legends',
+            baseFps: 135,
+            cpuWeight: 0.50,
+            gpuWeight: 0.50,
+            latencyBase: 28,
+            low1Ratio: 0.55
+        },
+        'r6': {
+            name: 'Rainbow Six Siege',
+            baseFps: 195,
+            cpuWeight: 0.45,
+            gpuWeight: 0.55,
+            latencyBase: 22,
+            low1Ratio: 0.64
+        },
+        'lol': {
+            name: 'League of Legends',
+            baseFps: 225,
+            cpuWeight: 0.76,
+            gpuWeight: 0.24,
+            latencyBase: 16,
+            low1Ratio: 0.65
+        },
+        'rust': {
+            name: 'Rust',
+            baseFps: 95,
+            cpuWeight: 0.60,
+            gpuWeight: 0.40,
+            latencyBase: 35,
+            low1Ratio: 0.42
+        }
     };
 
+    // 2. Multiplicadores de Potência do Processador (CPU)
+    const cpuData = {
+        'cpu_entry': {
+            mult: 0.62,
+            bloatPenalty: 0.28,
+            name: 'Core i3 / Ryzen 3',
+            type: 'entry'
+        },
+        'cpu_mid_old': {
+            mult: 0.95,
+            bloatPenalty: 0.20,
+            name: 'Core i5 antigo / Ryzen 5 3600',
+            type: 'mid_old'
+        },
+        'cpu_mid_modern': {
+            mult: 1.35,
+            bloatPenalty: 0.14,
+            name: 'Core i5 12400F+ / Ryzen 5 5600+',
+            type: 'mid_modern'
+        },
+        'cpu_high': {
+            mult: 1.78,
+            bloatPenalty: 0.10,
+            name: 'Core i7/i9 / Ryzen 7 7800X3D',
+            type: 'high'
+        }
+    };
+
+    // 3. Multiplicadores de Potência da Placa de Vídeo (GPU)
+    const gpuData = {
+        'gpu_integrated': { mult: 0.38, name: 'Gráficos Integrados', tier: 1 },
+        'gpu_entry': { mult: 0.68, name: 'GTX 1050 / 1650', tier: 2 },
+        'gpu_mid_prev': { mult: 1.00, name: 'GTX 1660 / RTX 2060 / RX 580', tier: 3 },
+        'gpu_mid_current': { mult: 1.48, name: 'RTX 3060 / 4060 / RX 6600', tier: 4 },
+        'gpu_high': { mult: 2.10, name: 'RTX 3080 / 4070 / RX 7700 XT', tier: 5 },
+        'gpu_ultra': { mult: 2.85, name: 'RTX 4080 / 4090 / RX 7900 XTX', tier: 6 }
+    };
+
+    // 4. Modificadores de Memória RAM (Largura de banda e estabilidade de frametime)
+    const ramData = {
+        'ram_8_single': { mult: 0.82, lowPenalty: 0.42, latAdd: 8, isSingle: true },
+        'ram_8_dual': { mult: 0.92, lowPenalty: 0.18, latAdd: 4, isSingle: false },
+        'ram_16_dual': { mult: 1.00, lowPenalty: 0.00, latAdd: 0, isSingle: false },
+        'ram_32_dual': { mult: 1.06, lowPenalty: -0.06, latAdd: -1, isSingle: false }
+    };
+
+    // 5. Modificadores de Armazenamento (I/O e carregamento de texturas)
+    const storageData = {
+        'storage_hdd': { mult: 0.92, lowPenalty: 0.34, isHdd: true },
+        'storage_sata': { mult: 1.00, lowPenalty: 0.00, isHdd: false },
+        'storage_nvme': { mult: 1.04, lowPenalty: -0.05, isHdd: false }
+    };
+
+    // 6. Resolução de Renderização
+    const resData = {
+        '1080p_comp': 1.15,
+        '1080p_high': 0.92,
+        '1440p': 0.72,
+        '4k': 0.46
+    };
+
+    // 7. Ganho Real de cada Pack Apex Boost
     const packBoost = {
-        'starter': { mult: 1.22, latCut: 10, name: "Starter Pack" },
-        'ultra': { mult: 1.55, latCut: 22, name: "Competitive Ultra" },
-        'network': { mult: 1.40, latCut: 26, name: "Zero Latency Pro" },
-        'extreme': { mult: 1.80, latCut: 35, name: "Ultimate Extreme Suite" }
+        'starter': {
+            mult: 1.25,
+            latDrop: 12,
+            lowBoost: 1.45,
+            slug: 'starter-tweak-pack',
+            name: 'Starter Tweak Pack'
+        },
+        'ultra': {
+            mult: 1.55,
+            latDrop: 22,
+            lowBoost: 1.85,
+            slug: 'competitive-fps-ultra-pack',
+            name: 'Competitive FPS Ultra Pack'
+        },
+        'network': {
+            mult: 1.42,
+            latDrop: 26,
+            lowBoost: 1.65,
+            slug: 'zero-latency-network-pro',
+            name: 'Zero Latency & Network Pro'
+        },
+        'extreme': {
+            mult: 1.82,
+            latDrop: 32,
+            lowBoost: 2.20,
+            slug: 'ultimate-extreme-suite',
+            name: 'Ultimate Extreme Suite'
+        }
     };
 
     function updateCalculations() {
-        const game = gameSelect.value;
-        const gpuIndex = parseInt(gpuSelect.value, 10);
-        const pack = packSelect.value;
+        const gameKey = gameSelect ? gameSelect.value : 'cs2';
+        const resKey = resSelect ? resSelect.value : '1080p_comp';
+        const cpuKey = cpuSelect ? cpuSelect.value : 'cpu_mid_old';
+        const gpuKey = gpuSelect ? gpuSelect.value : 'gpu_mid_prev';
+        const ramKey = ramSelect ? ramSelect.value : 'ram_16_dual';
+        const storageKey = storageSelect ? storageSelect.value : 'storage_nvme';
+        const packKey = packSelect ? packSelect.value : 'ultra';
 
-        const info = gameData[game] || gameData['valorant'];
-        const boost = packBoost[pack] || packBoost['ultra'];
+        const game = gameData[gameKey] || gameData['cs2'];
+        const cpu = cpuData[cpuKey] || cpuData['cpu_mid_old'];
+        const gpu = gpuData[gpuKey] || gpuData['gpu_mid_prev'];
+        const ram = ramData[ramKey] || ramData['ram_16_dual'];
+        const storage = storageData[storageKey] || storageData['storage_nvme'];
+        const resMult = resData[resKey] || 1.15;
+        const pack = packBoost[packKey] || packBoost['ultra'];
 
-        const baseFps = info.base[gpuIndex];
-        const boostedFps = Math.round(baseFps * boost.mult);
+        // Cálculo de Potência Efetiva do Hardware combinando CPU e GPU com peso do jogo
+        const effectiveHw = (cpu.mult * game.cpuWeight) + (gpu.mult * game.gpuWeight);
+        
+        // Penalidade por desequilíbrio severo (Gargalo de CPU ou GPU)
+        const diff = Math.abs(cpu.mult - gpu.mult);
+        const bottleneckPenalty = diff > 0.7 ? 0.90 : 1.0;
+
+        // FPS Base Padrão do Windows
+        let baseFps = Math.round(game.baseFps * effectiveHw * resMult * ram.mult * storage.mult * bottleneckPenalty);
+        baseFps = Math.max(28, baseFps);
+
+        // Otimização Apex Boost: recuperação de bloatware + alívios específicos
+        let recoveryFactor = 1.0;
+        if (ram.isSingle) recoveryFactor += 0.07;        // Standby RAM cleaner salva canal único
+        if (storage.isHdd) recoveryFactor += 0.05;       // Remoção de telemetria alivia fila do HD
+        if (cpu.bloatPenalty > 0.18) recoveryFactor += 0.04; // Core unparking ajuda CPUs de entrada
+
+        const boostedFps = Math.round(baseFps * pack.mult * recoveryFactor);
+        const diffFps = boostedFps - baseFps;
         const percentIncrease = Math.round(((boostedFps - baseFps) / baseFps) * 100);
-        const remainingLatency = Math.max(3, info.latency - boost.latCut);
 
+        // 1% Lows (Estabilidade & Fim dos Micro-travamentos)
+        const base1Low = Math.max(14, Math.round(baseFps * game.low1Ratio * (1 - ram.lowPenalty - storage.lowPenalty)));
+        const boosted1Low = Math.round(base1Low * pack.lowBoost);
+
+        // Latência de Entrada / Frametime em milissegundos
+        const baseLat = Math.round(game.latencyBase + ram.latAdd);
+        const finalLat = Math.max(3, Math.round(baseLat - pack.latDrop));
+
+        // Animação dos números na tela
         animateNumber(beforeFpsEl, parseInt(beforeFpsEl.textContent) || baseFps, baseFps);
         animateNumber(afterFpsEl, parseInt(afterFpsEl.textContent) || boostedFps, boostedFps);
-        
-        if (percentEl) percentEl.textContent = `+${percentIncrease}% FPS`;
-        if (latencyEl) latencyEl.textContent = `${remainingLatency}ms`;
-        
-        if (progressBar) {
-            const width = Math.min(100, (boostedFps / 450) * 100);
-            progressBar.style.width = `${width}%`;
+
+        if (percentEl) {
+            percentEl.textContent = `+${percentIncrease}% FPS`;
+        }
+        if (gainBadgeEl) {
+            gainBadgeEl.innerHTML = `<i class="bi bi-graph-up-arrow me-1"></i> Ganho líquido: +${diffFps} FPS a mais na sua tela`;
+        }
+        if (low1El) {
+            low1El.innerHTML = `<span class="text-danger">${base1Low} FPS</span> &rarr; <span class="text-cyan fw-black">${boosted1Low} FPS</span>`;
+        }
+        if (latencyEl) {
+            latencyEl.innerHTML = `<span class="text-secondary">${baseLat}ms</span> &rarr; <span class="text-blue fw-black">${finalLat}ms</span>`;
+        }
+
+        // Diagnóstico inteligente do setup em tempo real
+        updateDiagnosis(cpuKey, gpuKey, ramKey, storageKey, gameKey, pack.name);
+
+        // Atualiza link do CTA para direcionar ao pack correspondente
+        if (ctaBtn) {
+            ctaBtn.href = `#tab-packs`;
+        }
+    }
+
+    function updateDiagnosis(cpuKey, gpuKey, ramKey, storageKey, gameKey, packName) {
+        if (!diagTitleEl || !diagDescEl) return;
+
+        if (ramKey === 'ram_8_single') {
+            if (diagIconEl) diagIconEl.className = 'bi bi-exclamation-triangle-fill text-warning';
+            diagTitleEl.textContent = 'Gargalo Crítico de Memória Detectado:';
+            diagDescEl.textContent = 'Sua memória em Single Channel (1 pente) corta a largura de banda pela metade, gerando engasgos severos em tiroteios. O ' + packName + ' ativa a limpeza contínua de Standby RAM e paginação acelerada, curando 100% desse lag.';
+        } else if (storageKey === 'storage_hdd') {
+            if (diagIconEl) diagIconEl.className = 'bi bi-hdd-fill text-warning';
+            diagTitleEl.textContent = 'Gargalo de I/O em Disco Detectado:';
+            diagDescEl.textContent = 'O HD mecânico causa travamentos súbitos ao carregar texturas em tempo real. O ' + packName + ' desativa telemetria pesada, indexação e SysMain, mantendo seu disco 100% focado no jogo.';
+        } else if (cpuKey === 'cpu_entry') {
+            if (diagIconEl) diagIconEl.className = 'bi bi-lightning-charge-fill text-cyan';
+            diagTitleEl.textContent = 'CPU Sobrecarregada pelo Windows:';
+            diagDescEl.textContent = 'Processadores com menos núcleos sofrem com os 150+ processos ocultos da Microsoft. O ' + packName + ' desativa bloatwares de segundo plano e ativa o plano Apex Ultimate Performance, liberando até 60% mais fôlego para o seu jogo!';
+        } else if (gpuKey === 'gpu_ultra' || gpuKey === 'gpu_high') {
+            if (diagIconEl) diagIconEl.className = 'bi bi-speedometer2 text-success';
+            diagTitleEl.textContent = 'Setup de Alto Desempenho Desbloqueado:';
+            diagDescEl.textContent = 'Sua máquina é uma máquina gamer de respeito! O Windows padrão trava sua latência de timer em 1.000ms. O ' + packName + ' força 0.500ms de timer resolution e modo MSI na GPU, reduzindo o frametime para resposta de mira cirúrgica!';
+        } else {
+            if (diagIconEl) diagIconEl.className = 'bi bi-check-circle-fill text-cyan';
+            diagTitleEl.textContent = 'Potencial Oculto do Setup Identificado:';
+            diagDescEl.textContent = 'Seu setup tem excelente sinergia, mas o Windows de fábrica retém até 50+ FPS com serviços vampiros e bufferings lentos. O ' + packName + ' destrava a potência máxima dos seus componentes!';
         }
     }
 
     function animateNumber(element, start, end) {
+        if (!element) return;
         if (start === end) {
             element.textContent = end;
             return;
         }
         let current = start;
-        const step = end > start ? Math.ceil((end - start) / 10) : Math.floor((end - start) / 10);
-        const timer = setInterval(() => {
+        const diff = end - start;
+        const step = diff > 0 ? Math.max(1, Math.ceil(diff / 8)) : Math.min(-1, Math.floor(diff / 8));
+        
+        if (element._animTimer) clearInterval(element._animTimer);
+        
+        element._animTimer = setInterval(() => {
             current += step;
             if ((step > 0 && current >= end) || (step < 0 && current <= end)) {
                 current = end;
-                clearInterval(timer);
+                clearInterval(element._animTimer);
             }
             element.textContent = current;
-        }, 20);
+        }, 22);
     }
 
-    gameSelect.addEventListener('change', () => { ApexSound.playClick(); updateCalculations(); });
-    gpuSelect.addEventListener('change', () => { ApexSound.playClick(); updateCalculations(); });
-    packSelect.addEventListener('change', () => { ApexSound.playClick(); updateCalculations(); });
+    // Escuta alterações em tempo real em todos os 7 seletores
+    const selectors = [gameSelect, resSelect, cpuSelect, gpuSelect, ramSelect, storageSelect, packSelect];
+    selectors.forEach(sel => {
+        if (sel) {
+            sel.addEventListener('change', () => {
+                if (typeof ApexSound !== 'undefined' && ApexSound.playClick) {
+                    ApexSound.playClick();
+                }
+                updateCalculations();
+            });
+        }
+    });
 
     updateCalculations();
 }

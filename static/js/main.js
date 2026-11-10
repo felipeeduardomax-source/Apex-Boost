@@ -25,6 +25,9 @@ const ApexSound = (function() {
         enabled = !enabled;
         localStorage.setItem('apex_sound_enabled', enabled ? 'true' : 'false');
         updateSoundIcons(enabled);
+        if (typeof ApexMusic !== 'undefined') {
+            ApexMusic.onSoundToggle(enabled);
+        }
         if (enabled) {
             playTone(880, 0.08, 'sine', 0.05);
         }
@@ -92,11 +95,196 @@ const ApexSound = (function() {
 })();
 
 // ==========================================================================
+// Ambient Background Music Player (Vicetone - Nevada)
+// Reprodução contínua em volume suave/baixo (15%) para imersão gamer
+// ==========================================================================
+const ApexMusic = (function() {
+    let audio = null;
+    let enabled = localStorage.getItem('apex_sound_enabled') !== 'false';
+    let isPlaying = false;
+    let hasInteracted = false;
+    let savedVol = parseFloat(localStorage.getItem('apex_music_volume'));
+    if (isNaN(savedVol) || savedVol < 0 || savedVol > 0.5) {
+        savedVol = 0.15; // Volume baixo (15%) conforme solicitação
+    }
+
+    function getAudio() {
+        if (!audio) {
+            audio = new Audio('/static/audio/nevada.mp3');
+            audio.loop = true;
+            audio.preload = 'auto';
+            audio.volume = savedVol;
+
+            // Restaura posição salva da música entre mudanças de página
+            const savedTime = parseFloat(localStorage.getItem('apex_music_time'));
+            if (!isNaN(savedTime) && savedTime > 0) {
+                try {
+                    audio.currentTime = savedTime;
+                } catch(e) {}
+            }
+
+            audio.addEventListener('play', () => updatePills(true));
+            audio.addEventListener('pause', () => updatePills(false));
+            audio.addEventListener('ended', () => {
+                audio.currentTime = 0;
+                audio.play().catch(() => {});
+            });
+        }
+        return audio;
+    }
+
+    function updatePills(playing) {
+        isPlaying = playing;
+        document.querySelectorAll('.apex-music-pill').forEach(pill => {
+            if (playing) {
+                pill.classList.add('apex-music-playing');
+                pill.setAttribute('title', 'Música Ativa: Vicetone - Nevada (Clique para pausar)');
+            } else {
+                pill.classList.remove('apex-music-playing');
+                pill.setAttribute('title', 'Música Pausada: Vicetone - Nevada (Clique para tocar)');
+            }
+        });
+        document.querySelectorAll('.music-volume-slider').forEach(slider => {
+            slider.value = audio ? audio.volume : savedVol;
+        });
+    }
+
+    function play() {
+        if (!enabled) return;
+        const player = getAudio();
+        player.volume = savedVol;
+        const promise = player.play();
+        if (promise !== undefined) {
+            promise.then(() => {
+                updatePills(true);
+            }).catch(() => {
+                // Navegadores bloqueiam autoplay sem interação prévia; aguarda 1º clique
+                updatePills(false);
+                setupAutoplayGesture();
+            });
+        }
+    }
+
+    function pause() {
+        if (audio) {
+            audio.pause();
+        }
+        updatePills(false);
+    }
+
+    function toggle() {
+        const player = getAudio();
+        if (player.paused) {
+            if (!enabled) {
+                ApexSound.toggle();
+            }
+            play();
+        } else {
+            pause();
+        }
+    }
+
+    function setVolume(vol) {
+        vol = Math.max(0, Math.min(0.5, vol));
+        savedVol = vol;
+        localStorage.setItem('apex_music_volume', vol.toString());
+        const player = getAudio();
+        player.volume = vol;
+        if (vol === 0) {
+            pause();
+        } else if (player.paused && enabled) {
+            play();
+        }
+    }
+
+    function onSoundToggle(soundOn) {
+        enabled = soundOn;
+        if (soundOn) {
+            play();
+        } else {
+            pause();
+        }
+    }
+
+    function setupAutoplayGesture() {
+        if (hasInteracted) return;
+        const startOnGesture = () => {
+            hasInteracted = true;
+            if (enabled && audio && audio.paused) {
+                audio.play().then(() => {
+                    updatePills(true);
+                }).catch(() => {});
+            }
+            ['pointerdown', 'click', 'keydown', 'touchstart'].forEach(evt => {
+                document.removeEventListener(evt, startOnGesture);
+            });
+        };
+
+        ['pointerdown', 'click', 'keydown', 'touchstart'].forEach(evt => {
+            document.addEventListener(evt, startOnGesture, { once: true, passive: true });
+        });
+    }
+
+    function init() {
+        getAudio();
+
+        // Salva periodicamente a posição de reprodução e ao sair da página
+        window.addEventListener('beforeunload', () => {
+            if (audio && !audio.paused && audio.currentTime > 0) {
+                localStorage.setItem('apex_music_time', audio.currentTime.toString());
+            }
+        });
+
+        setInterval(() => {
+            if (audio && !audio.paused && audio.currentTime > 0) {
+                localStorage.setItem('apex_music_time', audio.currentTime.toString());
+            }
+        }, 3000);
+
+        // Vincula cliques no mini player da música
+        document.querySelectorAll('.apex-music-pill').forEach(pill => {
+            pill.addEventListener('click', (e) => {
+                if (e.target.classList.contains('music-volume-slider')) return;
+                toggle();
+            });
+        });
+
+        // Vincula sliders de volume
+        document.querySelectorAll('.music-volume-slider').forEach(slider => {
+            slider.value = savedVol;
+            slider.addEventListener('input', (e) => {
+                e.stopPropagation();
+                setVolume(parseFloat(e.target.value));
+            });
+            slider.addEventListener('click', (e) => e.stopPropagation());
+        });
+
+        if (enabled) {
+            play();
+            setupAutoplayGesture();
+        } else {
+            updatePills(false);
+        }
+    }
+
+    return {
+        init,
+        play,
+        pause,
+        toggle,
+        setVolume,
+        onSoundToggle,
+        getAudio
+    };
+})();
+
+// ==========================================================================
 // Initialization on DOM Ready
 // ==========================================================================
 document.addEventListener('DOMContentLoaded', () => {
     initThemeToggle();
     initSoundToggle();
+    ApexMusic.init();
     initSidebarDrawer();
     initSidebarTabs();
     initPackSearchAndFilters();

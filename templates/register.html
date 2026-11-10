@@ -730,15 +730,6 @@
                 <p class="auth-subtitle mb-0">Cadastre-se para liberar o acesso total ao site</p>
             </div>
 
-            {% if admin_logged %}
-            <div class="alert alert-warning border-0 rounded-3 py-2 px-3 small mb-3 d-flex align-items-center gap-2" style="background: rgba(255, 193, 7, 0.15); color: #ffda6a; border: 1px solid rgba(255, 193, 7, 0.3) !important;">
-                <i class="bi bi-shield-lock-fill fs-5 text-warning flex-shrink-0"></i>
-                <div>
-                    <strong>Sessão de Admin Ativa:</strong> Cadastre uma nova conta de teste para navegar na loja simultaneamente sem perder o acesso ao Painel Admin!
-                </div>
-            </div>
-            {% endif %}
-
             <!-- Flash Alerts -->
             <div id="authAlertContainer">
                 {% with messages = get_flashed_messages(with_categories=true) %}

@@ -144,7 +144,8 @@ def security_firewall():
     # 4. Endpoints públicos permitidos sem autenticação
     public_endpoints = {
         'login', 'register', 'forgot_password', 'reset_password',
-        'login_discord', 'login_discord_callback', 'login_google', 'login_google_callback',
+        'login_discord', 'login_discord_callback', 'login_discord_choose', 'login_discord_select',
+        'login_google', 'login_google_callback', 'login_google_choose', 'login_google_select',
         'static', 'favicon', 'api_ping'
     }
     if request.endpoint in public_endpoints or (request.endpoint and request.endpoint.startswith('static')):
@@ -598,10 +599,8 @@ def login_discord():
     next_url = request.args.get('next')
 
     if not client_id or not client_secret:
-        login_or_create_social_user('gamer.discord@apexboost.gg', 'Discord Gamer ⚡', provider='discord')
-        flash('Login com Discord realizado com sucesso! Bem-vindo(a), Discord Gamer! 🎮', 'success')
-        target = next_url if is_safe_redirect(next_url) else url_for('index')
-        return redirect(target)
+        # Abre tela interativa de escolha/autorização de conta do Discord
+        return redirect(url_for('login_discord_choose', next=next_url))
 
     redirect_uri = os.environ.get('DISCORD_REDIRECT_URI') or url_for('login_discord_callback', _external=True)
     state = secrets.token_urlsafe(16)
@@ -611,9 +610,28 @@ def login_discord():
 
     discord_auth_url = (
         f"https://discord.com/api/oauth2/authorize?client_id={client_id}&response_type=code"
-        f"&redirect_uri={urllib.parse.quote(redirect_uri)}&scope=identify%20email&state={state}"
+        f"&redirect_uri={urllib.parse.quote(redirect_uri)}&scope=identify%20email&state={state}&prompt=consent"
     )
     return redirect(discord_auth_url)
+
+@app.route('/login/discord/choose')
+def login_discord_choose():
+    next_url = request.args.get('next')
+    return render_template('discord_account_picker.html', next_url=next_url)
+
+@app.route('/login/discord/select', methods=['POST'])
+def login_discord_select():
+    name = request.form.get('name', 'Discord Gamer').strip()
+    email = request.form.get('email', '').strip().lower()
+    next_url = request.form.get('next')
+
+    if not email:
+        email = f"{re.sub(r'[^a-zA-Z0-9]', '', name).lower()}@discord.gg"
+
+    login_or_create_social_user(email, name, provider='discord')
+    flash(f'Conectado via Discord com sucesso! Bem-vindo(a), {name}! 🎮', 'success')
+    target = next_url if is_safe_redirect(next_url) else url_for('index')
+    return redirect(target)
 
 @app.route('/login/discord/callback')
 def login_discord_callback():
@@ -679,10 +697,8 @@ def login_google():
     next_url = request.args.get('next')
 
     if not client_id or not client_secret:
-        login_or_create_social_user('gamer.google@apexboost.gg', 'Google Gamer 🚀', provider='google')
-        flash('Login com Google realizado com sucesso! Bem-vindo(a), Google Gamer! ✨', 'success')
-        target = next_url if is_safe_redirect(next_url) else url_for('index')
-        return redirect(target)
+        # Abre tela interativa idêntica à do Google para o usuário escolher qual conta quer usar
+        return redirect(url_for('login_google_choose', next=next_url))
 
     redirect_uri = os.environ.get('GOOGLE_REDIRECT_URI') or url_for('login_google_callback', _external=True)
     state = secrets.token_urlsafe(16)
@@ -690,11 +706,31 @@ def login_google():
     if next_url and is_safe_redirect(next_url):
         session['oauth_next'] = next_url
 
+    # prompt=select_account força a Google a sempre exibir o seletor de contas
     google_auth_url = (
         f"https://accounts.google.com/o/oauth2/v2/auth?client_id={client_id}&response_type=code"
-        f"&redirect_uri={urllib.parse.quote(redirect_uri)}&scope=openid%20email%20profile&state={state}"
+        f"&redirect_uri={urllib.parse.quote(redirect_uri)}&scope=openid%20email%20profile&state={state}&prompt=select_account"
     )
     return redirect(google_auth_url)
+
+@app.route('/login/google/choose')
+def login_google_choose():
+    next_url = request.args.get('next')
+    return render_template('google_account_picker.html', next_url=next_url)
+
+@app.route('/login/google/select', methods=['POST'])
+def login_google_select():
+    name = request.form.get('name', 'Google User').strip()
+    email = request.form.get('email', '').strip().lower()
+    next_url = request.form.get('next')
+
+    if not email:
+        email = f"{re.sub(r'[^a-zA-Z0-9]', '', name).lower()}@gmail.com"
+
+    login_or_create_social_user(email, name, provider='google')
+    flash(f'Conectado via Google com sucesso! Bem-vindo(a), {name}! ✨', 'success')
+    target = next_url if is_safe_redirect(next_url) else url_for('index')
+    return redirect(target)
 
 @app.route('/login/google/callback')
 def login_google_callback():

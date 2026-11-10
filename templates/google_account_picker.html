@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-bs-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fazer login com o Google | Escolha uma conta</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='img/favicon.svg') }}?v=2">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='img/favicon.ico') }}?v=2">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Bootstrap 5.3 CSS & Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        body {
+            background-color: #131314 !important;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 24px 16px;
+            font-family: 'Roboto', 'Inter', -apple-system, sans-serif;
+            color: #e3e3e3 !important;
+        }
+
+        .google-card {
+            background: #1e1f20;
+            border: 1px solid #3c4043;
+            border-radius: 28px;
+            width: 100%;
+            max-width: 460px;
+            padding: 40px 36px 32px 36px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            text-align: center;
+        }
+
+        .google-header-logo {
+            margin-bottom: 20px;
+        }
+
+        .google-title {
+            font-size: 1.5rem;
+            font-weight: 500;
+            color: #ffffff;
+            margin-bottom: 6px;
+            letter-spacing: -0.2px;
+        }
+
+        .google-subtitle {
+            font-size: 0.95rem;
+            color: #c4c7c5;
+            margin-bottom: 28px;
+        }
+
+        .account-list {
+            display: flex;
+            flex-direction: column;
+            border-top: 1px solid #3c4043;
+            border-bottom: 1px solid #3c4043;
+            margin-bottom: 24px;
+        }
+
+        .account-item-btn {
+            background: transparent;
+            border: none;
+            width: 100%;
+            padding: 14px 12px;
+            display: flex;
+            align-items: center;
+            text-align: left;
+            color: #e3e3e3;
+            text-decoration: none;
+            transition: background 0.15s ease;
+            cursor: pointer;
+            border-bottom: 1px solid #2d2f31;
+        }
+
+        .account-item-btn:last-child {
+            border-bottom: none;
+        }
+
+        .account-item-btn:hover {
+            background: #2a2b2d;
+        }
+
+        .account-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.15rem;
+            color: #ffffff;
+            margin-right: 16px;
+            flex-shrink: 0;
+        }
+
+        .avatar-blue {
+            background: linear-gradient(135deg, #1a73e8, #4285f4);
+        }
+
+        .avatar-purple {
+            background: linear-gradient(135deg, #7c3aed, #a855f7);
+        }
+
+        .avatar-other {
+            background: #2d2f31;
+            color: #c4c7c5;
+            border: 1px dashed #5e6368;
+        }
+
+        .account-info {
+            flex-grow: 1;
+            overflow: hidden;
+        }
+
+        .account-name {
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: #ffffff;
+            line-height: 1.25;
+        }
+
+        .account-email {
+            font-size: 0.82rem;
+            color: #9aa0a6;
+            margin-top: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .custom-account-box {
+            background: #242527;
+            border: 1px solid #444746;
+            border-radius: 16px;
+            padding: 18px;
+            margin-bottom: 20px;
+            text-align: left;
+            display: none;
+        }
+
+        .custom-account-box.active {
+            display: block;
+        }
+
+        .google-input {
+            background: #131314 !important;
+            border: 1px solid #5e6368 !important;
+            color: #ffffff !important;
+            border-radius: 8px !important;
+            padding: 10px 14px;
+            font-size: 0.92rem;
+            margin-bottom: 12px;
+        }
+
+        .google-input:focus {
+            border-color: #8ab4f8 !important;
+            box-shadow: 0 0 0 2px rgba(138, 180, 248, 0.25) !important;
+        }
+
+        .btn-google-primary {
+            background: #8ab4f8;
+            color: #041e49;
+            font-weight: 600;
+            font-size: 0.9rem;
+            border: none;
+            border-radius: 20px;
+            padding: 10px 24px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-google-primary:hover {
+            background: #a8c7fa;
+            color: #041e49;
+        }
+
+        .google-footer-notice {
+            font-size: 0.76rem;
+            color: #8e918f;
+            line-height: 1.45;
+            margin-top: 14px;
+            padding: 10px 12px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            text-align: left;
+        }
+
+        .btn-cancel {
+            color: #8ab4f8;
+            text-decoration: none;
+            font-size: 0.88rem;
+            font-weight: 500;
+        }
+
+        .btn-cancel:hover {
+            text-decoration: underline;
+            color: #a8c7fa;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="google-card">
+        <!-- Google Official Logo -->
+        <div class="google-header-logo">
+            <svg viewBox="0 0 24 24" width="36" height="36">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+            </svg>
+        </div>
+
+        <h1 class="google-title">Fazer login com o Google</h1>
+        <p class="google-subtitle">Escolha uma conta para continuar em <strong class="text-white">Apex Boost Labs</strong></p>
+
+        <!-- Lista de Contas Disponíveis -->
+        <div class="account-list">
+            <!-- Conta 1: Felipe / Conta Principal -->
+            <form method="POST" action="{{ url_for('login_google_select') }}">
+                <input type="hidden" name="name" value="Felipe">
+                <input type="hidden" name="email" value="felipe@gmail.com">
+                <input type="hidden" name="next" value="{{ next_url or '' }}">
+                <button type="submit" class="account-item-btn">
+                    <div class="account-avatar avatar-blue">F</div>
+                    <div class="account-info">
+                        <div class="account-name">Felipe</div>
+                        <div class="account-email">felipe@gmail.com</div>
+                    </div>
+                    <i class="bi bi-chevron-right text-secondary small"></i>
+                </button>
+            </form>
+
+            <!-- Conta 2: Gamer Apex -->
+            <form method="POST" action="{{ url_for('login_google_select') }}">
+                <input type="hidden" name="name" value="Apex Gamer">
+                <input type="hidden" name="email" value="gamer.apex@gmail.com">
+                <input type="hidden" name="next" value="{{ next_url or '' }}">
+                <button type="submit" class="account-item-btn">
+                    <div class="account-avatar avatar-purple">A</div>
+                    <div class="account-info">
+                        <div class="account-name">Apex Gamer</div>
+                        <div class="account-email">gamer.apex@gmail.com</div>
+                    </div>
+                    <i class="bi bi-chevron-right text-secondary small"></i>
+                </button>
+            </form>
+
+            <!-- Opção 3: Usar outra conta (abre campos para digitar seu próprio e-mail) -->
+            <button type="button" class="account-item-btn" id="btnUseOtherAccount">
+                <div class="account-avatar avatar-other">
+                    <i class="bi bi-person-plus-fill"></i>
+                </div>
+                <div class="account-info">
+                    <div class="account-name">Usar outra conta do Google</div>
+                    <div class="account-email">Digite qualquer e-mail @gmail.com ou seu nome</div>
+                </div>
+                <i class="bi bi-pencil text-secondary small"></i>
+            </button>
+        </div>
+
+        <!-- Formulário Dinâmico: Digitar outra conta -->
+        <div class="custom-account-box" id="customAccountBox">
+            <h6 class="text-white fw-bold mb-3 small"><i class="bi bi-google me-1"></i> Informar Dados da Conta Google</h6>
+            <form method="POST" action="{{ url_for('login_google_select') }}">
+                <input type="hidden" name="next" value="{{ next_url or '' }}">
+                <div class="mb-2">
+                    <label class="form-label small text-secondary mb-1">Seu Nome / Como quer ser chamado:</label>
+                    <input type="text" name="name" class="form-control google-input" placeholder="Ex: Felipe Silva" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small text-secondary mb-1">Seu E-mail do Google:</label>
+                    <input type="email" name="email" class="form-control google-input" placeholder="seuemail@gmail.com" required>
+                </div>
+                <div class="d-flex justify-content-end gap-2">
+                    <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3" id="btnCancelCustom">Cancelar</button>
+                    <button type="submit" class="btn btn-google-primary">Continuar</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Botão de Voltar -->
+        <div class="d-flex justify-content-between align-items-center mt-3">
+            <a href="{{ url_for('login') }}" class="btn-cancel">
+                <i class="bi bi-arrow-left me-1"></i> Cancelar e voltar
+            </a>
+            <span class="small text-secondary">Português (Brasil)</span>
+        </div>
+
+        <!-- Aviso Informativo -->
+        <div class="google-footer-notice">
+            <i class="bi bi-info-circle-fill text-info me-1"></i>
+            <strong>Escolha de Conta Ativa:</strong> Você escolhe exatamente com qual conta e nome quer entrar no Apex Boost. Para abrir a janela oficial externa do Google Cloud (<code>accounts.google.com</code>), basta definir as chaves <code>GOOGLE_CLIENT_ID</code> e <code>GOOGLE_CLIENT_SECRET</code> no seu <code>.env</code>.
+        </div>
+    </div>
+
+    <script>
+        const btnUseOther = document.getElementById('btnUseOtherAccount');
+        const customBox = document.getElementById('customAccountBox');
+        const btnCancelCustom = document.getElementById('btnCancelCustom');
+
+        if (btnUseOther && customBox) {
+            btnUseOther.addEventListener('click', () => {
+                customBox.classList.toggle('active');
+                if (customBox.classList.contains('active')) {
+                    const input = customBox.querySelector('input[name="name"]');
+                    if (input) input.focus();
+                }
+            });
+        }
+
+        if (btnCancelCustom && customBox) {
+            btnCancelCustom.addEventListener('click', () => {
+                customBox.classList.remove('active');
+            });
+        }
+    </script>
+</body>
+</html>

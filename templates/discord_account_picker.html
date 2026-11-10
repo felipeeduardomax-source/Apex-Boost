@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-bs-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autorizar Discord | Apex Boost Labs</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='img/favicon.svg') }}?v=2">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='img/favicon.ico') }}?v=2">
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet">
+    <!-- Bootstrap 5.3 CSS & Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        body {
+            background-color: #1e1f22 !important;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 24px 16px;
+            font-family: 'Inter', sans-serif;
+            color: #dbdee1 !important;
+        }
+
+        .discord-card {
+            background: #2b2d31;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 480px;
+            padding: 36px 32px;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .discord-header-logo {
+            width: 64px;
+            height: 64px;
+            background: #5865F2;
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            font-size: 2.2rem;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 24px rgba(88, 101, 242, 0.45);
+        }
+
+        .discord-title {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 6px;
+        }
+
+        .discord-subtitle {
+            font-size: 0.9rem;
+            color: #949ba4;
+            margin-bottom: 24px;
+        }
+
+        .account-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 22px;
+        }
+
+        .account-item-btn {
+            background: #313338;
+            border: 1px solid #383a40;
+            border-radius: 14px;
+            width: 100%;
+            padding: 12px 14px;
+            display: flex;
+            align-items: center;
+            text-align: left;
+            color: #dbdee1;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .account-item-btn:hover {
+            background: #383a40;
+            border-color: #5865F2;
+            transform: translateY(-1px);
+        }
+
+        .account-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.15rem;
+            color: #ffffff;
+            margin-right: 14px;
+            flex-shrink: 0;
+            background: #5865F2;
+        }
+
+        .account-info {
+            flex-grow: 1;
+        }
+
+        .account-name {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .account-email {
+            font-size: 0.8rem;
+            color: #949ba4;
+        }
+
+        .btn-discord-primary {
+            background: #5865F2;
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 0.92rem;
+            border: none;
+            border-radius: 12px;
+            padding: 12px 20px;
+            width: 100%;
+            transition: background 0.2s;
+        }
+
+        .btn-discord-primary:hover {
+            background: #4752c4;
+            color: #ffffff;
+        }
+
+        .custom-account-box {
+            background: #1e1f22;
+            border: 1px solid #383a40;
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 20px;
+            text-align: left;
+            display: none;
+        }
+
+        .custom-account-box.active {
+            display: block;
+        }
+
+        .discord-input {
+            background: #313338 !important;
+            border: 1px solid #383a40 !important;
+            color: #ffffff !important;
+            border-radius: 10px !important;
+            padding: 10px 14px;
+            font-size: 0.9rem;
+            margin-bottom: 12px;
+        }
+
+        .discord-input:focus {
+            border-color: #5865F2 !important;
+            box-shadow: 0 0 0 2px rgba(88, 101, 242, 0.3) !important;
+        }
+
+        .btn-cancel {
+            color: #949ba4;
+            text-decoration: none;
+            font-size: 0.88rem;
+        }
+
+        .btn-cancel:hover {
+            color: #ffffff;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="discord-card">
+        <div class="discord-header-logo">
+            <i class="bi bi-discord"></i>
+        </div>
+
+        <h1 class="discord-title">Autorizar Acesso do Discord</h1>
+        <p class="discord-subtitle">O aplicativo <strong class="text-white">Apex Boost Labs</strong> quer acessar sua conta.</p>
+
+        <!-- Contas Sugeridas -->
+        <div class="account-list">
+            <!-- Conta 1: Felipe -->
+            <form method="POST" action="{{ url_for('login_discord_select') }}">
+                <input type="hidden" name="name" value="Felipe">
+                <input type="hidden" name="email" value="felipe.discord@apexboost.gg">
+                <input type="hidden" name="next" value="{{ next_url or '' }}">
+                <button type="submit" class="account-item-btn">
+                    <div class="account-avatar">
+                        <i class="bi bi-controller"></i>
+                    </div>
+                    <div class="account-info">
+                        <div class="account-name">Felipe#0001</div>
+                        <div class="account-email">felipe.discord@apexboost.gg</div>
+                    </div>
+                    <span class="badge bg-primary text-white">Entrar</span>
+                </button>
+            </form>
+
+            <!-- Conta 2: Apex Pro -->
+            <form method="POST" action="{{ url_for('login_discord_select') }}">
+                <input type="hidden" name="name" value="Apex Pro Gamer">
+                <input type="hidden" name="email" value="apex.pro@apexboost.gg">
+                <input type="hidden" name="next" value="{{ next_url or '' }}">
+                <button type="submit" class="account-item-btn">
+                    <div class="account-avatar" style="background: #23a55a;">
+                        <i class="bi bi-lightning-charge-fill"></i>
+                    </div>
+                    <div class="account-info">
+                        <div class="account-name">Apex Pro Gamer ⚡</div>
+                        <div class="account-email">apex.pro@apexboost.gg</div>
+                    </div>
+                    <span class="badge bg-primary text-white">Entrar</span>
+                </button>
+            </form>
+
+            <!-- Opção 3: Usar outra tag -->
+            <button type="button" class="account-item-btn" id="btnUseOtherDiscord">
+                <div class="account-avatar" style="background: #383a40; color: #949ba4;">
+                    <i class="bi bi-pencil"></i>
+                </div>
+                <div class="account-info">
+                    <div class="account-name">Entrar com outra tag do Discord</div>
+                    <div class="account-email">Digite seu Nickname e E-mail</div>
+                </div>
+                <i class="bi bi-chevron-down text-secondary small"></i>
+            </button>
+        </div>
+
+        <!-- Formulário Dinâmico: Outro Discord -->
+        <div class="custom-account-box" id="customDiscordBox">
+            <h6 class="text-white fw-bold mb-3 small"><i class="bi bi-discord me-1"></i> Informar Usuário Discord</h6>
+            <form method="POST" action="{{ url_for('login_discord_select') }}">
+                <input type="hidden" name="next" value="{{ next_url or '' }}">
+                <div class="mb-2">
+                    <label class="form-label small text-secondary mb-1">Seu Nick / Tag do Discord:</label>
+                    <input type="text" name="name" class="form-control discord-input" placeholder="Ex: FelipeGamer#1234" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small text-secondary mb-1">Seu E-mail do Discord:</label>
+                    <input type="email" name="email" class="form-control discord-input" placeholder="seunick@discord.gg" required>
+                </div>
+                <div class="d-flex justify-content-end gap-2">
+                    <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3" id="btnCancelDiscord">Cancelar</button>
+                    <button type="submit" class="btn btn-sm btn-discord-primary" style="width: auto;">Autorizar e Acessar</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Footer -->
+        <div class="mt-3">
+            <a href="{{ url_for('login') }}" class="btn-cancel">
+                <i class="bi bi-arrow-left me-1"></i> Cancelar e voltar ao Apex Boost
+            </a>
+        </div>
+    </div>
+
+    <script>
+        const btnOther = document.getElementById('btnUseOtherDiscord');
+        const box = document.getElementById('customDiscordBox');
+        const btnCancel = document.getElementById('btnCancelDiscord');
+
+        if (btnOther && box) {
+            btnOther.addEventListener('click', () => {
+                box.classList.toggle('active');
+            });
+        }
+        if (btnCancel && box) {
+            btnCancel.addEventListener('click', () => {
+                box.classList.remove('active');
+            });
+        }
+    </script>
+</body>
+</html>

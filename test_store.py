@@ -299,6 +299,12 @@ class StoreTestCase(unittest.TestCase):
 
     def test_17_admin_product_and_coupon_management(self):
         """Testa o cadastro de novos produtos, gerenciamento de cupons e alternância de status de pedidos no painel admin"""
+        conn = get_db()
+        conn.execute("DELETE FROM products WHERE slug = 'otimizacao-remota-vip-anydesk'")
+        conn.execute("DELETE FROM coupons WHERE code = 'TESTEADMIN30'")
+        conn.commit()
+        conn.close()
+
         # 1. Login as admin
         self.client.post('/login', data={
             'email': 'admin@apexboost.com',
@@ -433,17 +439,34 @@ class StoreTestCase(unittest.TestCase):
         conn_restore.commit()
         conn_restore.close()
 
-        # 6. Test Discord 1-Click Social Login
+        # 6. Test Discord Social Account Chooser & Login
         self.client.get('/logout')
-        res_discord = self.client.get('/login/discord', follow_redirects=True)
-        self.assertEqual(res_discord.status_code, 200)
-        self.assertIn(b'Discord Gamer', res_discord.data)
+        res_discord_choose = self.client.get('/login/discord', follow_redirects=True)
+        self.assertEqual(res_discord_choose.status_code, 200)
+        self.assertIn(b'Autorizar Acesso do Discord', res_discord_choose.data)
 
-        # 7. Test Google 1-Click Social Login
+        # Select account
+        res_discord_login = self.client.post('/login/discord/select', data={
+            'name': 'Felipe',
+            'email': 'felipe.discord@apexboost.gg'
+        }, follow_redirects=True)
+        self.assertEqual(res_discord_login.status_code, 200)
+        self.assertIn(b'Felipe', res_discord_login.data)
+
+        # 7. Test Google Social Account Chooser & Login
         self.client.get('/logout')
-        res_google = self.client.get('/login/google', follow_redirects=True)
-        self.assertEqual(res_google.status_code, 200)
-        self.assertIn(b'Google Gamer', res_google.data)
+        res_google_choose = self.client.get('/login/google', follow_redirects=True)
+        self.assertEqual(res_google_choose.status_code, 200)
+        self.assertIn(b'Fazer login com o Google', res_google_choose.data)
+        self.assertIn(b'Escolha uma conta', res_google_choose.data)
+
+        # Select account (e.g. Felipe - felipe@gmail.com)
+        res_google_login = self.client.post('/login/google/select', data={
+            'name': 'Felipe',
+            'email': 'felipe@gmail.com'
+        }, follow_redirects=True)
+        self.assertEqual(res_google_login.status_code, 200)
+        self.assertIn(b'Felipe', res_google_login.data)
 
     def test_20_friction_reduction_and_auth_ui(self):
         # Verify /login has NO blocking preloader and HAS "Esqueceu sua senha?" and social buttons

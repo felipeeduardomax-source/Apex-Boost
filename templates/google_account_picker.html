@@ -297,10 +297,17 @@
             <span class="small text-secondary">Português (Brasil)</span>
         </div>
 
-        <!-- Aviso Informativo -->
+        <!-- Aviso Informativo & Ativação do Google Oficial -->
         <div class="google-footer-notice">
-            <i class="bi bi-info-circle-fill text-info me-1"></i>
-            <strong>Escolha de Conta Ativa:</strong> Você escolhe exatamente com qual conta e nome quer entrar no Apex Boost. Para abrir a janela oficial externa do Google Cloud (<code>accounts.google.com</code>), basta definir as chaves <code>GOOGLE_CLIENT_ID</code> e <code>GOOGLE_CLIENT_SECRET</code> no seu <code>.env</code>.
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <span><i class="bi bi-shield-check text-info me-1"></i> <strong>Modo Interativo Ativo</strong></span>
+                <a href="{{ url_for('login_google_setup') }}" class="btn btn-sm btn-outline-info py-1 px-2" style="font-size: 0.78rem;">
+                    <i class="bi bi-gear-fill me-1"></i> Conectar accounts.google.com
+                </a>
+            </div>
+            <div>
+                Você pode escolher sua conta acima. Se quiser que abra <strong>diretamente a janela oficial da Google</strong> no seu navegador, <a href="{{ url_for('login_google_setup') }}" class="text-info fw-bold text-decoration-none">clique aqui para ativar</a> com seu Client ID em 1 minuto.
+            </div>
         </div>
     </div>
 

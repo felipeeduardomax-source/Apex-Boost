@@ -468,6 +468,11 @@ class StoreTestCase(unittest.TestCase):
         self.assertEqual(res_google_login.status_code, 200)
         self.assertIn(b'Felipe', res_google_login.data)
 
+        # 8. Test Google Setup Page
+        res_google_setup = self.client.get('/login/google/setup')
+        self.assertEqual(res_google_setup.status_code, 200)
+        self.assertIn(b'Ativar Login Real da Google', res_google_setup.data)
+
     def test_20_friction_reduction_and_auth_ui(self):
         # Verify /login has NO blocking preloader and HAS "Esqueceu sua senha?" and social buttons
         res_login = self.client.get('/login')

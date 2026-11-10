@@ -145,7 +145,7 @@ def security_firewall():
     public_endpoints = {
         'login', 'register', 'forgot_password', 'reset_password',
         'login_discord', 'login_discord_callback', 'login_discord_choose', 'login_discord_select',
-        'login_google', 'login_google_callback', 'login_google_choose', 'login_google_select',
+        'login_google', 'login_google_callback', 'login_google_choose', 'login_google_select', 'login_google_setup',
         'static', 'favicon', 'api_ping'
     }
     if request.endpoint in public_endpoints or (request.endpoint and request.endpoint.startswith('static')):
@@ -792,6 +792,50 @@ def login_google_callback():
     except Exception:
         flash('Não foi possível concluir a autenticação com o Google. Tente novamente.', 'danger')
         return redirect(url_for('login'))
+
+@app.route('/login/google/setup', methods=['GET', 'POST'])
+def login_google_setup():
+    if request.method == 'POST':
+        client_id = request.form.get('client_id', '').strip()
+        client_secret = request.form.get('client_secret', '').strip()
+
+        if client_id and client_secret:
+            env_path = os.path.join(os.path.dirname(__file__), '.env')
+            lines = []
+            if os.path.exists(env_path):
+                with open(env_path, 'r', encoding='utf-8') as f:
+                    lines = f.readlines()
+
+            has_id = False
+            has_secret = False
+            new_lines = []
+            for line in lines:
+                if line.startswith('GOOGLE_CLIENT_ID='):
+                    new_lines.append(f'GOOGLE_CLIENT_ID={client_id}\n')
+                    has_id = True
+                elif line.startswith('GOOGLE_CLIENT_SECRET='):
+                    new_lines.append(f'GOOGLE_CLIENT_SECRET={client_secret}\n')
+                    has_secret = True
+                else:
+                    new_lines.append(line)
+
+            if not has_id:
+                new_lines.append(f'GOOGLE_CLIENT_ID={client_id}\n')
+            if not has_secret:
+                new_lines.append(f'GOOGLE_CLIENT_SECRET={client_secret}\n')
+
+            with open(env_path, 'w', encoding='utf-8') as f:
+                f.writelines(new_lines)
+
+            os.environ['GOOGLE_CLIENT_ID'] = client_id
+            os.environ['GOOGLE_CLIENT_SECRET'] = client_secret
+
+            flash('Credenciais oficiais do Google ativadas com sucesso! Redirecionando para o Google...', 'success')
+            return redirect(url_for('login_google'))
+        else:
+            flash('Por favor, informe tanto o Client ID quanto o Client Secret gerados no Google Cloud.', 'danger')
+
+    return render_template('google_setup.html')
 
 @app.route('/admin/logout')
 def admin_logout():

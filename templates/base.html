@@ -159,7 +159,7 @@
                     <span>Checkout Express</span>
                 </a>
 
-                {% if current_user and current_user.is_admin %}
+                {% if (current_user and current_user.is_admin) or admin_logged %}
                 <div class="sidebar-section-title section-admin mt-3">
                     <i class="bi bi-shield-fill-check"></i>
                     <span>Administração</span>

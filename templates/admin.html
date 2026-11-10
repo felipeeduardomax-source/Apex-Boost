@@ -12,12 +12,15 @@
             </span>
             <h1 class="display-6 fw-black text-white mb-0">ADMIN DASHBOARD</h1>
         </div>
-        <div class="d-flex gap-2">
-            <a href="{{ url_for('profile') }}" class="btn btn-sm btn-apex-outline py-2 px-3">
-                <i class="bi bi-person-fill me-1"></i> Meu Perfil
+        <div class="d-flex gap-2 flex-wrap">
+            <a href="{{ url_for('profile', as_admin=1) }}" class="btn btn-sm btn-apex-outline py-2 px-3">
+                <i class="bi bi-person-fill me-1"></i> Perfil Admin
             </a>
-            <a href="{{ url_for('index') }}" class="btn btn-sm btn-apex-primary py-2 px-3">
-                <i class="bi bi-shop me-1"></i> Ver Loja
+            <a href="{{ url_for('index') }}" class="btn btn-sm btn-apex-primary py-2 px-3" target="_blank" title="Abre a vitrine da loja em nova aba para testar">
+                <i class="bi bi-shop me-1"></i> Ver Loja (Nova Aba)
+            </a>
+            <a href="{{ url_for('admin_logout') }}" class="btn btn-sm btn-outline-danger py-2 px-3" title="Encerrar sessão de Administrador">
+                <i class="bi bi-box-arrow-right me-1"></i> Sair do Admin
             </a>
         </div>
     </div>
@@ -92,7 +95,12 @@
                 <div class="p-3 rounded-3" style="background: var(--bg-surface-2); border: 1px solid var(--border-subtle);">
                     <small class="text-secondary d-block" style="font-size: 0.75rem;">Status do Banco de Dados:</small>
                     <div class="text-success small fw-bold mt-1"><i class="bi bi-database-check me-1"></i> {{ db_backend }} Conectado</div>
-                    <small class="text-secondary d-block mt-2" style="font-size: 0.72rem;">Segurança Ativa: HSTS, Anti-Leak & CSP</small>
+                    {% if 'Neon' in db_backend %}
+                    <small class="text-cyan d-block mt-2" style="font-size: 0.72rem;"><i class="bi bi-cloud-check-fill me-1"></i> Nuvem Neon sincronizada em tempo real.</small>
+                    {% else %}
+                    <small class="text-warning d-block mt-2" style="font-size: 0.72rem;"><i class="bi bi-info-circle me-1"></i> Para ativar Neon na Vercel, defina <code>DATABASE_URL</code> nas Environment Variables.</small>
+                    {% endif %}
+                    <small class="text-secondary d-block mt-2" style="font-size: 0.72rem;">Sessão Dupla Ativa (Admin & Cliente simultâneos)</small>
                 </div>
             </div>
         </div>

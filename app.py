@@ -85,19 +85,36 @@ def get_cart():
 def inject_global_data():
     cart = get_cart()
     cart_count = sum(cart.values()) if isinstance(cart, dict) else 0
+
+    # Determinar usuário ativo para a página solicitada:
+    # Se a requisição for no painel admin (/admin*), prioriza o admin logado
+    if request.path.startswith('/admin') and session.get('admin_user_id'):
+        uid = session.get('admin_user_id')
+    else:
+        # Nas páginas da vitrine, perfil e checkout, prioriza o cliente comum ou admin fallback
+        uid = session.get('user_id') or session.get('admin_user_id')
+
     logged_user = None
-    if 'user_id' in session:
+    if uid:
         conn = get_db()
         logged_user = conn.execute(
             "SELECT id, name, email, is_admin, avatar, drop_vip_claimed FROM users WHERE id = ?",
-            (session['user_id'],)
+            (uid,)
         ).fetchone()
         conn.close()
+
+    admin_logged = bool(session.get('admin_user_id') or session.get('is_admin'))
+
     return {
         'cart_count': cart_count,
         'current_user': logged_user,
+        'admin_logged': admin_logged,
         'current_year': datetime.datetime.now().year
     }
+
+def is_admin_session():
+    """Retorna True se houver uma sessão administrativa autenticada ativa no navegador"""
+    return bool(session.get('admin_user_id') or session.get('is_admin'))
 
 # ----------------- ACCESS CONTROL & FIREWALL MIDDLEWARE ----------------- #
 
@@ -130,8 +147,16 @@ def security_firewall():
     if request.path.startswith('/static/') or request.path in ('/favicon.ico', '/api/ping'):
         return
 
-    # Se não estiver logado, redirecionar para login
-    if 'user_id' not in session:
+    # Se for rota administrativa (/admin), exige admin autenticado
+    if request.path.startswith('/admin'):
+        if not is_admin_session():
+            if request.path.startswith('/api/') or request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.is_json:
+                return jsonify({'error': 'unauthorized', 'message': 'Acesso administrativo restrito.'}), 403
+            return redirect(url_for('login', next=request.path))
+        return
+
+    # Se não estiver logado nem como cliente nem como admin, redirecionar para login
+    if 'user_id' not in session and 'admin_user_id' not in session:
         if request.path in ('/login', '/register', '/favicon.ico', '/api/ping'):
             return
 
@@ -243,8 +268,10 @@ COMMON_LEAKED_PASSWORDS = {
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-    if 'user_id' in session:
-        return redirect(url_for('index'))
+    # Se já logado como cliente comum (sem admin ativo), redireciona para index
+    if request.method == 'GET' and 'user_id' in session and not session.get('admin_user_id'):
+        if not request.args.get('switch'):
+            return redirect(url_for('index'))
 
     if request.method == 'POST':
         is_ajax = request.is_json or request.headers.get('X-Requested-With') == 'XMLHttpRequest'
@@ -297,18 +324,17 @@ def register():
         password_hash = generate_password_hash(password)
         cursor = conn.cursor()
         cursor.execute(
-            "INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?)",
+            "INSERT INTO users (name, email, password_hash, is_admin) VALUES (?, ?, ?, 0)",
             (name, email, password_hash)
         )
         user_id = cursor.lastrowid
         conn.commit()
         conn.close()
 
-        # Log in user automatically
+        # Conecta o novo usuário como cliente na vitrine (preserva sessão de admin se ativa)
         session['user_id'] = user_id
         session['user_name'] = name
         session['user_email'] = email
-        session['is_admin'] = 0
 
         flash(f'Conta criada com sucesso! Bem-vindo(a) ao Apex Boost Labs, {name}! 🚀', 'success')
         
@@ -332,8 +358,10 @@ def register():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    if 'user_id' in session:
-        return redirect(url_for('index'))
+    # Se já logado como cliente comum (sem admin ativo), redireciona se for GET
+    if request.method == 'GET' and 'user_id' in session and not session.get('admin_user_id'):
+        if not request.args.get('switch'):
+            return redirect(url_for('index'))
 
     if request.method == 'POST':
         is_ajax = request.is_json or request.headers.get('X-Requested-With') == 'XMLHttpRequest'
@@ -356,18 +384,37 @@ def login():
         conn.close()
 
         if user and check_password_hash(user['password_hash'], password):
-            session['user_id'] = user['id']
-            session['user_name'] = user['name']
-            session['user_email'] = user['email']
-            session['is_admin'] = bool(user['is_admin'])
-
-            flash(f'Login realizado com sucesso! Bem-vindo(a), {user["name"]}! 🚀', 'success')
+            is_admin_user = bool(user['is_admin'])
             next_url = request.args.get('next')
-            redirect_target = url_for('index')
-            if is_safe_redirect(next_url):
-                redirect_target = next_url
-            elif session.get('cart'):
-                redirect_target = url_for('checkout')
+
+            if is_admin_user:
+                # Armazena credenciais administrativas de forma isolada e persistente
+                session['admin_user_id'] = user['id']
+                session['admin_name'] = user['name']
+                session['admin_email'] = user['email']
+                session['is_admin'] = True
+
+                # Se não houver cliente comum logado, preenche a vitrine com o admin para navegação
+                if not session.get('user_id'):
+                    session['user_id'] = user['id']
+                    session['user_name'] = user['name']
+                    session['user_email'] = user['email']
+
+                flash(f'Sessão administrativa iniciada! Bem-vindo(a), {user["name"]}! 🛡️', 'success')
+                redirect_target = next_url if is_safe_redirect(next_url) else url_for('admin_dashboard')
+            else:
+                # Login de cliente regular (vitrine / compras)
+                session['user_id'] = user['id']
+                session['user_name'] = user['name']
+                session['user_email'] = user['email']
+                # NOTA DE SEGURANÇA: NÃO removemos session['admin_user_id'] nem deslogamos o admin na outra aba!
+
+                flash(f'Login realizado com sucesso! Bem-vindo(a), {user["name"]}! 🚀', 'success')
+                redirect_target = url_for('index')
+                if is_safe_redirect(next_url):
+                    redirect_target = next_url
+                elif session.get('cart'):
+                    redirect_target = url_for('checkout')
 
             if is_ajax:
                 return jsonify({
@@ -387,15 +434,40 @@ def login():
 
 @app.route('/logout')
 def logout():
-    session.clear()
-    flash('Você saiu da sua conta com sucesso. Faça login novamente para acessar o site.', 'info')
+    # Desconecta apenas a conta de cliente da vitrine
+    session.pop('user_id', None)
+    session.pop('user_name', None)
+    session.pop('user_email', None)
+    session.pop('cart', None)
+    session.pop('coupon_code', None)
+    session.pop('discount_percent', None)
+
+    if not session.get('admin_user_id'):
+        session.clear()
+        flash('Você saiu da sua conta com sucesso. Faça login novamente para acessar o site.', 'info')
+    else:
+        flash('Você saiu da sua conta de cliente. Sua sessão de Administrador permanece ativa.', 'info')
     return redirect(url_for('login'))
-    flash('Você saiu da sua conta com sucesso. Faça login novamente para acessar o site.', 'info')
+
+@app.route('/admin/logout')
+def admin_logout():
+    # Encerra exclusivamente a sessão administrativa
+    session.pop('admin_user_id', None)
+    session.pop('admin_name', None)
+    session.pop('admin_email', None)
+    session.pop('is_admin', None)
+    flash('Sessão administrativa encerrada com segurança.', 'info')
     return redirect(url_for('login'))
 
 @app.route('/profile', methods=['GET', 'POST'])
 def profile():
-    if 'user_id' not in session:
+    as_admin = request.args.get('as_admin')
+    if as_admin and session.get('admin_user_id'):
+        user_id = session.get('admin_user_id')
+    else:
+        user_id = session.get('user_id') or session.get('admin_user_id')
+
+    if not user_id:
         flash('Faça login para acessar o painel de membro.', 'warning')
         return redirect(url_for('login', next=request.path))
 
@@ -683,8 +755,8 @@ def order_success(order_code):
         abort(404)
 
     # Proteção IDOR: Apenas o dono do pedido ou administrador pode visualizar recibo e chaves
-    logged_user_id = session.get('user_id')
-    is_admin = session.get('is_admin', False)
+    logged_user_id = session.get('user_id') or session.get('admin_user_id')
+    is_admin = is_admin_session()
     if not is_admin and (not logged_user_id or order['user_id'] != logged_user_id):
         conn.close()
         flash('Acesso não autorizado a este pedido.', 'danger')
@@ -715,7 +787,10 @@ def order_success(order_code):
 
 @app.route('/download/<filename>')
 def download_file(filename):
-    if 'user_id' not in session:
+    user_id = session.get('user_id') or session.get('admin_user_id')
+    is_admin = is_admin_session()
+
+    if not user_id and not is_admin:
         flash('Faça login para baixar seus pacotes.', 'warning')
         return redirect(url_for('login', next=request.path))
 
@@ -728,9 +803,6 @@ def download_file(filename):
     }
     if safe_name not in safe_files:
         abort(404)
-
-    user_id = session['user_id']
-    is_admin = session.get('is_admin', False)
 
     # Validação de compra: Apenas admin ou comprador com pedido PAGO pode baixar
     if not is_admin:
@@ -777,9 +849,9 @@ def api_ping():
 
 @app.route('/admin')
 def admin_dashboard():
-    if not session.get('is_admin'):
+    if not is_admin_session():
         flash('Acesso restrito para administradores.', 'danger')
-        return redirect(url_for('index'))
+        return redirect(url_for('login', next=request.path))
 
     conn = get_db()
     try:
@@ -864,7 +936,7 @@ def admin_dashboard():
 
 @app.route('/admin/add-product', methods=['POST'])
 def admin_add_product():
-    if not session.get('is_admin'):
+    if not is_admin_session():
         abort(403)
 
     name = request.form.get('name', '').strip()
@@ -937,7 +1009,7 @@ def admin_add_product():
 
 @app.route('/admin/delete-product/<int:product_id>', methods=['POST'])
 def admin_delete_product(product_id):
-    if not session.get('is_admin'):
+    if not is_admin_session():
         abort(403)
     conn = get_db()
     try:
@@ -952,7 +1024,7 @@ def admin_delete_product(product_id):
 
 @app.route('/admin/toggle-product/<int:product_id>', methods=['GET', 'POST'])
 def admin_toggle_product(product_id):
-    if not session.get('is_admin'):
+    if not is_admin_session():
         abort(403)
     conn = get_db()
     conn.execute("UPDATE products SET active = CASE WHEN active = 1 THEN 0 ELSE 1 END WHERE id = ?", (product_id,))
@@ -963,7 +1035,7 @@ def admin_toggle_product(product_id):
 
 @app.route('/admin/add-coupon', methods=['POST'])
 def admin_add_coupon():
-    if not session.get('is_admin'):
+    if not is_admin_session():
         abort(403)
     code = request.form.get('code', '').strip().upper()
     try:
@@ -987,7 +1059,7 @@ def admin_add_coupon():
 
 @app.route('/admin/delete-coupon/<int:coupon_id>', methods=['POST'])
 def admin_delete_coupon(coupon_id):
-    if not session.get('is_admin'):
+    if not is_admin_session():
         abort(403)
     conn = get_db()
     try:
@@ -1002,7 +1074,7 @@ def admin_delete_coupon(coupon_id):
 
 @app.route('/admin/toggle-order-status/<int:order_id>', methods=['POST'])
 def admin_toggle_order_status(order_id):
-    if not session.get('is_admin'):
+    if not is_admin_session():
         abort(403)
     conn = get_db()
     try:
@@ -1026,7 +1098,7 @@ def admin_toggle_order_status(order_id):
 
 @app.route('/admin/clear-orders', methods=['POST'])
 def admin_clear_orders():
-    if not session.get('is_admin'):
+    if not is_admin_session():
         abort(403)
     conn = get_db()
     conn.execute("DELETE FROM order_items")
@@ -1054,14 +1126,14 @@ def live_sales():
 @app.route('/api/claim-drop', methods=['POST'])
 def claim_drop():
     """Resgate único do Drop VIP para usuários logados"""
-    if 'user_id' not in session:
+    user_id = session.get('user_id') or session.get('admin_user_id')
+    if not user_id:
         return jsonify({
             'success': False,
             'message': 'Você precisa estar logado para resgatar seu Drop VIP!',
             'redirect': url_for('login')
         }), 401
 
-    user_id = session['user_id']
     conn = get_db()
     try:
         user = conn.execute("SELECT id, drop_vip_claimed FROM users WHERE id = ?", (user_id,)).fetchone()
@@ -1097,11 +1169,12 @@ def claim_drop():
 @app.route('/api/drop-status')
 def drop_status():
     """Retorna o status do Drop VIP do usuário logado"""
-    if 'user_id' not in session:
+    user_id = session.get('user_id') or session.get('admin_user_id')
+    if not user_id:
         return jsonify({'logged_in': False, 'claimed': False})
     conn = get_db()
     try:
-        user = conn.execute("SELECT drop_vip_claimed FROM users WHERE id = ?", (session['user_id'],)).fetchone()
+        user = conn.execute("SELECT drop_vip_claimed FROM users WHERE id = ?", (user_id,)).fetchone()
         claimed = bool(dict(user).get('drop_vip_claimed')) if user else False
         return jsonify({'logged_in': True, 'claimed': claimed})
     finally:

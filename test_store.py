@@ -330,5 +330,63 @@ class StoreTestCase(unittest.TestCase):
         self.assertEqual(res_add_c.status_code, 200)
         self.assertIn(b'TESTEADMIN30', res_add_c.data)
 
+    def test_18_dual_admin_and_client_sessions(self):
+        """Testa o isolamento de sessões simultâneas entre a aba do Administrador e a aba do Cliente no mesmo navegador"""
+        # 1. Login inicial como Administrador (Aba 1)
+        res_admin_login = self.client.post('/login', data={
+            'email': 'admin@apexboost.com',
+            'password': 'admin123'
+        }, follow_redirects=True)
+        self.assertEqual(res_admin_login.status_code, 200)
+
+        # 2. Verifica que o Admin acessa o painel normalmente
+        res_dash = self.client.get('/admin')
+        self.assertEqual(res_dash.status_code, 200)
+        self.assertIn(b'ADMIN DASHBOARD', res_dash.data)
+
+        # 3. Na mesma sessão do navegador (simulando a Aba 2), loga como cliente comum
+        res_client_login = self.client.post('/login', data={
+            'email': 'gamer@teste.com',
+            'password': '123456'
+        }, follow_redirects=True)
+        self.assertEqual(res_client_login.status_code, 200)
+        self.assertIn(b'Felipe Gamer', res_client_login.data)
+
+        # 4. Verifica que a Aba 2 (Cliente) está autenticada com os dados do cliente
+        res_profile = self.client.get('/profile')
+        self.assertEqual(res_profile.status_code, 200)
+        self.assertIn(b'Felipe Gamer', res_profile.data)
+
+        # 5. CRÍTICO: Volta para a Aba 1 (Admin) e dá refresh no /admin
+        # Não deve tomar 403 nem ser redirecionado para a vitrine!
+        res_admin_tab = self.client.get('/admin')
+        self.assertEqual(res_admin_tab.status_code, 200)
+        self.assertIn(b'ADMIN DASHBOARD', res_admin_tab.data)
+
+        # 6. Admin consegue executar ações administrativas sem interferência
+        res_action = self.client.post('/admin/add-coupon', data={
+            'code': 'DUALSESSION20',
+            'discount': '20'
+        }, follow_redirects=True)
+        self.assertEqual(res_action.status_code, 200)
+        self.assertIn(b'DUALSESSION20', res_action.data)
+
+        # 7. Cliente na Aba 2 clica em "Sair" (/logout)
+        res_client_logout = self.client.get('/logout', follow_redirects=True)
+        self.assertEqual(res_client_logout.status_code, 200)
+
+        # 8. O painel admin /admin CONTINUA autenticado e acessível!
+        res_admin_still_ok = self.client.get('/admin')
+        self.assertEqual(res_admin_still_ok.status_code, 200)
+        self.assertIn(b'ADMIN DASHBOARD', res_admin_still_ok.data)
+
+        # 9. Quando o Admin explicitamente faz logout pelo /admin/logout
+        res_admin_logout = self.client.get('/admin/logout', follow_redirects=True)
+        self.assertEqual(res_admin_logout.status_code, 200)
+
+        # 10. Agora o acesso a /admin é devidamente bloqueado
+        res_admin_blocked = self.client.get('/admin')
+        self.assertEqual(res_admin_blocked.status_code, 302)
+
 if __name__ == '__main__':
     unittest.main()

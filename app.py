@@ -434,7 +434,17 @@ def login():
 
 @app.route('/logout')
 def logout():
-    # Desconecta apenas a conta de cliente da vitrine
+    role = request.args.get('role')
+    admin_id = session.get('admin_user_id')
+    user_id = session.get('user_id')
+
+    # Se for logout de admin ou se a sessão pertencer unicamente ao administrador
+    if role == 'admin' or request.path.startswith('/admin') or (admin_id and (not user_id or admin_id == user_id)):
+        session.clear()
+        flash('Você saiu da sua conta com sucesso.', 'info')
+        return redirect(url_for('login'))
+
+    # Se for um cliente diferente saindo da vitrine
     session.pop('user_id', None)
     session.pop('user_name', None)
     session.pop('user_email', None)
@@ -442,21 +452,26 @@ def logout():
     session.pop('coupon_code', None)
     session.pop('discount_percent', None)
 
+    # Se não houver sessão administrativa ativa, limpa completamente
     if not session.get('admin_user_id'):
         session.clear()
-        flash('Você saiu da sua conta com sucesso. Faça login novamente para acessar o site.', 'info')
-    else:
-        flash('Você saiu da sua conta de cliente. Sua sessão de Administrador permanece ativa.', 'info')
+
+    flash('Você saiu da sua conta com sucesso.', 'info')
     return redirect(url_for('login'))
 
 @app.route('/admin/logout')
 def admin_logout():
-    # Encerra exclusivamente a sessão administrativa
+    # Encerra a sessão administrativa
     session.pop('admin_user_id', None)
     session.pop('admin_name', None)
     session.pop('admin_email', None)
     session.pop('is_admin', None)
-    flash('Sessão administrativa encerrada com segurança.', 'info')
+
+    # Se a conta da vitrine era a mesma do admin, encerra completamente
+    if not session.get('user_id') or session.get('user_id') == session.get('admin_user_id'):
+        session.clear()
+
+    flash('Você saiu da sua conta com sucesso.', 'info')
     return redirect(url_for('login'))
 
 @app.route('/profile', methods=['GET', 'POST'])

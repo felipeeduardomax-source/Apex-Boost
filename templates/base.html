@@ -188,7 +188,7 @@
                                     class="bi bi-cloud-arrow-down me-1"></i>Downloads</small>
                         </div>
                     </a>
-                    <a href="{{ url_for('logout') }}" class="btn btn-sm btn-outline-danger p-1 px-2"
+                    <a href="{% if current_user.is_admin %}{{ url_for('logout', role='admin') }}{% else %}{{ url_for('logout') }}{% endif %}" class="btn btn-sm btn-outline-danger p-1 px-2"
                         title="Sair da Conta">
                         <i class="bi bi-box-arrow-right"></i>
                     </a>

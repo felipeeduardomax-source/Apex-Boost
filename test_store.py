@@ -389,5 +389,79 @@ class StoreTestCase(unittest.TestCase):
         res_admin_blocked = self.client.get('/admin')
         self.assertEqual(res_admin_blocked.status_code, 302)
 
+    def test_19_password_recovery_and_social_auth(self):
+        # 1. Test GET /forgot-password
+        res_get_forgot = self.client.get('/forgot-password')
+        self.assertEqual(res_get_forgot.status_code, 200)
+        self.assertIn(b'RECUPERAR SENHA', res_get_forgot.data)
+
+        # 2. Test POST /forgot-password with registered user
+        res_post_forgot = self.client.post('/forgot-password', data={
+            'email': 'gamer@teste.com'
+        })
+        self.assertEqual(res_post_forgot.status_code, 200)
+        self.assertIn(b'Instru', res_post_forgot.data)
+        self.assertIn(b'/reset-password/', res_post_forgot.data)
+
+        # 3. Generate token & test reset password flow
+        from app import generate_password_reset_token
+        token = generate_password_reset_token('gamer@teste.com')
+        res_get_reset = self.client.get(f'/reset-password/{token}')
+        self.assertEqual(res_get_reset.status_code, 200)
+        self.assertIn(b'CRIAR NOVA SENHA', res_get_reset.data)
+
+        # 4. POST new password
+        res_post_reset = self.client.post(f'/reset-password/{token}', data={
+            'password': 'newpassword789',
+            'confirm_password': 'newpassword789'
+        }, follow_redirects=True)
+        self.assertEqual(res_post_reset.status_code, 200)
+        self.assertIn(b'Senha redefinida com sucesso', res_post_reset.data)
+
+        # 5. Verify login with the updated password succeeds
+        res_login_new = self.client.post('/login', data={
+            'email': 'gamer@teste.com',
+            'password': 'newpassword789'
+        }, follow_redirects=True)
+        self.assertEqual(res_login_new.status_code, 200)
+        self.assertIn(b'Login realizado com sucesso', res_login_new.data)
+
+        # Restore original password for gamer@teste.com so subsequent runs are 100% idempotent
+        from werkzeug.security import generate_password_hash
+        conn_restore = get_db()
+        conn_restore.execute("UPDATE users SET password_hash = ? WHERE email = ?", (generate_password_hash('123456'), 'gamer@teste.com'))
+        conn_restore.commit()
+        conn_restore.close()
+
+        # 6. Test Discord 1-Click Social Login
+        self.client.get('/logout')
+        res_discord = self.client.get('/login/discord', follow_redirects=True)
+        self.assertEqual(res_discord.status_code, 200)
+        self.assertIn(b'Discord Gamer', res_discord.data)
+
+        # 7. Test Google 1-Click Social Login
+        self.client.get('/logout')
+        res_google = self.client.get('/login/google', follow_redirects=True)
+        self.assertEqual(res_google.status_code, 200)
+        self.assertIn(b'Google Gamer', res_google.data)
+
+    def test_20_friction_reduction_and_auth_ui(self):
+        # Verify /login has NO blocking preloader and HAS "Esqueceu sua senha?" and social buttons
+        res_login = self.client.get('/login')
+        self.assertEqual(res_login.status_code, 200)
+        self.assertNotIn(b'id="apexPreloader"', res_login.data)
+        self.assertNotIn(b'id="preloaderPercent"', res_login.data)
+        self.assertIn(b'Esqueceu sua senha?', res_login.data)
+        self.assertIn(b'Entrar com Discord', res_login.data)
+        self.assertIn(b'Entrar com Google', res_login.data)
+
+        # Verify /register has NO blocking preloader and HAS social registration buttons
+        res_register = self.client.get('/register')
+        self.assertEqual(res_register.status_code, 200)
+        self.assertNotIn(b'id="apexPreloader"', res_register.data)
+        self.assertNotIn(b'id="preloaderPercent"', res_register.data)
+        self.assertIn(b'Cadastrar com Discord', res_register.data)
+        self.assertIn(b'Cadastrar com Google', res_register.data)
+
 if __name__ == '__main__':
     unittest.main()

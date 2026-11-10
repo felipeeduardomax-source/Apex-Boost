@@ -287,6 +287,8 @@ def _init_db_postgres():
     # Migração segura para coluna drop_vip_claimed no Postgres
     try:
         cursor.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS drop_vip_claimed INTEGER DEFAULT 0;")
+        cursor.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token TEXT;")
+        cursor.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token_expires TIMESTAMP;")
         conn.commit()
     except Exception:
         pass
@@ -380,6 +382,18 @@ def _init_db_sqlite():
     # Migração segura para coluna drop_vip_claimed no SQLite
     try:
         cursor.execute("ALTER TABLE users ADD COLUMN drop_vip_claimed INTEGER DEFAULT 0;")
+        conn.commit()
+    except Exception:
+        pass
+
+    # Migração segura para colunas de recuperação de senha no SQLite
+    try:
+        cursor.execute("ALTER TABLE users ADD COLUMN reset_token TEXT;")
+        conn.commit()
+    except Exception:
+        pass
+    try:
+        cursor.execute("ALTER TABLE users ADD COLUMN reset_token_expires TIMESTAMP;")
         conn.commit()
     except Exception:
         pass

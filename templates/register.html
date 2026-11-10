@@ -583,14 +583,80 @@
             40%, 80% { transform: translateX(8px); }
         }
 
-        /* Container Fade & Entrance */
-        .auth-container-animate {
-            opacity: 0;
-            transform: translateY(20px);
-            transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        /* Links & Divisores de Autenticação */
+        .auth-divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            color: #64748b;
+            font-size: 0.74rem;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
         }
 
-        .auth-container-animate.visible {
+        .auth-divider::before,
+        .auth-divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+        }
+
+        .auth-divider span {
+            padding: 0 12px;
+        }
+
+        .social-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .btn-social {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 18px;
+            border-radius: 14px;
+            font-weight: 700;
+            font-size: 0.94rem;
+            letter-spacing: 0.02em;
+            text-decoration: none !important;
+            transition: all 0.22s ease;
+            position: relative;
+        }
+
+        .btn-discord {
+            background: #5865F2 !important;
+            color: #ffffff !important;
+            border: 1px solid #5865F2;
+            box-shadow: 0 6px 20px rgba(88, 101, 242, 0.35);
+        }
+
+        .btn-discord:hover {
+            background: #4752c4 !important;
+            color: #ffffff !important;
+            box-shadow: 0 8px 25px rgba(88, 101, 242, 0.55);
+            transform: translateY(-2px);
+        }
+
+        .btn-google {
+            background: #151823 !important;
+            color: #ffffff !important;
+            border: 1.5px solid rgba(255, 255, 255, 0.14);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .btn-google:hover {
+            background: #1c2130 !important;
+            border-color: rgba(255, 255, 255, 0.3);
+            color: #ffffff !important;
+            box-shadow: 0 8px 25px rgba(255, 255, 255, 0.08);
+            transform: translateY(-2px);
+        }
+
+        /* Container Fade & Entrance - Imediato sem travamento */
+        .auth-container-animate {
             opacity: 1;
             transform: translateY(0);
         }
@@ -670,39 +736,7 @@
 </head>
 <body class="theme-dark">
 
-    <!-- Preloader -->
-    <div id="apexPreloader" class="apex-preloader-screen">
-        <div class="preloader-container">
-            <div class="preloader-brand-box">
-                <div class="preloader-icon-wrap">
-                    <div class="preloader-pulse-ring-outer"></div>
-                    <div class="preloader-pulse-ring-inner"></div>
-                    <div class="preloader-icon-badge">
-                        <i class="bi bi-lightning-charge-fill"></i>
-                    </div>
-                </div>
-                <div class="preloader-title-row">
-                    <span class="preloader-title-apex">APEX</span>
-                    <span class="preloader-title-boost">BOOST</span>
-                </div>
-                <div class="preloader-sub-title">PERFORMANCE LABS</div>
-            </div>
-
-            <div class="preloader-bar-wrap">
-                <div class="preloader-bar-track">
-                    <div class="preloader-bar-fill" id="preloaderFill"></div>
-                </div>
-                <div class="preloader-percent" id="preloaderPercent">0%</div>
-            </div>
-
-            <div class="preloader-status-tag" id="preloaderStatus">
-                <span class="preloader-dot"></span>
-                <span id="preloaderStatusText">Iniciando Apex Boost Labs...</span>
-            </div>
-        </div>
-    </div>
-
-    <!-- Auth Overlay -->
+    <!-- Auth Overlay (Feedback ao Enviar Formulário) -->
     <div id="apexAuthOverlay" class="apex-auth-overlay">
         <div class="auth-overlay-card">
             <div class="preloader-icon-wrap auth-icon-wrap">
@@ -810,6 +844,27 @@
                 </button>
             </form>
 
+            <!-- Divisor e Cadastro Rápido com Redes Sociais -->
+            <div class="auth-divider my-4">
+                <span>OU CADASTRE-SE COM</span>
+            </div>
+
+            <div class="social-grid">
+                <a href="{{ url_for('login_discord', next=request.args.get('next')) }}" class="btn-social btn-discord" id="discordRegisterBtn" title="Acessar diretamente com Discord">
+                    <i class="bi bi-discord fs-5 me-2"></i>
+                    <span>Cadastrar com Discord</span>
+                </a>
+                <a href="{{ url_for('login_google', next=request.args.get('next')) }}" class="btn-social btn-google" id="googleRegisterBtn" title="Acessar diretamente com Google">
+                    <svg class="me-2" viewBox="0 0 24 24" width="20" height="20">
+                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                    </svg>
+                    <span>Cadastrar com Google</span>
+                </a>
+            </div>
+
             <!-- Link to Login -->
             <div class="auth-footer-text">
                 <span>Já possui uma conta?</span>
@@ -876,58 +931,15 @@
             } catch (e) {}
         }
 
-        // 2. Animação 1: Entrada (Apex Preloader)
-        (function initPreloader() {
-            const preloader = document.getElementById('apexPreloader');
-            const fill = document.getElementById('preloaderFill');
-            const percent = document.getElementById('preloaderPercent');
-            const statusText = document.getElementById('preloaderStatusText');
-            const authContainer = document.querySelector('.auth-container-animate');
-
-            if (!preloader) return;
-
-            let progress = 0;
-            const startTime = Date.now();
-            const duration = 750;
-
-            function step() {
-                const elapsed = Date.now() - startTime;
-                progress = Math.min(Math.floor((elapsed / duration) * 100), 100);
-
-                if (fill) fill.style.width = progress + '%';
-                if (percent) percent.textContent = progress + '%';
-
-                if (statusText) {
-                    if (progress < 40) {
-                        statusText.textContent = 'Iniciando Apex Boost Labs...';
-                    } else if (progress < 85) {
-                        statusText.textContent = 'Carregando Módulos de Segurança...';
-                    } else {
-                        statusText.textContent = 'Inicializado com Sucesso!';
-                    }
-                }
-
-                if (progress < 100) {
-                    requestAnimationFrame(step);
-                } else {
-                    setTimeout(() => {
-                        preloader.classList.add('fade-out');
-                        if (authContainer) {
-                            authContainer.classList.add('visible');
-                        }
-                        setTimeout(() => {
-                            preloader.style.display = 'none';
-                            const nameEl = document.getElementById('name');
-                            if (nameEl && !nameEl.value) nameEl.focus();
-                        }, 450);
-                    }, 120);
-                }
+        // Foco imediato no campo de nome ao carregar (zero delay/fricção)
+        document.addEventListener('DOMContentLoaded', () => {
+            const nameEl = document.getElementById('name');
+            if (nameEl && !nameEl.value) {
+                nameEl.focus();
             }
+        });
 
-            requestAnimationFrame(step);
-        })();
-
-        // 3. Animação 2: Quando Cadastra (Apex Auth Overlay)
+        // 2. Animação: Quando Cadastra (Apex Auth Overlay)
         (function initRegisterSubmit() {
             const form = document.getElementById('registerForm');
             const overlay = document.getElementById('apexAuthOverlay');

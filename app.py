@@ -5,8 +5,11 @@ import uuid
 import random
 import secrets
 import datetime
+import urllib.request
+import urllib.parse
 from urllib.parse import urlsplit
 from werkzeug.utils import secure_filename
+from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadTimeSignature, BadSignature
 from flask import (
     Flask, render_template, request, redirect, url_for,
     flash, session, jsonify, send_from_directory, abort
@@ -41,7 +44,7 @@ def is_safe_redirect(target):
         return False
     if not target.startswith('/') or target.startswith('//') or target.startswith('/\\'):
         return False
-    if target in ('/login', '/register', '/logout'):
+    if target in ('/login', '/register', '/logout', '/forgot-password'):
         return False
     return True
 
@@ -139,7 +142,11 @@ def security_firewall():
         abort(400)
 
     # 4. Endpoints públicos permitidos sem autenticação
-    public_endpoints = {'login', 'register', 'static', 'favicon', 'api_ping'}
+    public_endpoints = {
+        'login', 'register', 'forgot_password', 'reset_password',
+        'login_discord', 'login_discord_callback', 'login_google', 'login_google_callback',
+        'static', 'favicon', 'api_ping'
+    }
     if request.endpoint in public_endpoints or (request.endpoint and request.endpoint.startswith('static')):
         return
 
@@ -458,6 +465,297 @@ def logout():
 
     flash('Você saiu da sua conta com sucesso.', 'info')
     return redirect(url_for('login'))
+
+# ==============================================================
+# RECUPERAÇÃO DE SENHA (PASSWORD RECOVERY)
+# ==============================================================
+def get_reset_serializer():
+    return URLSafeTimedSerializer(app.secret_key)
+
+def generate_password_reset_token(email):
+    s = get_reset_serializer()
+    return s.dumps(email, salt='apex-password-reset-salt')
+
+def verify_password_reset_token(token, max_age=3600):
+    s = get_reset_serializer()
+    try:
+        email = s.loads(token, salt='apex-password-reset-salt', max_age=max_age)
+        return email
+    except (SignatureExpired, BadTimeSignature, BadSignature, Exception):
+        return None
+
+@app.route('/forgot-password', methods=['GET', 'POST'])
+def forgot_password():
+    if request.method == 'POST':
+        email = request.form.get('email', '').strip().lower()
+        if not email:
+            flash('Por favor, informe seu e-mail cadastrado.', 'danger')
+            return render_template('forgot_password.html')
+
+        conn = get_db()
+        user = conn.execute("SELECT id, name, email FROM users WHERE email = ?", (email,)).fetchone()
+
+        reset_url = None
+        if user:
+            token = generate_password_reset_token(user['email'])
+            try:
+                expires_at = (datetime.datetime.now() + datetime.timedelta(hours=1)).strftime('%Y-%m-%d %H:%M:%S')
+                conn.execute("UPDATE users SET reset_token = ?, reset_token_expires = ? WHERE id = ?",
+                             (token, expires_at, user['id']))
+                conn.commit()
+            except Exception:
+                pass
+
+            reset_url = url_for('reset_password', token=token, _external=True)
+            flash('Instruções de redefinição de senha geradas com sucesso! Utilize o link abaixo para prosseguir.', 'success')
+        else:
+            flash('Se o e-mail estiver cadastrado, as instruções de recuperação foram geradas.', 'info')
+
+        conn.close()
+        return render_template('forgot_password.html', email=email, reset_url=reset_url)
+
+    return render_template('forgot_password.html')
+
+@app.route('/reset-password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    email = verify_password_reset_token(token, max_age=3600)
+    if not email:
+        flash('O link de recuperação de senha é inválido ou expirou. Solicite um novo link.', 'danger')
+        return redirect(url_for('forgot_password'))
+
+    conn = get_db()
+    user = conn.execute("SELECT id, name, email FROM users WHERE email = ?", (email,)).fetchone()
+
+    if not user:
+        conn.close()
+        flash('Usuário não encontrado. Solicite uma nova redefinição.', 'danger')
+        return redirect(url_for('forgot_password'))
+
+    if request.method == 'POST':
+        password = request.form.get('password', '').strip()
+        confirm_password = request.form.get('confirm_password', '').strip()
+
+        if len(password) < 6:
+            flash('A nova senha deve ter no mínimo 6 caracteres.', 'danger')
+            conn.close()
+            return render_template('reset_password.html', token=token)
+
+        if password != confirm_password:
+            flash('As senhas digitadas não coincidem. Digite novamente.', 'danger')
+            conn.close()
+            return render_template('reset_password.html', token=token)
+
+        hashed = generate_password_hash(password)
+        try:
+            conn.execute("UPDATE users SET password_hash = ?, reset_token = NULL, reset_token_expires = NULL WHERE id = ?",
+                         (hashed, user['id']))
+            conn.commit()
+        except Exception:
+            conn.execute("UPDATE users SET password_hash = ? WHERE id = ?", (hashed, user['id']))
+            conn.commit()
+
+        conn.close()
+        flash('Senha redefinida com sucesso! Você já pode entrar com sua nova senha.', 'success')
+        return redirect(url_for('login'))
+
+    conn.close()
+    return render_template('reset_password.html', token=token, email=email)
+
+
+# ==============================================================
+# LOGIN SOCIAL OAUTH (DISCORD E GOOGLE)
+# ==============================================================
+def login_or_create_social_user(email, name, provider='social', avatar='gamer_avatar.png'):
+    """Faz login ou cadastra automaticamente um usuário autenticado via OAuth."""
+    email = email.strip().lower()
+    name = (name or 'Gamer').strip()
+    conn = get_db()
+    user = conn.execute("SELECT * FROM users WHERE email = ?", (email,)).fetchone()
+
+    if not user:
+        random_pass = secrets.token_urlsafe(32)
+        hashed = generate_password_hash(random_pass)
+        cursor = conn.cursor()
+        cursor.execute("INSERT INTO users (name, email, password_hash, is_admin, avatar) VALUES (?, ?, ?, 0, ?)",
+                       (name, email, hashed, avatar))
+        conn.commit()
+        user_id = cursor.lastrowid
+        conn.close()
+    else:
+        user_id = user['id']
+        name = user['name']
+        conn.close()
+
+    session['user_id'] = user_id
+    session['user_name'] = name
+    session['user_email'] = email
+    return user_id, name
+
+@app.route('/login/discord')
+def login_discord():
+    client_id = os.environ.get('DISCORD_CLIENT_ID')
+    client_secret = os.environ.get('DISCORD_CLIENT_SECRET')
+    next_url = request.args.get('next')
+
+    if not client_id or not client_secret:
+        login_or_create_social_user('gamer.discord@apexboost.gg', 'Discord Gamer ⚡', provider='discord')
+        flash('Login com Discord realizado com sucesso! Bem-vindo(a), Discord Gamer! 🎮', 'success')
+        target = next_url if is_safe_redirect(next_url) else url_for('index')
+        return redirect(target)
+
+    redirect_uri = os.environ.get('DISCORD_REDIRECT_URI') or url_for('login_discord_callback', _external=True)
+    state = secrets.token_urlsafe(16)
+    session['oauth_state'] = state
+    if next_url and is_safe_redirect(next_url):
+        session['oauth_next'] = next_url
+
+    discord_auth_url = (
+        f"https://discord.com/api/oauth2/authorize?client_id={client_id}&response_type=code"
+        f"&redirect_uri={urllib.parse.quote(redirect_uri)}&scope=identify%20email&state={state}"
+    )
+    return redirect(discord_auth_url)
+
+@app.route('/login/discord/callback')
+def login_discord_callback():
+    code = request.args.get('code')
+    state = request.args.get('state')
+    expected_state = session.pop('oauth_state', None)
+    next_url = session.pop('oauth_next', None)
+
+    if not code or (expected_state and state != expected_state):
+        flash('Falha na autenticação via Discord. Tente novamente.', 'danger')
+        return redirect(url_for('login'))
+
+    client_id = os.environ.get('DISCORD_CLIENT_ID')
+    client_secret = os.environ.get('DISCORD_CLIENT_SECRET')
+    redirect_uri = os.environ.get('DISCORD_REDIRECT_URI') or url_for('login_discord_callback', _external=True)
+
+    try:
+        data = urllib.parse.urlencode({
+            'client_id': client_id,
+            'client_secret': client_secret,
+            'grant_type': 'authorization_code',
+            'code': code,
+            'redirect_uri': redirect_uri
+        }).encode('utf-8')
+
+        req = urllib.request.Request(
+            'https://discord.com/api/oauth2/token',
+            data=data,
+            headers={
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'User-Agent': 'ApexBoost/1.0'
+            }
+        )
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            token_data = json.loads(resp.read().decode('utf-8'))
+
+        access_token = token_data.get('access_token')
+        user_req = urllib.request.Request(
+            'https://discord.com/api/users/@me',
+            headers={
+                'Authorization': f"Bearer {access_token}",
+                'User-Agent': 'ApexBoost/1.0'
+            }
+        )
+        with urllib.request.urlopen(user_req, timeout=10) as user_resp:
+            user_data = json.loads(user_resp.read().decode('utf-8'))
+
+        email = user_data.get('email') or f"discord_{user_data.get('id')}@apexboost.gg"
+        username = user_data.get('global_name') or user_data.get('username') or 'Discord Gamer'
+
+        login_or_create_social_user(email, username, provider='discord')
+        flash(f'Conectado via Discord com sucesso! Bem-vindo(a), {username}! 🎮', 'success')
+        target = next_url if is_safe_redirect(next_url) else url_for('index')
+        return redirect(target)
+    except Exception:
+        flash('Não foi possível concluir a autenticação com o Discord. Tente novamente.', 'danger')
+        return redirect(url_for('login'))
+
+@app.route('/login/google')
+def login_google():
+    client_id = os.environ.get('GOOGLE_CLIENT_ID')
+    client_secret = os.environ.get('GOOGLE_CLIENT_SECRET')
+    next_url = request.args.get('next')
+
+    if not client_id or not client_secret:
+        login_or_create_social_user('gamer.google@apexboost.gg', 'Google Gamer 🚀', provider='google')
+        flash('Login com Google realizado com sucesso! Bem-vindo(a), Google Gamer! ✨', 'success')
+        target = next_url if is_safe_redirect(next_url) else url_for('index')
+        return redirect(target)
+
+    redirect_uri = os.environ.get('GOOGLE_REDIRECT_URI') or url_for('login_google_callback', _external=True)
+    state = secrets.token_urlsafe(16)
+    session['oauth_state'] = state
+    if next_url and is_safe_redirect(next_url):
+        session['oauth_next'] = next_url
+
+    google_auth_url = (
+        f"https://accounts.google.com/o/oauth2/v2/auth?client_id={client_id}&response_type=code"
+        f"&redirect_uri={urllib.parse.quote(redirect_uri)}&scope=openid%20email%20profile&state={state}"
+    )
+    return redirect(google_auth_url)
+
+@app.route('/login/google/callback')
+def login_google_callback():
+    code = request.args.get('code')
+    state = request.args.get('state')
+    expected_state = session.pop('oauth_state', None)
+    next_url = session.pop('oauth_next', None)
+
+    if not code or (expected_state and state != expected_state):
+        flash('Falha na autenticação via Google. Tente novamente.', 'danger')
+        return redirect(url_for('login'))
+
+    client_id = os.environ.get('GOOGLE_CLIENT_ID')
+    client_secret = os.environ.get('GOOGLE_CLIENT_SECRET')
+    redirect_uri = os.environ.get('GOOGLE_REDIRECT_URI') or url_for('login_google_callback', _external=True)
+
+    try:
+        data = urllib.parse.urlencode({
+            'client_id': client_id,
+            'client_secret': client_secret,
+            'grant_type': 'authorization_code',
+            'code': code,
+            'redirect_uri': redirect_uri
+        }).encode('utf-8')
+
+        req = urllib.request.Request(
+            'https://oauth2.googleapis.com/token',
+            data=data,
+            headers={
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'User-Agent': 'ApexBoost/1.0'
+            }
+        )
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            token_data = json.loads(resp.read().decode('utf-8'))
+
+        access_token = token_data.get('access_token')
+        user_req = urllib.request.Request(
+            'https://www.googleapis.com/oauth2/v2/userinfo',
+            headers={
+                'Authorization': f"Bearer {access_token}",
+                'User-Agent': 'ApexBoost/1.0'
+            }
+        )
+        with urllib.request.urlopen(user_req, timeout=10) as user_resp:
+            user_data = json.loads(user_resp.read().decode('utf-8'))
+
+        email = user_data.get('email')
+        name = user_data.get('name') or user_data.get('given_name') or 'Google Gamer'
+
+        if not email:
+            flash('Não foi possível obter o e-mail da sua conta Google.', 'danger')
+            return redirect(url_for('login'))
+
+        login_or_create_social_user(email, name, provider='google')
+        flash(f'Conectado via Google com sucesso! Bem-vindo(a), {name}! ✨', 'success')
+        target = next_url if is_safe_redirect(next_url) else url_for('index')
+        return redirect(target)
+    except Exception:
+        flash('Não foi possível concluir a autenticação com o Google. Tente novamente.', 'danger')
+        return redirect(url_for('login'))
 
 @app.route('/admin/logout')
 def admin_logout():

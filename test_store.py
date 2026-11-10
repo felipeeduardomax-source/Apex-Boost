@@ -118,6 +118,7 @@ class StoreTestCase(unittest.TestCase):
         res = self.client.get('/download/ultra_fps_pack.zip')
         self.assertEqual(res.status_code, 200)
         self.assertIn(res.headers.get('Content-Type'), ['application/zip', 'application/x-zip-compressed'])
+        res.close()
 
     def test_07_admin_dashboard(self):
         # Login as admin

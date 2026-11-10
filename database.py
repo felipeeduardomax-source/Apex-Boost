@@ -289,6 +289,12 @@ def _init_db_postgres():
         cursor.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS drop_vip_claimed INTEGER DEFAULT 0;")
         cursor.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token TEXT;")
         cursor.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token_expires TIMESTAMP;")
+        cursor.execute("ALTER TABLE order_items ADD COLUMN IF NOT EXISTS hwid TEXT;")
+        cursor.execute("ALTER TABLE order_items ADD COLUMN IF NOT EXISTS hwid_linked_at TIMESTAMP;")
+        cursor.execute("ALTER TABLE order_items ADD COLUMN IF NOT EXISTS hwid_last_reset TIMESTAMP;")
+        cursor.execute("ALTER TABLE order_items ADD COLUMN IF NOT EXISTS license_status TEXT DEFAULT 'ATIVA';")
+        cursor.execute("ALTER TABLE order_items ADD COLUMN IF NOT EXISTS license_type TEXT DEFAULT 'VITALÍCIA';")
+        cursor.execute("ALTER TABLE order_items ADD COLUMN IF NOT EXISTS expires_at TIMESTAMP;")
         conn.commit()
     except Exception:
         pass
@@ -397,6 +403,21 @@ def _init_db_sqlite():
         conn.commit()
     except Exception:
         pass
+
+    # Migração segura para colunas de HWID e Licenças no SQLite
+    for col, col_type in [
+        ('hwid', 'TEXT'),
+        ('hwid_linked_at', 'TIMESTAMP'),
+        ('hwid_last_reset', 'TIMESTAMP'),
+        ('license_status', "TEXT DEFAULT 'ATIVA'"),
+        ('license_type', "TEXT DEFAULT 'VITALÍCIA'"),
+        ('expires_at', 'TIMESTAMP')
+    ]:
+        try:
+            cursor.execute(f"ALTER TABLE order_items ADD COLUMN {col} {col_type};")
+            conn.commit()
+        except Exception:
+            pass
 
     _seed_initial_data(cursor, conn, is_postgres=False)
     conn.close()
@@ -595,6 +616,31 @@ def _seed_initial_data(cursor, conn, is_postgres=False):
                 INSERT INTO reviews (author, game, rating, text, fps_before, fps_after)
                 VALUES (?, ?, ?, ?, ?, ?)
             ''', (author, game, rating, text, before, after))
+
+    # Seed Demo Order for gamer@teste.com if none exists
+    gamer = cursor.execute("SELECT id FROM users WHERE email = ?", ('gamer@teste.com',)).fetchone()
+    if gamer:
+        gamer_id = gamer['id'] if isinstance(gamer, dict) else gamer[0]
+        has_order = cursor.execute("SELECT id FROM orders WHERE user_id = ?", (gamer_id,)).fetchone()
+        if not has_order:
+            ultra_prod = cursor.execute("SELECT id, name, price FROM products WHERE slug = ?", ('ultra-fps-competitive-pack',)).fetchone()
+            if ultra_prod:
+                p_id = ultra_prod['id'] if isinstance(ultra_prod, dict) else ultra_prod[0]
+                p_name = ultra_prod['name'] if isinstance(ultra_prod, dict) else ultra_prod[1]
+                p_price = ultra_prod['price'] if isinstance(ultra_prod, dict) else ultra_prod[2]
+
+                cursor.execute('''
+                    INSERT INTO orders (order_code, user_id, customer_name, customer_email, total, payment_method, status)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                ''', ('ORD-DEMO-2026', gamer_id, 'Felipe Gamer', 'gamer@teste.com', p_price, 'PIX', 'PAGO'))
+
+                ord_row = cursor.execute("SELECT id FROM orders WHERE order_code = ?", ('ORD-DEMO-2026',)).fetchone()
+                order_id = ord_row['id'] if isinstance(ord_row, dict) else ord_row[0]
+
+                cursor.execute('''
+                    INSERT INTO order_items (order_id, product_id, product_name, price, license_key, hwid, hwid_linked_at, license_status, license_type)
+                    VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, 'ATIVA', 'VITALÍCIA')
+                ''', (order_id, p_id, p_name, p_price, 'APEX-ULTRA-7F9B-2026-VIP', 'DESKTOP-FELIPE-PC (Windows 11 Pro 64-bit)'))
 
     conn.commit()
 

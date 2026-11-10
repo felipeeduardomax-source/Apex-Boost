@@ -491,5 +491,65 @@ class StoreTestCase(unittest.TestCase):
         self.assertIn(b'Cadastrar com Discord', res_register.data)
         self.assertIn(b'Cadastrar com Google', res_register.data)
 
+    def test_21_client_dashboard_hwid_and_licenses(self):
+        # 1. Login as client (gamer@teste.com)
+        self.client.post('/login', data={'email': 'gamer@teste.com', 'password': '123456'}, follow_redirects=True)
+
+        # 2. Access /profile dashboard
+        res_profile = self.client.get('/profile')
+        self.assertEqual(res_profile.status_code, 200)
+        self.assertIn(b'Gerenciador de Licen', res_profile.data)
+        self.assertIn(b'Central de Downloads Segura', res_profile.data)
+        self.assertIn(b'Guia de Instala', res_profile.data)
+        self.assertIn(b'Checklist', res_profile.data)
+        self.assertIn(b'CHECKSUM OFICIAL SHA-256', res_profile.data)
+
+        # 3. Find the item_id for the user's order_item
+        conn = get_db()
+        u = conn.execute("SELECT id FROM users WHERE email = 'gamer@teste.com'").fetchone()
+        item = conn.execute("""
+            SELECT oi.id, oi.hwid, oi.license_key 
+            FROM order_items oi
+            JOIN orders o ON oi.order_id = o.id
+            WHERE o.user_id = ?
+            ORDER BY oi.id DESC LIMIT 1
+        """, (u['id'],)).fetchone()
+        self.assertIsNotNone(item)
+        item_id = item['id']
+        conn.close()
+
+        # 4. Perform HWID reset
+        res_reset = self.client.post(f'/profile/reset-hwid/{item_id}', follow_redirects=True)
+        self.assertEqual(res_reset.status_code, 200)
+        self.assertIn(b'HWID desvinculado com sucesso', res_reset.data)
+
+        # Verify in DB that HWID is now None
+        conn = get_db()
+        item_after = conn.execute("SELECT hwid, hwid_last_reset FROM order_items WHERE id = ?", (item_id,)).fetchone()
+        self.assertIsNone(item_after['hwid'])
+        self.assertIsNotNone(item_after['hwid_last_reset'])
+        conn.close()
+
+        # 5. Try resetting again immediately (should be blocked by 15-day cooldown)
+        res_reset_blocked = self.client.post(f'/profile/reset-hwid/{item_id}', follow_redirects=True)
+        self.assertEqual(res_reset_blocked.status_code, 200)
+        self.assertIn(b'Reset de HWID bloqueado', res_reset_blocked.data)
+
+        # 6. Test Linking HWID
+        res_link = self.client.post(f'/profile/link-hwid/{item_id}', data={
+            'machine_name': 'DESKTOP-NOVO-PC (Windows 11 64-bit)'
+        }, follow_redirects=True)
+        self.assertEqual(res_link.status_code, 200)
+        self.assertIn(b'DESKTOP-NOVO-PC', res_link.data)
+
+        # Verify in DB
+        conn = get_db()
+        item_linked = conn.execute("SELECT hwid FROM order_items WHERE id = ?", (item_id,)).fetchone()
+        self.assertEqual(item_linked['hwid'], 'DESKTOP-NOVO-PC (Windows 11 64-bit)')
+        # Reset last_reset to None so subsequent test runs have clean state
+        conn.execute("UPDATE order_items SET hwid_last_reset = NULL WHERE id = ?", (item_id,))
+        conn.commit()
+        conn.close()
+
 if __name__ == '__main__':
     unittest.main()

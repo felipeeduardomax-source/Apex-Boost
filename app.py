@@ -4,6 +4,7 @@ import json
 import uuid
 import random
 import secrets
+import hashlib
 import datetime
 import urllib.request
 import urllib.parse
@@ -31,6 +32,68 @@ app.config.update(
     MAX_CONTENT_LENGTH=2 * 1024 * 1024,  # Limite de 2MB por requisição (Anti-DoS / Payload)
     DOWNLOAD_FOLDER=os.path.join(os.path.dirname(__file__), 'static', 'downloads')
 )
+
+# Metadados de Versões e Changelogs Oficiais dos Packs
+PACK_METADATA = {
+    "ultra_fps_pack.zip": {
+        "version": "v3.6.0",
+        "release_date": "Novembro/2026",
+        "size": "24.8 MB",
+        "changelog": [
+            "Compatibilidade nativa com Windows 11 24H2 e Windows 10 22H2.",
+            "Novo Core Unparker v2 com suporte a arquitetura híbrida (Intel P-Cores/E-Cores e AMD 3D V-Cache).",
+            "Módulo de DPC Latency minimizado (< 0.2ms) para NVIDIA Reflex e AMD Anti-Lag 2.",
+            "Script de reversão 100% automatizado e criação de ponto de restauração em segundo plano."
+        ]
+    },
+    "ultimate_extreme_suite.zip": {
+        "version": "v4.2.1",
+        "release_date": "Novembro/2026",
+        "size": "48.2 MB",
+        "changelog": [
+            "Painel Master Pro com novo seletor visual e modo 1-clique com barra de progresso.",
+            "Otimizações exclusivas de kernel para CS2, Valorant, FiveM e Warzone.",
+            "Tuning avançado de rede TCP/IP com desativação total de algoritmo de Nagle.",
+            "Limpador inteligente de Standby Memory que executa a cada 45 minutos sem lag spikes."
+        ]
+    },
+    "starter_pack.zip": {
+        "version": "v2.1.0",
+        "release_date": "Outubro/2026",
+        "size": "12.4 MB",
+        "changelog": [
+            "Plano Apex Ultimate Performance com desbloqueio de frequência máxima de CPU.",
+            "Remoção limpa de telemetria da Microsoft e diagnóstico em segundo plano.",
+            "Limpeza profunda de caches e arquivos temporários do DirectX e GPU."
+        ]
+    },
+    "network_pro_pack.zip": {
+        "version": "v2.8.4",
+        "release_date": "Novembro/2026",
+        "size": "15.1 MB",
+        "changelog": [
+            "Redução agressiva de jitter e perda de pacotes via DSCP QoS.",
+            "Configuração ultra-rápida de DNS Anycast (Cloudflare 1.1.1.1 e Google 8.8.8.8 com DoH).",
+            "Buffer tuning para conexões de fibra ótica e Wi-Fi 6/7."
+        ]
+    }
+}
+
+def get_file_sha256(filename):
+    """Calcula o checksum SHA-256 real do arquivo físico na pasta de downloads."""
+    if not filename:
+        return None
+    file_path = os.path.join(app.config.get('DOWNLOAD_FOLDER', os.path.join(os.path.dirname(__file__), 'static', 'downloads')), filename)
+    if not os.path.exists(file_path):
+        return None
+    sha256_hash = hashlib.sha256()
+    try:
+        with open(file_path, "rb") as f:
+            for byte_block in iter(lambda: f.read(4096), b""):
+                sha256_hash.update(byte_block)
+        return sha256_hash.hexdigest()
+    except Exception:
+        return None
 
 # Ensure DB exists
 init_db()
@@ -852,6 +915,25 @@ def admin_logout():
     flash('Você saiu da sua conta com sucesso.', 'info')
     return redirect(url_for('login'))
 
+def parse_db_datetime(val):
+    """Helper para normalizar datas vindas do SQLite ou PostgreSQL."""
+    if not val:
+        return None
+    if isinstance(val, (datetime.datetime, datetime.date)):
+        if isinstance(val, datetime.date) and not isinstance(val, datetime.datetime):
+            return datetime.datetime.combine(val, datetime.time.min)
+        return val
+    val_str = str(val).strip().replace('Z', '')
+    for fmt in ('%Y-%m-%d %H:%M:%S.%f', '%Y-%m-%d %H:%M:%S', '%Y-%m-%dT%H:%M:%S.%f', '%Y-%m-%dT%H:%M:%S', '%Y-%m-%d'):
+        try:
+            return datetime.datetime.strptime(val_str, fmt)
+        except ValueError:
+            pass
+    try:
+        return datetime.datetime.fromisoformat(val_str)
+    except Exception:
+        return datetime.datetime.now()
+
 @app.route('/profile', methods=['GET', 'POST'])
 def profile():
     as_admin = request.args.get('as_admin')
@@ -864,7 +946,6 @@ def profile():
         flash('Faça login para acessar o painel de membro.', 'warning')
         return redirect(url_for('login', next=request.path))
 
-    user_id = session['user_id']
     conn = get_db()
 
     if request.method == 'POST':
@@ -902,7 +983,7 @@ def profile():
     """, (user_id,)).fetchall()
 
     # Get user purchased items & licenses for downloads
-    purchased_items = conn.execute("""
+    raw_purchased_items = conn.execute("""
         SELECT oi.*, p.name as prod_name, p.slug as prod_slug, p.download_file, p.icon, o.order_code, o.created_at as purchase_date
         FROM order_items oi
         JOIN orders o ON oi.order_id = o.id
@@ -911,8 +992,176 @@ def profile():
         ORDER BY oi.id DESC
     """, (user_id,)).fetchall()
 
+    enriched_items = []
+    now = datetime.datetime.now()
+    for row in raw_purchased_items:
+        item = dict(row)
+        dl_file = item.get('download_file', '')
+        item['sha256'] = get_file_sha256(dl_file)
+        meta = PACK_METADATA.get(dl_file, {
+            "version": "v3.6.0",
+            "release_date": "Novembro/2026",
+            "size": "24.8 MB",
+            "changelog": [
+                "Compatibilidade nativa com Windows 11 24H2 e Windows 10 22H2.",
+                "Otimizações gerais de estabilidade e redução de latência."
+            ]
+        })
+        item['version'] = meta['version']
+        item['release_date'] = meta['release_date']
+        item['file_size'] = meta['size']
+        item['changelog'] = meta['changelog']
+
+        # Status e Tipo de Licença
+        if not item.get('license_status'):
+            item['license_status'] = 'ATIVA'
+        if not item.get('license_type'):
+            item['license_type'] = 'VITALÍCIA'
+
+        # Cálculo do Cooldown de Reset de HWID (Limite de 1 reset a cada 15 dias)
+        last_reset = item.get('hwid_last_reset')
+        item['can_reset_hwid'] = True
+        item['days_until_next_reset'] = 0
+
+        if last_reset:
+            last_reset_dt = parse_db_datetime(last_reset)
+            if last_reset_dt:
+                days_passed = (now - last_reset_dt).days
+                if days_passed < 15:
+                    item['can_reset_hwid'] = False
+                    item['days_until_next_reset'] = max(1, 15 - days_passed)
+
+        enriched_items.append(item)
+
     conn.close()
-    return render_template('profile.html', user=user, orders=orders, purchased_items=purchased_items)
+    return render_template('profile.html', user=user, orders=orders, purchased_items=enriched_items)
+
+@app.route('/profile/reset-hwid/<int:item_id>', methods=['POST'])
+def reset_hwid(item_id):
+    user_id = session.get('user_id') or session.get('admin_user_id')
+    if not user_id:
+        flash('Faça login para gerenciar suas licenças.', 'warning')
+        return redirect(url_for('login'))
+
+    conn = get_db()
+    item = conn.execute("""
+        SELECT oi.*, o.user_id 
+        FROM order_items oi
+        JOIN orders o ON oi.order_id = o.id
+        WHERE oi.id = ? AND o.user_id = ?
+    """, (item_id, user_id)).fetchone()
+
+    if not item:
+        conn.close()
+        flash('Licença não encontrada ou você não possui permissão para alterá-la.', 'danger')
+        return redirect(url_for('profile'))
+
+    item_dict = dict(item)
+    last_reset = item_dict.get('hwid_last_reset')
+    now = datetime.datetime.now()
+
+    if last_reset:
+        last_reset_dt = parse_db_datetime(last_reset)
+        if last_reset_dt:
+            days_passed = (now - last_reset_dt).days
+            if days_passed < 15:
+                days_left = max(1, 15 - days_passed)
+                conn.close()
+                flash(f'Reset de HWID bloqueado! Você só pode realizar 1 reset a cada 15 dias para proteger sua conta. Faltam {days_left} dia(s).', 'warning')
+                return redirect(url_for('profile'))
+
+    conn.execute("""
+        UPDATE order_items 
+        SET hwid = NULL, hwid_last_reset = CURRENT_TIMESTAMP
+        WHERE id = ?
+    """, (item_id,))
+    conn.commit()
+    conn.close()
+
+    flash('HWID desvinculado com sucesso! Agora você pode ativar sua licença em um novo computador ao executar o launcher.', 'success')
+    return redirect(url_for('profile'))
+
+@app.route('/profile/link-hwid/<int:item_id>', methods=['POST'])
+def link_hwid(item_id):
+    user_id = session.get('user_id') or session.get('admin_user_id')
+    if not user_id:
+        flash('Faça login para gerenciar suas licenças.', 'warning')
+        return redirect(url_for('login'))
+
+    conn = get_db()
+    item = conn.execute("""
+        SELECT oi.*, o.user_id 
+        FROM order_items oi
+        JOIN orders o ON oi.order_id = o.id
+        WHERE oi.id = ? AND o.user_id = ?
+    """, (item_id, user_id)).fetchone()
+
+    if not item:
+        conn.close()
+        flash('Licença não encontrada ou sem permissão.', 'danger')
+        return redirect(url_for('profile'))
+
+    machine_name = request.form.get('machine_name', '').strip()
+    if not machine_name:
+        machine_name = f"DESKTOP-GAMER-{uuid.uuid4().hex[:4].upper()} (Windows 11 64-bit)"
+
+    conn.execute("""
+        UPDATE order_items 
+        SET hwid = ?, hwid_linked_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+    """, (machine_name, item_id))
+    conn.commit()
+    conn.close()
+
+    flash(f'Máquina vinculada com sucesso: {machine_name}', 'success')
+    return redirect(url_for('profile'))
+
+@app.route('/profile/claim-demo-pack', methods=['POST'])
+def claim_demo_pack():
+    user_id = session.get('user_id') or session.get('admin_user_id')
+    if not user_id:
+        flash('Faça login primeiro para ativar seu pack de teste.', 'warning')
+        return redirect(url_for('login'))
+
+    conn = get_db()
+    existing_order = conn.execute("SELECT id FROM orders WHERE user_id = ?", (user_id,)).fetchone()
+    if existing_order:
+        conn.close()
+        flash('Você já possui packs e licenças ativas em sua conta!', 'info')
+        return redirect(url_for('profile'))
+
+    user = conn.execute("SELECT name, email FROM users WHERE id = ?", (user_id,)).fetchone()
+    user_name = user['name'] if user else 'Membro VIP'
+    user_email = user['email'] if user else 'membro@apexboost.com'
+
+    prod = conn.execute("SELECT id, name, price FROM products WHERE slug = ?", ('ultra-fps-competitive-pack',)).fetchone()
+    if not prod:
+        prod = conn.execute("SELECT id, name, price FROM products LIMIT 1").fetchone()
+
+    p_id = prod['id']
+    p_name = prod['name']
+    p_price = prod['price']
+
+    order_code = f"DEMO-{uuid.uuid4().hex[:8].upper()}"
+    conn.execute("""
+        INSERT INTO orders (order_code, user_id, customer_name, customer_email, total, payment_method, status)
+        VALUES (?, ?, ?, ?, ?, ?, 'PAGO')
+    """, (order_code, user_id, user_name, user_email, p_price, 'PIX'))
+
+    ord_row = conn.execute("SELECT id FROM orders WHERE order_code = ?", (order_code,)).fetchone()
+    order_id = ord_row['id']
+    lic_key = generate_license_key()
+
+    conn.execute("""
+        INSERT INTO order_items (order_id, product_id, product_name, price, license_key, hwid, hwid_linked_at, license_status, license_type)
+        VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, 'ATIVA', 'VITALÍCIA')
+    """, (order_id, p_id, p_name, p_price, lic_key, f"DESKTOP-{uuid.uuid4().hex[:6].upper()}-PC (Windows 11 Pro 64-bit)"))
+
+    conn.commit()
+    conn.close()
+
+    flash('🎉 Pack Competitivo VIP ativado com sucesso em sua conta! Chave e downloads liberados.', 'success')
+    return redirect(url_for('profile'))
 
 # ----------------- CART & CHECKOUT ROUTES ----------------- #
 

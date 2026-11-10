@@ -1,29 +1,34 @@
 {% extends "base.html" %}
 
-{% block title %}Painel do Membro | Apex Boost Labs{% endblock %}
+{% block title %}Painel do Cliente | Apex Boost Labs{% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4" style="max-width: 1300px;">
+<div class="container-fluid py-4" style="max-width: 1350px;">
     <!-- User Profile Header Card -->
-    <div class="glass-card p-4 mb-4 border-2" style="border-color: rgba(0, 102, 255, 0.3);">
+    <div class="glass-card p-4 mb-4 border-2" style="border-color: rgba(0, 102, 255, 0.3); background: linear-gradient(135deg, rgba(13, 18, 34, 0.95) 0%, rgba(9, 10, 15, 0.98) 100%);">
         <div class="row align-items-center g-3">
             <div class="col-auto">
-                <div class="rounded-circle text-white d-flex align-items-center justify-content-center fw-black fs-2 shadow" style="width: 68px; height: 68px; background: var(--grad-primary); box-shadow: 0 0 20px rgba(0, 102, 255, 0.4);">
+                <div class="rounded-circle text-white d-flex align-items-center justify-content-center fw-black fs-2 shadow position-relative" style="width: 72px; height: 72px; background: var(--grad-primary); box-shadow: 0 0 25px rgba(0, 102, 255, 0.5);">
                     {{ user.name[0] | upper }}
+                    <span class="position-absolute bottom-0 end-0 p-1 bg-success border border-dark rounded-circle" title="Online no Sistema" style="width: 14px; height: 14px;"></span>
                 </div>
             </div>
             <div class="col">
                 <div class="d-flex align-items-center gap-2 flex-wrap">
                     <h2 class="text-white fw-black mb-0 fs-3">{{ user.name }}</h2>
                     {% if user.is_admin %}
-                        <span class="badge bg-warning text-dark fw-bold" style="font-size: 0.72rem;">ADMINISTRADOR</span>
+                        <span class="badge bg-warning text-dark fw-bold" style="font-size: 0.72rem;"><i class="bi bi-shield-check me-1"></i> ADMINISTRADOR</span>
                     {% else %}
-                        <span class="badge-fire">MEMBRO VIP 👑</span>
+                        <span class="badge-fire"><i class="bi bi-patch-check-fill me-1"></i> CLIENTE VIP 👑</span>
                     {% endif %}
+                    <span class="badge" style="background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); font-size: 0.72rem;">
+                        <i class="bi bi-check-circle-fill me-1"></i> CONTA VERIFICADA
+                    </span>
                 </div>
                 <div class="text-secondary small mt-1">
                     <i class="bi bi-envelope me-1"></i> {{ user.email }} &bull;
-                    <i class="bi bi-calendar-check me-1"></i> Membro desde {{ user.created_at | format_date }}
+                    <i class="bi bi-calendar-check me-1"></i> Membro desde {{ user.created_at | format_date }} &bull;
+                    <i class="bi bi-hdd-network text-cyan me-1"></i> {{ purchased_items|length }} Licença(s) Ativa(s)
                 </div>
             </div>
             <div class="col-12 col-md-auto d-flex gap-2 flex-wrap pt-2 pt-md-0">
@@ -39,36 +44,58 @@
         </div>
     </div>
 
-    <!-- Main Workspace with Dedicated Inner Tabs Sidebar -->
+    <!-- Main Workspace with Dedicated Sidebar Tabs -->
     <div class="row g-4">
         <!-- Inner Profile Tabs Sidebar -->
         <div class="col-lg-3">
             <div class="inner-page-sidebar">
-                <div class="sidebar-section-title px-2 pt-1 pb-2">Minha Área</div>
+                <div class="sidebar-section-title px-2 pt-1 pb-2 text-uppercase text-secondary" style="font-size: 0.72rem; letter-spacing: 1px; font-weight: 700;">
+                    PAINEL DO CLIENTE
+                </div>
                 <div class="nav flex-column nav-pills" id="profileSidebarTabs" role="tablist">
-                    <button class="inner-sidebar-btn active" id="downloads-tab" data-bs-toggle="pill" data-bs-target="#downloadsContent" type="button" role="tab">
-                        <i class="bi bi-cloud-arrow-down-fill text-blue"></i>
-                        <span>Downloads & Licenças</span>
-                        <span class="badge rounded-pill bg-dark border border-secondary ms-auto text-white">{{ purchased_items|length }}</span>
+                    <!-- Tab 1: Licenças & HWID -->
+                    <button class="inner-sidebar-btn active" id="licenses-tab" data-bs-toggle="pill" data-bs-target="#licensesContent" type="button" role="tab">
+                        <i class="bi bi-key-fill text-warning"></i>
+                        <span>Licenças & HWID</span>
+                        <span class="badge rounded-pill bg-dark border border-secondary ms-auto text-warning fw-bold">{{ purchased_items|length }}</span>
                     </button>
+
+                    <!-- Tab 2: Central de Downloads -->
+                    <button class="inner-sidebar-btn" id="downloads-tab" data-bs-toggle="pill" data-bs-target="#downloadsContent" type="button" role="tab">
+                        <i class="bi bi-cloud-arrow-down-fill text-blue"></i>
+                        <span>Central de Downloads</span>
+                        <span class="badge rounded-pill bg-dark border border-secondary ms-auto text-info fw-bold">{{ purchased_items|length }}</span>
+                    </button>
+
+                    <!-- Tab 3: Guia de Instalação & Checklist -->
+                    <button class="inner-sidebar-btn" id="guide-tab" data-bs-toggle="pill" data-bs-target="#guideContent" type="button" role="tab">
+                        <i class="bi bi-journal-bookmark-fill text-success"></i>
+                        <span>Guia de Instalação</span>
+                        <span class="badge rounded-pill bg-success-subtle border border-success text-success ms-auto fw-bold" style="font-size: 0.68rem;">PASSO A PASSO</span>
+                    </button>
+
+                    <!-- Tab 4: Histórico de Pedidos -->
                     <button class="inner-sidebar-btn" id="orders-tab" data-bs-toggle="pill" data-bs-target="#ordersContent" type="button" role="tab">
-                        <i class="bi bi-receipt text-violet"></i>
+                        <i class="bi bi-receipt text-cyan"></i>
                         <span>Histórico de Pedidos</span>
                         <span class="badge rounded-pill bg-dark border border-secondary ms-auto text-white">{{ orders|length }}</span>
                     </button>
+
+                    <!-- Tab 5: Configurações & Senha -->
                     <button class="inner-sidebar-btn" id="settings-tab" data-bs-toggle="pill" data-bs-target="#settingsContent" type="button" role="tab">
-                        <i class="bi bi-gear-fill text-cyan"></i>
-                        <span>Configurações & Senha</span>
+                        <i class="bi bi-gear-fill text-secondary"></i>
+                        <span>Segurança & Senha</span>
                     </button>
                 </div>
 
                 <hr class="border-secondary border-opacity-50 my-3">
 
+                <!-- Support Box -->
                 <div class="p-3 rounded-3" style="background: rgba(0, 102, 255, 0.08); border: 1px solid rgba(0, 102, 255, 0.25);">
-                    <small class="text-blue d-block fw-bold mb-1"><i class="bi bi-headset me-1"></i> Precisa de Suporte?</small>
-                    <small class="text-muted d-block mb-2" style="font-size: 0.78rem;">Fale diretamente com nossa equipe no Discord oficial.</small>
+                    <small class="text-blue d-block fw-bold mb-1"><i class="bi bi-headset me-1"></i> Suporte Técnico VIP</small>
+                    <small class="text-muted d-block mb-2" style="font-size: 0.78rem;">Dúvidas sobre o HWID ou instalação? Nossa equipe atende 24/7 no Discord.</small>
                     <a href="https://discord.com" target="_blank" class="btn btn-sm btn-apex-purple w-100 py-1" style="font-size: 0.8rem;">
-                        <i class="bi bi-discord me-1"></i> Abrir Discord
+                        <i class="bi bi-discord me-1"></i> Abrir Suporte Discord
                     </a>
                 </div>
             </div>
@@ -77,56 +104,194 @@
         <!-- Inner Content Area -->
         <div class="col-lg-9">
             <div class="tab-content" id="profileTabContents">
-                <!-- 1. Central de Downloads & Licenças -->
-                <div class="tab-pane fade show active" id="downloadsContent" role="tabpanel">
+
+                <!-- ==========================================
+                     TAB 1: GERENCIADOR DE LICENÇAS & HWID
+                     ========================================== -->
+                <div class="tab-pane fade show active" id="licensesContent" role="tabpanel">
                     <div class="glass-card p-4">
-                        <h4 class="text-white fw-bold mb-3 border-bottom border-secondary border-opacity-50 pb-2">
-                            <i class="bi bi-cloud-arrow-down-fill text-blue me-2"></i> Meus Packs Adquiridos
-                        </h4>
+                        <div class="d-flex justify-content-between align-items-center mb-4 border-bottom border-secondary border-opacity-50 pb-3 flex-wrap gap-2">
+                            <div>
+                                <h4 class="text-white fw-bold mb-1">
+                                    <i class="bi bi-key-fill text-warning me-2"></i> Gerenciador de Licenças & HWID
+                                </h4>
+                                <p class="text-secondary small mb-0">Gerencie suas chaves de ativação, máquinas vinculadas e solicite reset de hardware quando necessário.</p>
+                            </div>
+                            <span class="badge rounded-pill bg-dark border border-warning text-warning px-3 py-2">
+                                <i class="bi bi-shield-lock me-1"></i> Proteção Anti-Compartilhamento Ativa
+                            </span>
+                        </div>
 
                         {% if not purchased_items %}
-                            <div class="p-5 text-center">
-                                <i class="bi bi-box-seam fs-1 text-violet mb-3 d-block"></i>
-                                <h5 class="text-white fw-bold mb-2">Nenhum pack adquirido ainda</h5>
-                                <p class="text-secondary small mb-4">Escolha um de nossos packs de otimização para desbloquear downloads ilimitados e sua chave de licença vitalícia.</p>
-                                <a href="{{ url_for('index') }}#packs" class="btn btn-apex-primary px-4 py-2">
-                                    <i class="bi bi-lightning-charge me-1"></i> Ver Catálogo de Packs
-                                </a>
+                            <div class="p-5 text-center rounded-3" style="background: rgba(13, 18, 34, 0.6); border: 1px dashed rgba(255,255,255,0.15);">
+                                <i class="bi bi-key fs-1 text-warning mb-3 d-block"></i>
+                                <h5 class="text-white fw-bold mb-2">Nenhuma licença ativa encontrada</h5>
+                                <p class="text-secondary small mb-4" style="max-width: 500px; margin: 0 auto;">Adquira um de nossos packs de otimização para desbloquear sua chave de ativação vitalícia com controle seguro de HWID.</p>
+                                <div class="d-flex justify-content-center gap-3 flex-wrap">
+                                    <a href="{{ url_for('index') }}#packs" class="btn btn-apex-primary px-4 py-2">
+                                        <i class="bi bi-lightning-charge me-1"></i> Ver Packs na Vitrine
+                                    </a>
+                                    <form method="POST" action="{{ url_for('claim_demo_pack') }}">
+                                        <button type="submit" class="btn btn-outline-warning px-4 py-2">
+                                            <i class="bi bi-gift-fill me-1"></i> Ativar Pack VIP de Demonstração (1-Clique)
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
                         {% else %}
-                            <div class="row g-4">
+                            <div class="d-flex flex-column gap-4">
                                 {% for item in purchased_items %}
-                                <div class="col-md-6">
-                                    <div class="p-4 rounded-3 h-100 d-flex flex-column justify-content-between border border-secondary border-opacity-50" style="background: #0d1222;">
-                                        <div>
-                                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                                <div class="d-flex align-items-center gap-2">
-                                                    <div class="pack-icon-glow mb-0" style="width: 44px; height: 44px; font-size: 1.25rem;">
-                                                        <i class="bi {{ item.icon }}"></i>
-                                                    </div>
-                                                    <div>
-                                                        <h6 class="text-white fw-bold mb-0">{{ item.prod_name }}</h6>
-                                                        <small class="text-secondary">Pedido: {{ item.order_code }}</small>
-                                                    </div>
-                                                </div>
-                                                <span class="badge-cyan">ATIVO</span>
+                                <div class="p-4 rounded-3 border border-secondary border-opacity-50" style="background: linear-gradient(180deg, #0d1222 0%, #090c15 100%); box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+                                    <!-- Pack Header -->
+                                    <div class="d-flex justify-content-between align-items-start mb-3 flex-wrap gap-2">
+                                        <div class="d-flex align-items-center gap-3">
+                                            <div class="pack-icon-glow mb-0" style="width: 48px; height: 48px; font-size: 1.4rem;">
+                                                <i class="bi {{ item.icon }}"></i>
                                             </div>
+                                            <div>
+                                                <h5 class="text-white fw-bold mb-0">{{ item.prod_name }}</h5>
+                                                <small class="text-secondary">
+                                                    Pedido: <strong class="text-blue">{{ item.order_code }}</strong> &bull;
+                                                    Data: {{ item.purchase_date | format_date }}
+                                                </small>
+                                            </div>
+                                        </div>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="badge" style="background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.4); font-size: 0.75rem; padding: 6px 10px;">
+                                                <i class="bi bi-patch-check-fill me-1"></i> STATUS: {{ item.license_status }}
+                                            </span>
+                                            <span class="badge" style="background: rgba(0, 210, 255, 0.2); color: #00d2ff; border: 1px solid rgba(0, 210, 255, 0.4); font-size: 0.75rem; padding: 6px 10px;">
+                                                <i class="bi bi-infinity me-1"></i> {{ item.license_type }}
+                                            </span>
+                                        </div>
+                                    </div>
 
-                                            <div class="my-3">
-                                                <small class="text-secondary d-block mb-1" style="font-size: 0.72rem;">SUA CHAVE DE LICENÇA:</small>
-                                                <div class="license-display">
-                                                    <span id="profLic{{ item.id }}">{{ item.license_key }}</span>
-                                                    <button type="button" class="btn btn-sm btn-apex-outline py-0 px-2 btn-copy-clip" data-copy-target="profLic{{ item.id }}" title="Copiar Chave">
-                                                        <i class="bi bi-copy"></i>
+                                    <div class="row g-3">
+                                        <!-- License Key Column -->
+                                        <div class="col-md-6">
+                                            <div class="p-3 rounded-3 h-100 border border-secondary border-opacity-25" style="background: rgba(0,0,0,0.35);">
+                                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                                    <small class="text-secondary fw-bold" style="font-size: 0.75rem; letter-spacing: 0.5px;">CHAVE DE ATIVAÇÃO:</small>
+                                                    <small class="text-cyan" style="font-size: 0.72rem;"><i class="bi bi-shield-check me-1"></i> Criptografia 256-bit</small>
+                                                </div>
+                                                <div class="license-display mb-2 d-flex align-items-center justify-content-between p-2 rounded" style="background: #05070c; border: 1px solid rgba(0, 102, 255, 0.4);">
+                                                    <span id="licKeyVal{{ item.id }}" class="font-monospace fw-bold text-white fs-6 px-1">{{ item.license_key }}</span>
+                                                    <button type="button" class="btn btn-sm btn-apex-primary py-1 px-3 btn-copy-clip" data-copy-target="licKeyVal{{ item.id }}" title="Copiar Chave">
+                                                        <i class="bi bi-copy me-1"></i> Copiar
                                                     </button>
+                                                </div>
+                                                <div class="d-flex justify-content-between align-items-center text-secondary small">
+                                                    <span><i class="bi bi-calendar-event me-1"></i> Validade:</span>
+                                                    <strong class="text-white">Vitalícia (Sem Expiração)</strong>
                                                 </div>
                                             </div>
                                         </div>
 
-                                        <div class="pt-3 border-top border-secondary border-opacity-50 mt-3">
-                                            <a href="{{ url_for('download_file', filename=item.download_file) }}" class="btn btn-apex-primary w-100 py-2">
-                                                <i class="bi bi-download me-2"></i> Baixar Pack (.ZIP)
-                                            </a>
+                                        <!-- HWID Machine Column -->
+                                        <div class="col-md-6">
+                                            <div class="p-3 rounded-3 h-100 border border-secondary border-opacity-25" style="background: rgba(0,0,0,0.35);">
+                                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                                    <small class="text-secondary fw-bold" style="font-size: 0.75rem; letter-spacing: 0.5px;">MÁQUINA VINCULADA (HWID):</small>
+                                                    {% if item.hwid %}
+                                                        <span class="badge bg-success-subtle text-success border border-success border-opacity-25" style="font-size: 0.68rem;">
+                                                            <i class="bi bi-lock-fill me-1"></i> VINCULADO
+                                                        </span>
+                                                    {% else %}
+                                                        <span class="badge bg-warning-subtle text-warning border border-warning border-opacity-25" style="font-size: 0.68rem;">
+                                                            <i class="bi bi-unlock-fill me-1"></i> DISPONÍVEL
+                                                        </span>
+                                                    {% endif %}
+                                                </div>
+
+                                                {% if item.hwid %}
+                                                    <div class="p-2 rounded mb-2 d-flex align-items-center gap-2" style="background: #05070c; border: 1px solid rgba(255,255,255,0.1);">
+                                                        <i class="bi bi-pc-display text-cyan fs-5"></i>
+                                                        <div class="text-truncate">
+                                                            <strong class="text-white small d-block text-truncate" title="{{ item.hwid }}">{{ item.hwid }}</strong>
+                                                            <small class="text-secondary" style="font-size: 0.7rem;">
+                                                                <i class="bi bi-clock-history me-1"></i> Vinculado em: {{ item.hwid_linked_at | format_datetime if item.hwid_linked_at else 'Ativação Automática' }}
+                                                            </small>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        {% if item.can_reset_hwid %}
+                                                            <button type="button" class="btn btn-sm btn-outline-danger w-100 py-1" data-bs-toggle="modal" data-bs-target="#resetHwidModal{{ item.id }}">
+                                                                <i class="bi bi-arrow-counterclockwise me-1"></i> Resetar HWID da Máquina
+                                                            </button>
+                                                        {% else %}
+                                                            <div class="w-100">
+                                                                <button class="btn btn-sm btn-secondary w-100 py-1 opacity-75" disabled title="Aguarde o período de cooldown">
+                                                                    <i class="bi bi-hourglass-split me-1"></i> Reset em Cooldown (Restam {{ item.days_until_next_reset }} dia{{ 's' if item.days_until_next_reset > 1 else '' }})
+                                                                </button>
+                                                                <small class="text-warning d-block mt-1 text-center" style="font-size: 0.72rem;">
+                                                                    <i class="bi bi-info-circle me-1"></i> Limite de 1 reset a cada 15 dias para proteger sua conta.
+                                                                </small>
+                                                            </div>
+                                                        {% endif %}
+                                                    </div>
+                                                {% else %}
+                                                    <div class="p-2 rounded mb-2" style="background: #05070c; border: 1px dashed rgba(255,255,255,0.15);">
+                                                        <div class="d-flex align-items-center gap-2">
+                                                            <i class="bi bi-info-circle text-warning fs-5"></i>
+                                                            <div>
+                                                                <small class="text-secondary d-block" style="font-size: 0.73rem;">Nenhuma máquina vinculada no momento.</small>
+                                                                <small class="text-white fw-bold" style="font-size: 0.75rem;">O vínculo ocorre no 1º uso do script.</small>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <form method="POST" action="{{ url_for('link_hwid', item_id=item.id) }}">
+                                                        <input type="hidden" name="machine_name" value="DESKTOP-FELIPE-PC (Windows 11 Pro 64-bit)">
+                                                        <button type="submit" class="btn btn-sm btn-apex-outline w-100 py-1">
+                                                            <i class="bi bi-link-45deg me-1"></i> Vincular Meu PC Atual (Simular)
+                                                        </button>
+                                                    </form>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Security & Policy Footer -->
+                                    <div class="mt-3 pt-2 border-top border-secondary border-opacity-25 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                        <small class="text-secondary" style="font-size: 0.72rem;">
+                                            <i class="bi bi-shield-shaded text-blue me-1"></i>
+                                            <strong>Regra de Proteção:</strong> Cada licença autoriza o uso em 1 computador ativo por vez.
+                                        </small>
+                                        <a href="#downloadsContent" class="btn btn-sm btn-apex-primary py-1 px-3" onclick="document.getElementById('downloads-tab').click();">
+                                            <i class="bi bi-download me-1"></i> Ir para Downloads & Checksum
+                                        </a>
+                                    </div>
+                                </div>
+
+                                <!-- Modal de Confirmação de Reset de HWID -->
+                                <div class="modal fade" id="resetHwidModal{{ item.id }}" tabindex="-1" aria-labelledby="resetHwidModalLabel{{ item.id }}" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content text-white" style="background: #0d1222; border: 1px solid rgba(220, 53, 69, 0.4); box-shadow: 0 0 30px rgba(220, 53, 69, 0.2);">
+                                            <div class="modal-header border-secondary border-opacity-50">
+                                                <h5 class="modal-title fw-bold text-danger" id="resetHwidModalLabel{{ item.id }}">
+                                                    <i class="bi bi-exclamation-triangle-fill me-2"></i> Confirmar Reset de Hardware (HWID)
+                                                </h5>
+                                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <p class="mb-2">Você está prestes a desvincular a máquina:</p>
+                                                <div class="p-2 rounded bg-dark border border-secondary border-opacity-50 font-monospace text-warning small mb-3">
+                                                    {{ item.hwid }}
+                                                </div>
+                                                <div class="alert alert-warning py-2 small mb-3" style="background: rgba(255, 193, 7, 0.1); border-color: rgba(255, 193, 7, 0.3); color: #ffc107;">
+                                                    <i class="bi bi-shield-exclamation me-1"></i>
+                                                    <strong>Aviso Importante:</strong> Após confirmar este reset, você poderá ativar sua licença em um novo PC. Porém, um novo reset só estará disponível após <strong>15 dias</strong>.
+                                                </div>
+                                                <p class="small text-secondary mb-0">Esta política garante a segurança da sua conta e previne o compartilhamento não autorizado de chaves.</p>
+                                            </div>
+                                            <div class="modal-footer border-secondary border-opacity-50">
+                                                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                                                <form method="POST" action="{{ url_for('reset_hwid', item_id=item.id) }}">
+                                                    <button type="submit" class="btn btn-danger btn-sm px-3">
+                                                        <i class="bi bi-check-lg me-1"></i> Sim, Desvincular e Resetar HWID
+                                                    </button>
+                                                </form>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -136,11 +301,269 @@
                     </div>
                 </div>
 
-                <!-- 2. Histórico de Pedidos -->
+                <!-- ==========================================
+                     TAB 2: CENTRAL DE DOWNLOADS SEGURA
+                     ========================================== -->
+                <div class="tab-pane fade" id="downloadsContent" role="tabpanel">
+                    <div class="glass-card p-4">
+                        <div class="d-flex justify-content-between align-items-center mb-4 border-bottom border-secondary border-opacity-50 pb-3 flex-wrap gap-2">
+                            <div>
+                                <h4 class="text-white fw-bold mb-1">
+                                    <i class="bi bi-cloud-arrow-down-fill text-blue me-2"></i> Central de Downloads Segura
+                                </h4>
+                                <p class="text-secondary small mb-0">Baixe os pacotes de otimização mais recentes e confirme a integridade criptográfica dos arquivos via SHA-256.</p>
+                            </div>
+                            <span class="badge rounded-pill bg-dark border border-info text-info px-3 py-2">
+                                <i class="bi bi-shield-check me-1"></i> Arquivos Verificados & Livres de Ameaças
+                            </span>
+                        </div>
+
+                        {% if not purchased_items %}
+                            <div class="p-5 text-center rounded-3" style="background: rgba(13, 18, 34, 0.6); border: 1px dashed rgba(255,255,255,0.15);">
+                                <i class="bi bi-cloud-slash fs-1 text-blue mb-3 d-block"></i>
+                                <h5 class="text-white fw-bold mb-2">Nenhum download disponível</h5>
+                                <p class="text-secondary small mb-4">Adquira um pack para ter acesso ilimitado aos arquivos de instalação e histórico de versões.</p>
+                                <a href="{{ url_for('index') }}#packs" class="btn btn-apex-primary px-4 py-2">
+                                    <i class="bi bi-lightning-charge me-1"></i> Ver Catálogo de Packs
+                                </a>
+                            </div>
+                        {% else %}
+                            <div class="d-flex flex-column gap-4">
+                                {% for item in purchased_items %}
+                                <div class="p-4 rounded-3 border border-secondary border-opacity-50" style="background: linear-gradient(180deg, #0d1222 0%, #090c15 100%);">
+                                    <div class="row align-items-center g-3 mb-3">
+                                        <div class="col-md-7">
+                                            <div class="d-flex align-items-center gap-3">
+                                                <div class="pack-icon-glow mb-0" style="width: 52px; height: 52px; font-size: 1.5rem;">
+                                                    <i class="bi {{ item.icon }}"></i>
+                                                </div>
+                                                <div>
+                                                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                                                        <h5 class="text-white fw-bold mb-0">{{ item.prod_name }}</h5>
+                                                        <span class="badge bg-primary text-white" style="font-size: 0.72rem;">{{ item.version }}</span>
+                                                        <span class="badge bg-success-subtle text-success border border-success border-opacity-25" style="font-size: 0.72rem;">ÚLTIMA VERSÃO ESTÁVEL</span>
+                                                    </div>
+                                                    <small class="text-secondary d-block mt-1">
+                                                        Arquivo: <span class="font-monospace text-white">{{ item.download_file }}</span> &bull;
+                                                        Tamanho: <strong class="text-cyan">{{ item.file_size }}</strong> &bull;
+                                                        Lançamento: {{ item.release_date }}
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-5 text-md-end">
+                                            <a href="{{ url_for('download_file', filename=item.download_file) }}" class="btn btn-apex-primary py-2 px-4 shadow-lg w-100 w-md-auto">
+                                                <i class="bi bi-download me-2"></i> Baixar Pack Mais Recente (.ZIP)
+                                            </a>
+                                        </div>
+                                    </div>
+
+                                    <!-- SHA-256 Checksum Card -->
+                                    <div class="p-3 rounded-3 mb-3 border border-secondary border-opacity-25" style="background: rgba(0, 0, 0, 0.4);">
+                                        <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+                                            <span class="text-secondary fw-bold" style="font-size: 0.75rem; letter-spacing: 0.5px;">
+                                                <i class="bi bi-fingerprint text-info me-1"></i> CHECKSUM OFICIAL SHA-256 (INTEGRIDADE):
+                                            </span>
+                                            <button type="button" class="btn btn-sm btn-outline-info py-0 px-2 btn-copy-clip" data-copy-target="sha256Val{{ item.id }}" style="font-size: 0.75rem;">
+                                                <i class="bi bi-copy me-1"></i> Copiar Hash SHA-256
+                                            </button>
+                                        </div>
+                                        <div class="p-2 rounded bg-black border border-secondary border-opacity-50 font-monospace small text-info text-break mb-2" id="sha256Val{{ item.id }}">
+                                            {{ item.sha256 }}
+                                        </div>
+                                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 text-secondary" style="font-size: 0.72rem;">
+                                            <span>Como verificar no Windows PowerShell:</span>
+                                            <code class="text-muted font-monospace bg-dark px-2 py-1 rounded border border-secondary border-opacity-25">Get-FileHash -Algorithm SHA256 .\{{ item.download_file }}</code>
+                                        </div>
+                                    </div>
+
+                                    <!-- Changelog Accordion -->
+                                    <div class="accordion accordion-flush" id="changelogAccordion{{ item.id }}">
+                                        <div class="accordion-item rounded border border-secondary border-opacity-25" style="background: rgba(0,0,0,0.25);">
+                                            <h2 class="accordion-header" id="headingChangelog{{ item.id }}">
+                                                <button class="accordion-button collapsed py-2 px-3 text-white small" type="button" data-bs-toggle="collapse" data-bs-target="#collapseChangelog{{ item.id }}" aria-expanded="false" style="background: transparent;">
+                                                    <i class="bi bi-clock-history text-cyan me-2"></i>
+                                                    <strong>Histórico de Versões & Notas de Atualização (Changelog)</strong>
+                                                </button>
+                                            </h2>
+                                            <div id="collapseChangelog{{ item.id }}" class="accordion-collapse collapse" data-bs-parent="#changelogAccordion{{ item.id }}">
+                                                <div class="accordion-body p-3 pt-2">
+                                                    <div class="small text-secondary mb-2">Versão {{ item.version }} ({{ item.release_date }}):</div>
+                                                    <ul class="mb-0 text-white small ps-3">
+                                                        {% for log in item.changelog %}
+                                                            <li class="mb-1"><i class="bi bi-check2 text-success me-1"></i> {{ log }}</li>
+                                                        {% endfor %}
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- ==========================================
+                     TAB 3: GUIA DE INSTALAÇÃO & CHECKLIST
+                     ========================================== -->
+                <div class="tab-pane fade" id="guideContent" role="tabpanel">
+                    <div class="glass-card p-4">
+                        <div class="d-flex justify-content-between align-items-center mb-4 border-bottom border-secondary border-opacity-50 pb-3 flex-wrap gap-2">
+                            <div>
+                                <h4 class="text-white fw-bold mb-1">
+                                    <i class="bi bi-journal-bookmark-fill text-success me-2"></i> Guia de Instalação Passo a Passo
+                                </h4>
+                                <p class="text-secondary small mb-0">Siga o checklist de pré-instalação para garantir 100% de segurança, estabilidade e ganho de FPS.</p>
+                            </div>
+                            <!-- Progress Badge -->
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="badge" id="checklistStatusBadge" style="background: rgba(0, 102, 255, 0.2); color: #00d2ff; border: 1px solid rgba(0, 102, 255, 0.4); padding: 8px 12px; font-size: 0.8rem;">
+                                    Progresso: <span id="checklistPercentage">0%</span>
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Progress Bar Visual -->
+                        <div class="progress mb-4" style="height: 8px; background: rgba(255,255,255,0.08); border-radius: 4px;">
+                            <div id="checklistProgressBar" class="progress-bar bg-success progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%; transition: width 0.4s ease;"></div>
+                        </div>
+
+                        <!-- Interactive Pre-installation Checklist -->
+                        <div class="row g-3 mb-4">
+                            <!-- Step 1 -->
+                            <div class="col-md-6">
+                                <div class="p-3 rounded-3 h-100 border border-secondary border-opacity-50 checklist-card" id="stepCard1" style="background: #0d1222; transition: all 0.3s ease;">
+                                    <div class="form-check d-flex align-items-start gap-2 mb-2">
+                                        <input class="form-check-input mt-1 checklist-input" type="checkbox" id="checkStep1" onchange="updateChecklistProgress()">
+                                        <label class="form-check-label text-white fw-bold cursor-pointer" for="checkStep1">
+                                            1. Criar Ponto de Restauração no Windows
+                                        </label>
+                                    </div>
+                                    <p class="text-secondary small mb-2 ms-4">
+                                        Garante segurança total. Se desejar desfazer qualquer modificação no futuro, basta restaurar seu Windows com 1 clique.
+                                    </p>
+                                    <div class="ms-4 p-2 rounded bg-black border border-secondary border-opacity-25 d-flex justify-content-between align-items-center">
+                                        <code class="text-info font-monospace small" id="restoreCmd">Checkpoint-Computer -Description "ApexRestore" -RestorePointType "MODIFY_SETTINGS"</code>
+                                        <button type="button" class="btn btn-sm btn-link text-secondary p-0 btn-copy-clip ms-2" data-copy-target="restoreCmd" title="Copiar Comando PowerShell">
+                                            <i class="bi bi-copy"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Step 2 -->
+                            <div class="col-md-6">
+                                <div class="p-3 rounded-3 h-100 border border-secondary border-opacity-50 checklist-card" id="stepCard2" style="background: #0d1222; transition: all 0.3s ease;">
+                                    <div class="form-check d-flex align-items-start gap-2 mb-2">
+                                        <input class="form-check-input mt-1 checklist-input" type="checkbox" id="checkStep2" onchange="updateChecklistProgress()">
+                                        <label class="form-check-label text-white fw-bold cursor-pointer" for="checkStep2">
+                                            2. Pausar Proteção em Tempo Real (Antivírus)
+                                        </label>
+                                    </div>
+                                    <p class="text-secondary small mb-2 ms-4">
+                                        Scripts de otimização modificam chaves de registro do kernel e timers de CPU, o que pode causar falso-positivo em antivírus convencionais.
+                                    </p>
+                                    <div class="ms-4 small text-muted">
+                                        <i class="bi bi-lightbulb text-warning me-1"></i> Dica: Pause por 15 minutos até a conclusão da instalação.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Step 3 -->
+                            <div class="col-md-6">
+                                <div class="p-3 rounded-3 h-100 border border-secondary border-opacity-50 checklist-card" id="stepCard3" style="background: #0d1222; transition: all 0.3s ease;">
+                                    <div class="form-check d-flex align-items-start gap-2 mb-2">
+                                        <input class="form-check-input mt-1 checklist-input" type="checkbox" id="checkStep3" onchange="updateChecklistProgress()">
+                                        <label class="form-check-label text-white fw-bold cursor-pointer" for="checkStep3">
+                                            3. Extrair .ZIP e Executar como Administrador
+                                        </label>
+                                    </div>
+                                    <p class="text-secondary small mb-2 ms-4">
+                                        Extraia a pasta para a sua Área de Trabalho. Clique com o botão direito sobre o arquivo <span class="text-info font-monospace">ApexOptimizer.bat</span> e selecione <strong>Executar como Administrador</strong>.
+                                    </p>
+                                    <div class="ms-4 small text-muted">
+                                        <i class="bi bi-shield-lock text-cyan me-1"></i> Digite sua Chave de Licença quando solicitada pelo launcher.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Step 4 -->
+                            <div class="col-md-6">
+                                <div class="p-3 rounded-3 h-100 border border-secondary border-opacity-50 checklist-card" id="stepCard4" style="background: #0d1222; transition: all 0.3s ease;">
+                                    <div class="form-check d-flex align-items-start gap-2 mb-2">
+                                        <input class="form-check-input mt-1 checklist-input" type="checkbox" id="checkStep4" onchange="updateChecklistProgress()">
+                                        <label class="form-check-label text-white fw-bold cursor-pointer" for="checkStep4">
+                                            4. Reiniciar o Computador após Aplicação
+                                        </label>
+                                    </div>
+                                    <p class="text-secondary small mb-2 ms-4">
+                                        O reinício é fundamental para que o subsistema do Windows carregue as novas diretivas de timer 0.5ms, unpark de núcleos e alocação de GPU.
+                                    </p>
+                                    <div class="ms-4 small text-success fw-bold">
+                                        <i class="bi bi-check2-circle me-1"></i> Após o reboot, aproveite seu jogo com máxima fluidez e zero stutter!
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Embedded Interactive Cyberpunk Video / Tutorial Walkthrough Player -->
+                        <div class="rounded-3 border border-secondary border-opacity-50 overflow-hidden" style="background: #080a10; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+                            <!-- Player Header Bar -->
+                            <div class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom border-secondary border-opacity-50" style="background: #111420;">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="rounded-circle" style="width: 10px; height: 10px; background: #ff5f56; display: inline-block;"></span>
+                                    <span class="rounded-circle" style="width: 10px; height: 10px; background: #ffbd2e; display: inline-block;"></span>
+                                    <span class="rounded-circle" style="width: 10px; height: 10px; background: #27c93f; display: inline-block;"></span>
+                                    <span class="text-secondary font-monospace small ms-2">Apex_Quick_Tutorial_v3.mp4</span>
+                                </div>
+                                <span class="badge bg-danger text-white" style="font-size: 0.68rem; animation: pulse 2s infinite;">
+                                    <i class="bi bi-play-circle-fill me-1"></i> VÍDEO INTERATIVO 1080p
+                                </span>
+                            </div>
+
+                            <!-- Visual Player Simulation Area -->
+                            <div class="p-4 position-relative" style="min-height: 280px; background: radial-gradient(circle at center, #0f172a 0%, #05070d 100%);">
+                                <div class="row align-items-center">
+                                    <div class="col-lg-7">
+                                        <div class="p-3 rounded border border-info border-opacity-25" style="background: rgba(0, 210, 255, 0.04);">
+                                            <div class="d-flex align-items-center gap-2 mb-2">
+                                                <i class="bi bi-terminal-fill text-cyan fs-5"></i>
+                                                <strong class="text-white small">Simulador do Launcher Apex Optimizer Master</strong>
+                                            </div>
+                                            <div class="font-monospace small text-secondary" style="font-size: 0.78rem; line-height: 1.6;">
+                                                <span class="text-success">[OK]</span> Verificando permissões de Administrador... Concedido.<br>
+                                                <span class="text-success">[OK]</span> Validando Chave de Licença VIP via Servidor Neon... Chave Válida.<br>
+                                                <span class="text-info">[HWID]</span> Máquina vinculada com sucesso: DESKTOP-FELIPE-PC.<br>
+                                                <span class="text-warning">[TWEAK]</span> Desbloqueando 100% dos núcleos de CPU (Core Unparker)... Concluído.<br>
+                                                <span class="text-cyan">[TIMER]</span> Resolução do Timer ajustada para 0.500ms estável.<br>
+                                                <span class="text-success">[PRONTO]</span> Ponto de restauração salvo em C:\ApexRestorePoint.
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-5 text-center mt-3 mt-lg-0">
+                                        <div class="p-3">
+                                            <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-3 shadow" style="width: 72px; height: 72px; background: var(--grad-primary); cursor: pointer;" onclick="alert('Tutorial Interativo Apex Labs: Siga as etapas 1 a 4 acima para a máxima performance em seus jogos!')">
+                                                <i class="bi bi-play-fill text-white fs-1 ms-1"></i>
+                                            </div>
+                                            <h6 class="text-white fw-bold mb-1">Passo a Passo Guiado (3 Minutos)</h6>
+                                            <small class="text-secondary d-block">Aprenda a aplicar as configurações ideais para Valorant, CS2 e Warzone.</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ==========================================
+                     TAB 4: HISTÓRICO DE PEDIDOS
+                     ========================================== -->
                 <div class="tab-pane fade" id="ordersContent" role="tabpanel">
                     <div class="glass-card p-4">
                         <h4 class="text-white fw-bold mb-3 border-bottom border-secondary border-opacity-50 pb-2">
-                            <i class="bi bi-receipt text-violet me-2"></i> Histórico de Pedidos
+                            <i class="bi bi-receipt text-cyan me-2"></i> Histórico de Compras & Recibos
                         </h4>
 
                         {% if not orders %}
@@ -155,7 +578,7 @@
                                             <th>Pagamento</th>
                                             <th>Total</th>
                                             <th>Status</th>
-                                            <th>Ação</th>
+                                            <th>Recibo</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -164,13 +587,13 @@
                                             <td><strong class="text-blue">{{ ord.order_code }}</strong></td>
                                             <td class="text-secondary small">{{ ord.created_at | format_datetime }}</td>
                                             <td><span class="badge bg-dark border border-secondary">{{ ord.payment_method }}</span></td>
-                                            <td><strong class="text-heading fs-6">R$ {{ "%.2f"|format(ord.total)|replace('.', ',') }}</strong></td>
+                                            <td><strong class="text-white fs-6">R$ {{ "%.2f"|format(ord.total)|replace('.', ',') }}</strong></td>
                                             <td>
                                                 <span class="badge-fire">{{ ord.status }}</span>
                                             </td>
                                             <td>
                                                 <a href="{{ url_for('order_success', order_code=ord.order_code) }}" class="btn btn-sm btn-apex-outline py-1">
-                                                    Ver Detalhes
+                                                    Ver Recibo
                                                 </a>
                                             </td>
                                         </tr>
@@ -182,7 +605,9 @@
                     </div>
                 </div>
 
-                <!-- 3. Configurações da Conta -->
+                <!-- ==========================================
+                     TAB 5: CONFIGURAÇÕES DA CONTA & SENHA
+                     ========================================== -->
                 <div class="tab-pane fade" id="settingsContent" role="tabpanel">
                     <div class="row g-4">
                         <div class="col-md-6">
@@ -191,13 +616,13 @@
                                 <form method="POST" action="{{ url_for('profile') }}">
                                     <input type="hidden" name="action" value="update_profile">
                                     <div class="mb-3">
-                                        <label class="form-label">Nome Completo</label>
+                                        <label class="form-label text-secondary small fw-bold">Nome Completo</label>
                                         <input type="text" name="name" class="form-control" value="{{ user.name }}" required>
                                     </div>
                                     <div class="mb-3">
-                                        <label class="form-label">E-mail Cadastrado</label>
+                                        <label class="form-label text-secondary small fw-bold">E-mail Cadastrado</label>
                                         <input type="email" class="form-control" value="{{ user.email }}" disabled>
-                                        <small class="text-secondary" style="font-size: 0.75rem;">O e-mail não pode ser alterado por segurança.</small>
+                                        <small class="text-secondary" style="font-size: 0.75rem;">O e-mail não pode ser alterado diretamente por questões de segurança de licença.</small>
                                     </div>
                                     <button type="submit" class="btn btn-apex-primary py-2 px-4">Salvar Alterações</button>
                                 </form>
@@ -206,17 +631,17 @@
 
                         <div class="col-md-6">
                             <div class="glass-card p-4">
-                                <h5 class="text-white fw-bold mb-3"><i class="bi bi-shield-lock-fill text-violet me-2"></i>Alterar Senha</h5>
+                                <h5 class="text-white fw-bold mb-3"><i class="bi bi-shield-lock-fill text-info me-2"></i>Alterar Senha</h5>
                                 <form method="POST" action="{{ url_for('profile') }}">
                                     <input type="hidden" name="action" value="change_password">
                                     <div class="mb-3">
-                                        <label class="form-label">Senha Atual</label>
+                                        <label class="form-label text-secondary small fw-bold">Senha Atual</label>
                                         <input type="password" name="old_password" class="form-control" placeholder="••••••••" required>
                                     </div>
                                     <div class="mb-3">
-                                        <label class="form-label">Nova Senha</label>
+                                        <label class="form-label text-secondary small fw-bold">Nova Senha</label>
                                         <input type="password" name="new_password" class="form-control" placeholder="Mínimo 6 caracteres" required minlength="6">
-                                        <small class="text-secondary d-block mt-1" style="font-size: 0.75rem;"><i class="bi bi-shield-check text-cyan me-1"></i> Use uma senha forte com letras e números para evitar alertas de senhas vazadas do navegador.</small>
+                                        <small class="text-secondary d-block mt-1" style="font-size: 0.75rem;"><i class="bi bi-shield-check text-cyan me-1"></i> Evite senhas fáceis ou já vazadas na internet.</small>
                                     </div>
                                     <button type="submit" class="btn btn-apex-outline py-2 px-4">Atualizar Senha</button>
                                 </form>
@@ -224,8 +649,71 @@
                         </div>
                     </div>
                 </div>
+
             </div>
         </div>
     </div>
 </div>
+
+<script>
+// Interactive Checklist Progress Engine with LocalStorage persistence
+function updateChecklistProgress() {
+    const checks = [
+        document.getElementById('checkStep1'),
+        document.getElementById('checkStep2'),
+        document.getElementById('checkStep3'),
+        document.getElementById('checkStep4')
+    ];
+    let completed = 0;
+    checks.forEach((chk, idx) => {
+        const card = document.getElementById('stepCard' + (idx + 1));
+        if (chk && chk.checked) {
+            completed++;
+            if (card) {
+                card.style.borderColor = 'rgba(16, 185, 129, 0.6)';
+                card.style.background = 'rgba(16, 185, 129, 0.05)';
+            }
+            localStorage.setItem('apex_check_step_' + (idx + 1), 'true');
+        } else {
+            if (card) {
+                card.style.borderColor = 'rgba(255, 255, 255, 0.15)';
+                card.style.background = '#0d1222';
+            }
+            localStorage.removeItem('apex_check_step_' + (idx + 1));
+        }
+    });
+
+    const percent = Math.round((completed / checks.length) * 100);
+    const pBar = document.getElementById('checklistProgressBar');
+    const pText = document.getElementById('checklistPercentage');
+    const badge = document.getElementById('checklistStatusBadge');
+
+    if (pBar) pBar.style.width = percent + '%';
+    if (pText) pText.innerText = percent + '% (' + completed + '/4)';
+
+    if (badge) {
+        if (percent === 100) {
+            badge.className = 'badge bg-success text-white px-3 py-2';
+            badge.innerHTML = '<i class="bi bi-check2-all me-1"></i> 100% Concluído - Pronto para Jogar!';
+        } else {
+            badge.className = 'badge';
+            badge.style.background = 'rgba(0, 102, 255, 0.2)';
+            badge.style.color = '#00d2ff';
+            badge.style.border = '1px solid rgba(0, 102, 255, 0.4)';
+            badge.innerHTML = 'Progresso: ' + percent + '% (' + completed + '/4)';
+        }
+    }
+}
+
+// Restore saved checklist state on load
+document.addEventListener('DOMContentLoaded', function() {
+    for (let i = 1; i <= 4; i++) {
+        const chk = document.getElementById('checkStep' + i);
+        if (chk && localStorage.getItem('apex_check_step_' + i) === 'true') {
+            chk.checked = true;
+        }
+    }
+    updateChecklistProgress();
+});
+</script>
 {% endblock %}

@@ -474,22 +474,22 @@ class StoreTestCase(unittest.TestCase):
         self.assertIn(b'Ativar Login Real da Google', res_google_setup.data)
 
     def test_20_friction_reduction_and_auth_ui(self):
-        # Verify /login has NO blocking preloader and HAS "Esqueceu sua senha?" and social buttons
+        # Verify /login has NO blocking preloader, HAS "Esqueceu sua senha?", and social buttons removed
         res_login = self.client.get('/login')
         self.assertEqual(res_login.status_code, 200)
         self.assertNotIn(b'id="apexPreloader"', res_login.data)
         self.assertNotIn(b'id="preloaderPercent"', res_login.data)
         self.assertIn(b'Esqueceu sua senha?', res_login.data)
-        self.assertIn(b'Entrar com Discord', res_login.data)
-        self.assertIn(b'Entrar com Google', res_login.data)
+        self.assertNotIn(b'Entrar com Discord', res_login.data)
+        self.assertNotIn(b'Entrar com Google', res_login.data)
 
-        # Verify /register has NO blocking preloader and HAS social registration buttons
+        # Verify /register has NO blocking preloader, and social buttons removed
         res_register = self.client.get('/register')
         self.assertEqual(res_register.status_code, 200)
         self.assertNotIn(b'id="apexPreloader"', res_register.data)
         self.assertNotIn(b'id="preloaderPercent"', res_register.data)
-        self.assertIn(b'Cadastrar com Discord', res_register.data)
-        self.assertIn(b'Cadastrar com Google', res_register.data)
+        self.assertNotIn(b'Cadastrar com Discord', res_register.data)
+        self.assertNotIn(b'Cadastrar com Google', res_register.data)
 
     def test_21_client_dashboard_hwid_and_licenses(self):
         # 1. Login as client (gamer@teste.com)

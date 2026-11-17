@@ -1281,21 +1281,21 @@ function initBottleneckScanner() {
         if (symptoms.length >= 3) {
             // Ultimate Extreme Suite
             if (recTag) recTag.textContent = 'SUÍTE COMPLETA RECOMENDADA';
-            if (recPrice) recPrice.textContent = 'R$ 34,90';
+            if (recPrice) recPrice.textContent = 'R$ 14,90';
             if (recName) recName.textContent = 'Ultimate Extreme Suite 2026';
             if (recDesc) recDesc.textContent = `Prescrição máxima para sua ${hardware.gpu.substring(0, 24)}: unpark completo das ${hardware.cores} threads, timer a 0.5ms e otimização total de rede.`;
             if (recBtn) recBtn.href = '/cart/add/4';
         } else if (symptoms.includes('ping_loss')) {
             // Network Pro Pack
             if (recTag) recTag.textContent = 'PRESCRIÇÃO DE REDE & LATÊNCIA';
-            if (recPrice) recPrice.textContent = 'R$ 24,90';
+            if (recPrice) recPrice.textContent = 'R$ 9,90';
             if (recName) recName.textContent = 'Network & Latency Pro Pack';
             if (recDesc) recDesc.textContent = `Zera perda de pacotes, desativa o Nagle Algorithm e reduz o ping de ${hardware.ping}ms para resposta instantânea.`;
             if (recBtn) recBtn.href = '/cart/add/3';
         } else {
             // Competitive FPS Ultra Pack
             if (recTag) recTag.textContent = 'PRESCRIÇÃO DE FPS & MIRA';
-            if (recPrice) recPrice.textContent = 'R$ 19,90';
+            if (recPrice) recPrice.textContent = 'R$ 6,90';
             if (recName) recName.textContent = 'Competitive FPS Ultra Pack';
             if (recDesc) recDesc.textContent = `Corrige a oscilação do timer (${hardware.jitter}ms) para 0.5ms cravado e acorda todas as ${hardware.cores} threads da CPU.`;
             if (recBtn) recBtn.href = '/cart/add/2';

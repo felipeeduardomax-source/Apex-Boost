@@ -17,10 +17,10 @@ Uma plataforma moderna e completa de e-commerce gamer voltada para a venda e dis
 ### 2. Loja e Experiência Gamer
 - **Simulador Interativo de FPS**: Calcule em tempo real o ganho de FPS e queda de latência escolhendo o jogo (*Valorant, CS2, Fortnite, Warzone, FiveM, Apex*), o hardware do PC e o pack.
 - **Catálogo de Packs**:
-  1. *Starter Tweak Pack* (Iniciante & PCs Fracos - R$ 19,90)
-  2. *Competitive FPS Ultra Pack* (Mais Vendido ⭐ - R$ 39,90)
-  3. *Zero Latency & Network Pro* (Rede & OBS - R$ 49,90)
-  4. *Ultimate Extreme Suite* (All-In-One Definitivo & VIP - R$ 69,90)
+  1. *Starter Tweak Pack* (Iniciante & PCs Fracos - R$ 2,90)
+  2. *Competitive FPS Ultra Pack* (Mais Vendido ⭐ - R$ 6,90)
+  3. *Zero Latency & Network Pro* (Rede & OBS - R$ 9,90)
+  4. *Ultimate Extreme Suite* (All-In-One Definitivo & VIP - R$ 14,90)
 - **Páginas de Detalhes dos Produtos**: Lista completa de scripts, requisitos e garantia.
 - **Depoimentos e Benchmarks**: Prova social com reviews de jogadores reais e comparativos antes vs depois.
 - **Notificações Flutuantes (Social Proof)**: Alertas em tempo real de compras recentes ("Matheus acabou de adquirir o Pack Ultra").

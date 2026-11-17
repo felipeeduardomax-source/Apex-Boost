@@ -1170,40 +1170,70 @@ def view_cart():
     cart = get_cart()
     cart_items = []
     subtotal = 0.0
+    original_total = 0.0
+    in_cart_ids = set()
 
-    if cart:
-        conn = get_db()
-        for prod_id_str, qty in list(cart.items()):
+    conn = get_db()
+    for prod_id_str, qty in list(cart.items()):
+        try:
+            p_id = int(prod_id_str)
+            p_qty = int(qty)
+        except (ValueError, TypeError):
+            continue
+        prod = conn.execute("SELECT * FROM products WHERE id = ?", (p_id,)).fetchone()
+        if prod:
+            p_dict = dict(prod)
+            price = float(p_dict.get('price') or 0.0)
+            old_price = float(p_dict['old_price']) if p_dict.get('old_price') else None
+            p_dict['price'] = price
+            p_dict['old_price'] = old_price
+            p_dict['quantity'] = p_qty
+            p_dict['item_total'] = round(price * p_qty, 2)
+            p_dict['item_savings'] = round((old_price - price) * p_qty, 2) if old_price and old_price > price else 0.0
+            p_dict['savings_percent'] = int(round((1 - price / old_price) * 100)) if old_price and old_price > price else 0
             try:
-                p_id = int(prod_id_str)
-                p_qty = int(qty)
+                p_dict['features_list'] = json.loads(p_dict['features']) if p_dict.get('features') else []
             except (ValueError, TypeError):
-                continue
-            prod = conn.execute("SELECT * FROM products WHERE id = ?", (p_id,)).fetchone()
-            if prod:
-                p_dict = dict(prod)
-                price = float(p_dict.get('price') or 0.0)
-                p_dict['price'] = price
-                p_dict['quantity'] = p_qty
-                p_dict['item_total'] = round(price * p_qty, 2)
-                subtotal += p_dict['item_total']
-                cart_items.append(p_dict)
-        conn.close()
+                p_dict['features_list'] = []
+            subtotal += p_dict['item_total']
+            original_total += (old_price or price) * p_qty
+            in_cart_ids.add(p_id)
+            cart_items.append(p_dict)
+
+    # Recomendações: packs ativos que ainda não estão no carrinho
+    recommended = []
+    rec_rows = conn.execute(
+        "SELECT * FROM products WHERE active = 1 ORDER BY popular DESC, price ASC"
+    ).fetchall()
+    for r in rec_rows:
+        r_dict = dict(r)
+        if r_dict['id'] in in_cart_ids:
+            continue
+        r_dict['price'] = float(r_dict.get('price') or 0.0)
+        r_dict['old_price'] = float(r_dict['old_price']) if r_dict.get('old_price') else None
+        recommended.append(r_dict)
+        if len(recommended) >= 3:
+            break
+    conn.close()
 
     subtotal = round(subtotal, 2)
     discount_percent = float(session.get('discount_percent', 0) or 0)
     coupon_code = session.get('coupon_code', '')
     discount_amount = round((subtotal * discount_percent) / 100.0, 2)
     total = max(0.0, round(subtotal - discount_amount, 2))
+    total_savings = max(0.0, round(original_total - total, 2))
 
     return render_template(
         'cart.html',
         cart_items=cart_items,
         subtotal=subtotal,
+        original_total=round(original_total, 2),
         discount_amount=discount_amount,
         discount_percent=discount_percent,
         coupon_code=coupon_code,
-        total=total
+        total=total,
+        total_savings=total_savings,
+        recommended=recommended
     )
 
 @app.route('/cart/add/<int:product_id>', methods=['POST', 'GET'])
@@ -1276,6 +1306,13 @@ def apply_coupon():
     else:
         flash('Cupom inválido ou expirado. Tente FPSBOOST ou PRIMEIRACOMPRA.', 'danger')
 
+    return redirect(url_for('view_cart'))
+
+@app.route('/cart/remove-coupon', methods=['POST'])
+def remove_coupon():
+    session.pop('coupon_code', None)
+    session.pop('discount_percent', None)
+    flash('Cupom removido do seu pedido.', 'info')
     return redirect(url_for('view_cart'))
 
 @app.route('/checkout', methods=['GET', 'POST'])

@@ -3,157 +3,282 @@
 {% block title %}Meu Carrinho | Apex Boost Labs{% endblock %}
 
 {% block content %}
-<div class="container py-5">
-    <div class="text-center mb-5">
-        <span class="badge-gamer mb-2 d-inline-block"><i class="bi bi-bag-check-fill text-blue"></i> CHECKOUT SEGURO</span>
-        <h1 class="display-5 fw-black text-white">SEU CARRINHO</h1>
-        <p class="text-secondary">Confira os itens selecionados antes de prosseguir para o pagamento.</p>
+{% macro brl(value) -%}
+R$ {{ "%.2f"|format(value or 0)|replace('.', ',') }}
+{%- endmacro %}
+<div class="cart-page container py-4 py-lg-5">
+
+    <!-- Progresso da compra -->
+    <div class="cart-steps mb-4 mb-lg-5">
+        <div class="cart-step active">
+            <span class="cart-step-dot"><i class="bi bi-bag-fill"></i></span>
+            <span class="cart-step-label">Carrinho</span>
+        </div>
+        <div class="cart-step-line"></div>
+        <div class="cart-step">
+            <span class="cart-step-dot"><i class="bi bi-credit-card-2-front-fill"></i></span>
+            <span class="cart-step-label">Pagamento</span>
+        </div>
+        <div class="cart-step-line"></div>
+        <div class="cart-step">
+            <span class="cart-step-dot"><i class="bi bi-cloud-arrow-down-fill"></i></span>
+            <span class="cart-step-label">Download</span>
+        </div>
     </div>
 
     {% if not cart_items %}
-        <div class="glass-card p-5 text-center mx-auto" style="max-width: 560px;">
-            <div class="rounded-circle d-inline-flex p-4 mb-3" style="background: rgba(0, 102, 255, 0.12);">
-                <i class="bi bi-bag-x fs-1 text-blue"></i>
+        <!-- Carrinho vazio -->
+        <div class="cart-card cart-empty text-center mx-auto">
+            <div class="cart-empty-icon mb-3">
+                <i class="bi bi-bag-x"></i>
             </div>
-            <h3 class="text-white fw-bold mb-2">Seu carrinho está vazio</h3>
-            <p class="text-secondary small mb-4">Você ainda não escolheu nenhum pack de otimização.</p>
-            <a href="{{ url_for('index') }}#packs" class="btn btn-apex-primary px-4 py-2">
+            <h3 class="cart-title mb-2">Seu carrinho está vazio</h3>
+            <p class="cart-muted mb-4">Escolha um pack e destrave o máximo de FPS do seu PC em poucos minutos.</p>
+            <a href="{{ url_for('index') }}#tab-packs" class="btn btn-apex-primary px-4 py-2">
                 <i class="bi bi-lightning-charge-fill me-1"></i> Ver Catálogo de Packs
             </a>
         </div>
-    {% else %}
-        <div class="row g-4">
-            <!-- Items List -->
-            <div class="col-lg-8">
-                <div class="glass-card p-4 mb-4">
-                    <h5 class="text-white fw-bold mb-3 border-bottom border-secondary border-opacity-50 pb-2">
-                        Packs no Carrinho ({{ cart_items|length }})
-                    </h5>
 
-                    <div class="table-responsive">
-                        <table class="table custom-gamer-table align-middle mb-0">
-                            <thead>
-                                <tr class="text-secondary small border-bottom border-secondary border-opacity-50">
-                                    <th>Pack</th>
-                                    <th>Preço</th>
-                                    <th>Ação</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for item in cart_items %}
-                                <tr class="border-bottom border-secondary border-opacity-25">
-                                    <td class="py-3">
-                                        <div class="d-flex align-items-center gap-3">
-                                            <div class="pack-icon-glow mb-0" style="width: 44px; height: 44px; font-size: 1.25rem;">
-                                                <i class="bi {{ item.icon }}"></i>
-                                            </div>
-                                            <div>
-                                                <a href="{{ url_for('product_detail', slug=item.slug) }}" class="text-heading fw-bold text-decoration-none">
-                                                    {{ item.name }}
-                                                </a>
-                                                <small class="text-blue d-block fw-semibold">{{ item.tag }} &bull; {{ item.fps_gain }}</small>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <strong class="text-heading fs-5">R$ {{ "%.2f"|format(item.price)|replace('.', ',') }}</strong>
-                                    </td>
-                                    <td>
-                                        <a href="{{ url_for('remove_from_cart', product_id=item.id) }}" class="btn btn-sm btn-outline-danger" title="Remover item">
-                                            <i class="bi bi-trash3-fill"></i>
-                                        </a>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <div class="d-flex justify-content-between align-items-center mt-3 pt-2">
-                        <a href="{{ url_for('index') }}#packs" class="btn btn-sm btn-apex-outline">
-                            &larr; Continuar Comprando
-                        </a>
-                        <a href="{{ url_for('clear_cart') }}" class="btn btn-sm btn-outline-secondary">
-                            Limpar Carrinho
-                        </a>
-                    </div>
-                </div>
-
-                <!-- Order Bump: Special Addon Offer -->
-                <div class="order-bump-box mb-4">
-                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
-                        <span class="badge-fire" style="font-size: 0.7rem;"><i class="bi bi-fire"></i> OFERTA RELÂMPAGO NO CARRINHO</span>
-                        <span class="text-white fw-bold">Por apenas <span class="text-blue fw-black fs-5">R$ 2,90</span></span>
-                    </div>
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="pack-icon-glow mb-0" style="width: 48px; height: 48px; font-size: 1.4rem;">
-                            <i class="bi bi-lightning-charge text-cyan"></i>
+        {% if recommended %}
+        <div class="mt-5">
+            <h5 class="cart-title mb-3 text-center">Packs mais procurados</h5>
+            <div class="row g-3 justify-content-center">
+                {% for rec in recommended %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="cart-rec-card h-100">
+                        <div class="d-flex align-items-center gap-3 mb-2">
+                            <div class="cart-item-icon cart-item-icon-sm"><i class="bi {{ rec.icon }}"></i></div>
+                            <div class="flex-grow-1 min-w-0">
+                                <div class="cart-item-name text-truncate">{{ rec.name }}</div>
+                                <small class="cart-muted">{{ rec.fps_gain }}</small>
+                            </div>
                         </div>
-                        <div class="flex-grow-1">
-                            <h6 class="text-white fw-bold mb-1">Leve Junto: Starter Tweak Pack (Básico & Limpeza)</h6>
-                            <p class="text-secondary small mb-2">Excelente para otimizar notebooks secundários ou PC de um amigo sem pagar caro.</p>
-                            <a href="{{ url_for('add_to_cart', product_id=1) }}" class="btn btn-sm btn-apex-outline py-1 px-3">
-                                <i class="bi bi-plus-circle text-blue me-1"></i> Adicionar ao Pedido (+ R$ 2,90)
+                        <div class="d-flex align-items-center justify-content-between mt-auto">
+                            <div>
+                                {% if rec.old_price %}<span class="cart-price-old me-1">{{ brl(rec.old_price) }}</span>{% endif %}
+                                <strong class="cart-price">{{ brl(rec.price) }}</strong>
+                            </div>
+                            <a href="{{ url_for('add_to_cart', product_id=rec.id) }}" class="btn btn-sm btn-apex-primary">
+                                <i class="bi bi-cart-plus"></i> Adicionar
                             </a>
                         </div>
                     </div>
                 </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    {% else %}
 
-                <!-- Coupon Box -->
-                <div class="glass-card p-4">
-                    <h6 class="text-white fw-bold mb-2"><i class="bi bi-ticket-perforated-fill text-blue me-2"></i> Possui Cupom de Desconto?</h6>
-                    <form action="{{ url_for('apply_coupon') }}" method="POST" class="d-flex gap-2">
-                        <input type="text" name="coupon_code" class="form-control text-uppercase" placeholder="Ex: PRIMEIRACOMPRA ou FPSBOOST" value="{{ coupon_code }}">
-                        <button type="submit" class="btn btn-apex-purple px-4 text-nowrap">Aplicar</button>
-                    </form>
-                    {% if coupon_code %}
-                        <div class="text-blue small mt-2 fw-semibold">
-                            <i class="bi bi-check-circle-fill"></i> Cupom <strong>{{ coupon_code }}</strong> ativado com {{ discount_percent }}% de desconto!
+        <!-- Cabeçalho -->
+        <div class="d-flex flex-wrap align-items-end justify-content-between gap-2 mb-4">
+            <div>
+                <h1 class="cart-title cart-title-lg mb-1">Seu Carrinho</h1>
+                <p class="cart-muted mb-0">
+                    {{ cart_items|length }} {{ 'pack selecionado' if cart_items|length == 1 else 'packs selecionados' }}
+                    &bull; licença vitalícia e entrega instantânea
+                </p>
+            </div>
+            {% if total_savings > 0 %}
+            <div class="cart-savings-pill">
+                <i class="bi bi-piggy-bank-fill me-1"></i>
+                Você está economizando <strong>{{ brl(total_savings) }}</strong>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="row g-4">
+            <!-- Coluna principal -->
+            <div class="col-lg-8">
+
+                <!-- Itens -->
+                <div class="cart-card mb-4">
+                    {% for item in cart_items %}
+                    <div class="cart-item">
+                        <div class="cart-item-icon"><i class="bi {{ item.icon }}"></i></div>
+
+                        <div class="cart-item-body">
+                            <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+                                <a href="{{ url_for('product_detail', slug=item.slug) }}" class="cart-item-name">{{ item.name }}</a>
+                                {% if item.savings_percent > 0 %}
+                                <span class="cart-off-badge">-{{ item.savings_percent }}%</span>
+                                {% endif %}
+                            </div>
+                            <div class="d-flex flex-wrap gap-2 mb-2">
+                                {% if item.tag %}<span class="cart-chip"><i class="bi bi-tag-fill"></i> {{ item.tag }}</span>{% endif %}
+                                {% if item.fps_gain %}<span class="cart-chip cart-chip-blue"><i class="bi bi-graph-up-arrow"></i> {{ item.fps_gain }}</span>{% endif %}
+                                {% if item.latency_drop %}<span class="cart-chip cart-chip-cyan"><i class="bi bi-stopwatch"></i> {{ item.latency_drop }}</span>{% endif %}
+                            </div>
+
+                            {% if item.features_list %}
+                            <details class="cart-features">
+                                <summary>Ver o que está incluso ({{ item.features_list|length }} itens)</summary>
+                                <ul>
+                                    {% for feat in item.features_list %}
+                                    <li><i class="bi bi-check-circle-fill"></i> {{ feat }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </details>
+                            {% endif %}
                         </div>
-                    {% else %}
-                        <small class="text-secondary d-block mt-2">Dica: Utilize <strong>PRIMEIRACOMPRA</strong> para receber 20% de desconto imediato.</small>
-                    {% endif %}
+
+                        <div class="cart-item-side">
+                            <div class="text-end">
+                                {% if item.old_price and item.old_price > item.price %}
+                                <div class="cart-price-old">{{ brl(item.old_price) }}</div>
+                                {% endif %}
+                                <div class="cart-price">{{ brl(item.item_total) }}</div>
+                                <small class="cart-muted">vitalício</small>
+                            </div>
+                            <a href="{{ url_for('remove_from_cart', product_id=item.id) }}" class="cart-remove-btn" title="Remover {{ item.name }}" aria-label="Remover {{ item.name }}">
+                                <i class="bi bi-trash3"></i>
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                    <div class="cart-card-footer">
+                        <a href="{{ url_for('index') }}#tab-packs" class="btn btn-sm btn-apex-outline">
+                            <i class="bi bi-arrow-left me-1"></i> Continuar comprando
+                        </a>
+                        <a href="{{ url_for('clear_cart') }}" class="cart-link-danger"
+                           onclick="return confirm('Deseja remover todos os itens do carrinho?');">
+                            <i class="bi bi-x-circle me-1"></i> Limpar carrinho
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Recomendações / Order bump -->
+                {% if recommended %}
+                <div class="cart-card mb-4">
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+                        <h6 class="cart-title mb-0"><i class="bi bi-stars text-warning me-1"></i> Complete seu setup</h6>
+                        <span class="badge-fire" style="font-size: 0.7rem;"><i class="bi bi-fire"></i> OFERTA DO CARRINHO</span>
+                    </div>
+                    <div class="row g-3">
+                        {% for rec in recommended %}
+                        <div class="col-md-4">
+                            <div class="cart-rec-card h-100">
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <div class="cart-item-icon cart-item-icon-sm"><i class="bi {{ rec.icon }}"></i></div>
+                                    <div class="min-w-0">
+                                        <div class="cart-item-name cart-item-name-sm text-truncate" title="{{ rec.name }}">{{ rec.name }}</div>
+                                        <small class="cart-muted">{{ rec.fps_gain }}</small>
+                                    </div>
+                                </div>
+                                <div class="mb-2 mt-auto">
+                                    {% if rec.old_price %}<span class="cart-price-old me-1">{{ brl(rec.old_price) }}</span>{% endif %}
+                                    <strong class="cart-price cart-price-sm">{{ brl(rec.price) }}</strong>
+                                </div>
+                                <a href="{{ url_for('add_to_cart', product_id=rec.id) }}" class="btn btn-sm btn-apex-outline w-100">
+                                    <i class="bi bi-plus-circle me-1"></i> Adicionar
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Garantias -->
+                <div class="row g-3">
+                    <div class="col-sm-4">
+                        <div class="cart-trust"><i class="bi bi-lightning-charge-fill"></i><div><strong>Entrega imediata</strong><small>Download liberado após o pagamento</small></div></div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="cart-trust"><i class="bi bi-arrow-counterclockwise"></i><div><strong>100% reversível</strong><small>Ponto de restauração automático</small></div></div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="cart-trust"><i class="bi bi-headset"></i><div><strong>Suporte no Discord</strong><small>Ajuda humanizada e atualizações</small></div></div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Order Summary -->
+            <!-- Resumo -->
             <div class="col-lg-4">
-                <div class="glass-card p-4 sticky-top" style="top: 90px;">
-                    <h5 class="text-white fw-bold mb-3 border-bottom border-secondary border-opacity-50 pb-2">RESUMO DO PEDIDO</h5>
+                <div class="cart-card cart-summary">
+                    <h5 class="cart-title mb-3">Resumo do pedido</h5>
 
-                    <div class="d-flex justify-content-between text-secondary mb-2">
-                        <span>Subtotal:</span>
-                        <strong class="text-white">R$ {{ "%.2f"|format(subtotal)|replace('.', ',') }}</strong>
+                    <!-- Cupom -->
+                    {% if coupon_code %}
+                    <div class="cart-coupon-applied mb-3">
+                        <div>
+                            <i class="bi bi-ticket-perforated-fill me-1"></i>
+                            <strong>{{ coupon_code }}</strong>
+                            <small class="d-block">{{ discount_percent|int }}% de desconto aplicado</small>
+                        </div>
+                        <form action="{{ url_for('remove_coupon') }}" method="POST" class="m-0">
+                            <button type="submit" class="cart-coupon-remove" title="Remover cupom" aria-label="Remover cupom">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </form>
+                    </div>
+                    {% else %}
+                    <form action="{{ url_for('apply_coupon') }}" method="POST" class="cart-coupon-form mb-1">
+                        <i class="bi bi-ticket-perforated"></i>
+                        <input type="text" name="coupon_code" class="text-uppercase" placeholder="Cupom de desconto" autocomplete="off" aria-label="Cupom de desconto">
+                        <button type="submit">Aplicar</button>
+                    </form>
+                    <small class="cart-muted d-block mb-3">Dica: use <strong>PRIMEIRACOMPRA</strong> e ganhe 20% OFF.</small>
+                    {% endif %}
+
+                    <div class="cart-summary-row">
+                        <span>Subtotal ({{ cart_items|length }} {{ 'item' if cart_items|length == 1 else 'itens' }})</span>
+                        <span>
+                            {% if original_total > subtotal %}<span class="cart-price-old me-1">{{ brl(original_total) }}</span>{% endif %}
+                            <strong>{{ brl(subtotal) }}</strong>
+                        </span>
+                    </div>
+                    {% if discount_amount > 0 %}
+                    <div class="cart-summary-row cart-summary-discount">
+                        <span>Cupom ({{ discount_percent|int }}%)</span>
+                        <strong>- {{ brl(discount_amount) }}</strong>
+                    </div>
+                    {% endif %}
+                    <div class="cart-summary-row">
+                        <span>Entrega</span>
+                        <strong class="text-success">Grátis &bull; Instantânea</strong>
                     </div>
 
-                    {% if discount_amount > 0 %}
-                    <div class="d-flex justify-content-between text-blue mb-2">
-                        <span>Desconto ({{ discount_percent }}%):</span>
-                        <strong>- R$ {{ "%.2f"|format(discount_amount)|replace('.', ',') }}</strong>
+                    <div class="cart-summary-total">
+                        <span>Total</span>
+                        <div class="text-end">
+                            <div class="cart-total-value">{{ brl(total) }}</div>
+                            <small class="cart-muted">pagamento único</small>
+                        </div>
+                    </div>
+
+                    {% if total_savings > 0 %}
+                    <div class="cart-savings-box mb-3">
+                        <i class="bi bi-check-circle-fill me-1"></i> Economia total de <strong>{{ brl(total_savings) }}</strong> neste pedido
                     </div>
                     {% endif %}
 
-                    <div class="d-flex justify-content-between text-secondary mb-3">
-                        <span>Entrega:</span>
-                        <span class="text-blue fw-bold">Instantânea (Grátis)</span>
-                    </div>
-
-                    <hr class="border-secondary border-opacity-50">
-
-                    <div class="d-flex justify-content-between align-items-baseline mb-4">
-                        <span class="text-white fw-bold">Total a Pagar:</span>
-                        <span class="fs-2 fw-black text-white glow-blue">R$ {{ "%.2f"|format(total)|replace('.', ',') }}</span>
-                    </div>
-
-                    <a href="{{ url_for('checkout') }}" class="btn btn-apex-primary btn-lg w-100 py-3 mb-3 text-center">
-                        <i class="bi bi-lock-fill me-1"></i> Ir para o Pagamento
+                    <a href="{{ url_for('checkout') }}" class="btn btn-apex-primary btn-lg w-100 py-3 mb-3">
+                        <i class="bi bi-lock-fill me-1"></i> Finalizar compra
                     </a>
 
-                    <div class="p-3 rounded-3 border border-secondary border-opacity-50 text-center small text-secondary" style="background: rgba(255,255,255,0.02);">
-                        <i class="bi bi-shield-check text-blue me-1"></i> Transação 100% Segura e Criptografada
+                    <div class="cart-payments">
+                        <span><i class="bi bi-qr-code"></i> PIX</span>
+                        <span><i class="bi bi-credit-card-fill"></i> Cartão</span>
+                        <span><i class="bi bi-shield-lock-fill"></i> SSL</span>
                     </div>
+                    <p class="cart-muted small text-center mb-0 mt-2">
+                        <i class="bi bi-shield-check text-success me-1"></i> Compra 100% segura e criptografada
+                    </p>
                 </div>
             </div>
+        </div>
+
+        <!-- Barra fixa mobile -->
+        <div class="cart-mobile-bar d-lg-none">
+            <div>
+                <small class="cart-muted d-block">Total</small>
+                <strong class="cart-total-value cart-total-value-sm">{{ brl(total) }}</strong>
+            </div>
+            <a href="{{ url_for('checkout') }}" class="btn btn-apex-primary px-4">
+                <i class="bi bi-lock-fill me-1"></i> Finalizar
+            </a>
         </div>
     {% endif %}
 </div>

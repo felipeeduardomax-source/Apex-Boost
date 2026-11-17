@@ -809,13 +809,28 @@
             <div class="row g-4 align-items-center">
                 <!-- Coluna da Esquerda: Configurações do Computador (Hardware Real) -->
                 <div class="col-lg-6">
-                    <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom border-secondary border-opacity-25">
-                        <span class="text-white fw-bold small text-uppercase">
-                            <i class="bi bi-pc-display-horizontal text-blue me-1"></i> Seu Setup Atual
-                        </span>
-                        <span class="badge bg-primary bg-opacity-20 text-cyan small" style="font-size: 0.72rem;">
-                            <i class="bi bi-check-circle-fill me-1"></i> Benchmark 100% Real
-                        </span>
+                    <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom border-secondary border-opacity-25 flex-wrap gap-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="text-white fw-bold small text-uppercase">
+                                <i class="bi bi-pc-display-horizontal text-blue me-1"></i> Seu Setup Atual
+                            </span>
+                            <span class="badge bg-primary bg-opacity-20 text-cyan small" style="font-size: 0.72rem;">
+                                <i class="bi bi-check-circle-fill me-1"></i> Benchmark 100% Real
+                            </span>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-apex-outline py-1 px-2 d-inline-flex align-items-center gap-1 shadow-sm" id="btnDetectMyPc" style="font-size: 0.76rem;" title="Detectar as peças instaladas no seu computador agora">
+                            <i class="bi bi-magic text-cyan"></i> <span>Detectar Meu PC</span>
+                        </button>
+                    </div>
+
+                    <!-- Toggle de Modo: Seleção Rápida vs Digitar Meu Setup Exato -->
+                    <div class="d-flex gap-1 mb-3 p-1 rounded-3" style="background: rgba(0, 102, 255, 0.08); border: 1px solid rgba(0, 102, 255, 0.2);">
+                        <button type="button" class="btn btn-sm flex-fill py-1 fw-bold active btn-calc-mode" id="btnModeQuick" data-mode="quick" style="font-size: 0.78rem;">
+                            <i class="bi bi-list-check me-1"></i> Selecionar da Lista
+                        </button>
+                        <button type="button" class="btn btn-sm flex-fill py-1 fw-bold btn-calc-mode text-secondary" id="btnModeCustom" data-mode="custom" style="font-size: 0.78rem;">
+                            <i class="bi bi-pencil-square me-1"></i> Digitar Meu Setup Exato
+                        </button>
                     </div>
 
                     <!-- 1. Jogo Competitivo e Resolução -->
@@ -849,52 +864,168 @@
                         </div>
                     </div>
 
-                    <!-- 2. Processador (CPU) -->
-                    <div class="mb-3">
-                        <label class="form-label text-white small fw-bold mb-1" for="calcCpu">
-                            <i class="bi bi-cpu-fill text-cyan me-1"></i> Processador (CPU):
-                        </label>
-                        <select id="calcCpu" class="form-select form-select-sm">
-                            <optgroup label="Entrada & PCs Antigos">
-                                <option value="cpu_entry">Intel Core i3 (Gerações anteriores) / Ryzen 3 / Athlon / Pentium</option>
-                            </optgroup>
-                            <optgroup label="Intermediário Popular">
-                                <option value="cpu_mid_old" selected>Intel Core i5 (7ª a 11ª gen - ex: 8400, 9400F, 10400F) / Ryzen 5 (1600, 2600, 3600)</option>
-                            </optgroup>
-                            <optgroup label="Intermediário de Alta Performance">
-                                <option value="cpu_mid_modern">Intel Core i5 (12ª a 14ª gen - ex: 12400F, 13400F, 14600K) / Ryzen 5 (5600, 5600X, 7600)</option>
-                            </optgroup>
-                            <optgroup label="Alto Desempenho & Entusiasta">
-                                <option value="cpu_high">Intel Core i7 / i9 (12700K a 14900K) / Ryzen 7 & 9 (5700X, 5800X3D, 7800X3D)</option>
-                            </optgroup>
-                        </select>
+                    <!-- MODO 1: Seleção em Lista -->
+                    <div id="calcQuickContainer">
+                        <!-- 2. Processador (CPU) -->
+                        <div class="mb-3">
+                            <label class="form-label text-white small fw-bold mb-1" for="calcCpu">
+                                <i class="bi bi-cpu-fill text-cyan me-1"></i> Processador (CPU):
+                            </label>
+                            <select id="calcCpu" class="form-select form-select-sm">
+                                <optgroup label="AMD Ryzen - Linha Competitiva & 3D V-Cache">
+                                    <option value="cpu_ryzen_x3d">Ryzen 7 7800X3D / 5800X3D / 5700X3D (Monstros do FPS)</option>
+                                    <option value="cpu_ryzen_7000">Ryzen 5 7600 / 7500F / Ryzen 7 7700X (AM5)</option>
+                                    <option value="cpu_ryzen_5600" selected>Ryzen 5 5600 / 5600X / 5500 / 5600G (Super Popular)</option>
+                                    <option value="cpu_ryzen_3600">Ryzen 5 3600 / 3600X / 2600 / 1600 AF</option>
+                                    <option value="cpu_ryzen_entry">Ryzen 3 3200G / 2200G / 3100 / Athlon 3000G</option>
+                                </optgroup>
+                                <optgroup label="Intel Core - Alta Performance (12ª a 14ª Gen)">
+                                    <option value="cpu_intel_ultra">Intel Core i7 / i9 (12700K a 14900K)</option>
+                                    <option value="cpu_intel_modern">Intel Core i5 (12400F, 13400F, 12600K, 13600K)</option>
+                                    <option value="cpu_intel_12100">Intel Core i3 (12100F / 13100F / 14100F)</option>
+                                </optgroup>
+                                <optgroup label="Intel Core - Gerações Anteriores (8ª a 11ª Gen)">
+                                    <option value="cpu_intel_mid_old">Intel Core i5 (8400, 9400F, 10400F, 11400F)</option>
+                                    <option value="cpu_intel_7700">Intel Core i7 (7700K, 8700K, 9700K, 10700K)</option>
+                                    <option value="cpu_intel_old_i3">Intel Core i3 (8100, 9100F, 10100F)</option>
+                                </optgroup>
+                                <optgroup label="Entrada, PCs Antigos & Xeon">
+                                    <option value="cpu_xeon">Intel Xeon E5 (2620, 2640, 2670 v3/v4 - Kit Xeon)</option>
+                                    <option value="cpu_intel_vintage">Intel Core i5 antigo (2500, 3470, 4460, 4590, 7400)</option>
+                                    <option value="cpu_entry">Intel Core i3 antigo (2ª a 7ª gen) / Pentium / Celeron</option>
+                                </optgroup>
+                            </select>
+                        </div>
+
+                        <!-- 3. Placa de Vídeo (GPU) -->
+                        <div class="mb-3">
+                            <label class="form-label text-white small fw-bold mb-1" for="calcGpu">
+                                <i class="bi bi-gpu-card text-cyan me-1"></i> Placa de Vídeo (GPU):
+                            </label>
+                            <select id="calcGpu" class="form-select form-select-sm">
+                                <optgroup label="NVIDIA GeForce RTX (Linha 30 & 40)">
+                                    <option value="gpu_rtx_4080">RTX 4080 / RTX 4090 (Máxima Potência 4K)</option>
+                                    <option value="gpu_rtx_4070">RTX 4070 / 4070 Super / RTX 3080 / 3070 Ti</option>
+                                    <option value="gpu_rtx_3060ti">RTX 4060 / 4060 Ti / RTX 3060 Ti (Gamer Atual)</option>
+                                    <option value="gpu_rtx_3060" selected>RTX 3060 12GB / RTX 2060 Super / RTX 3050</option>
+                                </optgroup>
+                                <optgroup label="NVIDIA GeForce GTX (As Mais Populares)">
+                                    <option value="gpu_gtx_1660">GTX 1660 / 1660 Super / 1660 Ti</option>
+                                    <option value="gpu_gtx_1060">GTX 1060 6GB / GTX 1650 Super / GTX 1070</option>
+                                    <option value="gpu_gtx_1650">GTX 1650 4GB / GTX 1050 Ti / GTX 960</option>
+                                    <option value="gpu_gtx_entry">GT 1030 / GTX 750 Ti / GTX 950</option>
+                                </optgroup>
+                                <optgroup label="AMD Radeon RX">
+                                    <option value="gpu_rx_7000">RX 7800 XT / RX 7900 GRE / 7900 XTX</option>
+                                    <option value="gpu_rx_6700">RX 6700 XT / RX 6750 XT / RX 7700 XT</option>
+                                    <option value="gpu_rx_6600">RX 6600 / RX 6600 XT / RX 7600</option>
+                                    <option value="gpu_rx_580">RX 580 8GB / RX 590 / RX 570 / RX 5500 XT</option>
+                                    <option value="gpu_rx_550">RX 550 / RX 560 / R7 240 / R9 280</option>
+                                </optgroup>
+                                <optgroup label="Gráficos Integrados (Sem Placa de Vídeo Dedicada)">
+                                    <option value="gpu_vega">AMD Radeon Vega 7 / Vega 8 / Vega 11 (Ryzen G)</option>
+                                    <option value="gpu_iris">Intel Iris Xe Graphics (Notebooks modernos)</option>
+                                    <option value="gpu_uhd">Intel UHD Graphics 630 / 730 / 770</option>
+                                    <option value="gpu_integrated">Intel HD Graphics antiga (HD 4000 / 4400 / 4600)</option>
+                                </optgroup>
+                            </select>
+                        </div>
                     </div>
 
-                    <!-- 3. Placa de Vídeo (GPU) -->
-                    <div class="mb-3">
-                        <label class="form-label text-white small fw-bold mb-1" for="calcGpu">
-                            <i class="bi bi-gpu-card text-cyan me-1"></i> Placa de Vídeo (GPU):
-                        </label>
-                        <select id="calcGpu" class="form-select form-select-sm">
-                            <optgroup label="Gráficos Integrados">
-                                <option value="gpu_integrated">Gráficos Integrados (Intel UHD / Iris Xe / AMD Vega / Radeon Graphics)</option>
-                            </optgroup>
-                            <optgroup label="Entrada">
-                                <option value="gpu_entry">GTX 1050 / 1050 Ti / GTX 1650 / RX 550 / RX 560</option>
-                            </optgroup>
-                            <optgroup label="Gamer Popular">
-                                <option value="gpu_mid_prev" selected>GTX 1660 / 1660 Super / RTX 2060 / RX 580 / RX 590 / RX 5500 XT</option>
-                            </optgroup>
-                            <optgroup label="Gamer Atual de Alta Velocidade">
-                                <option value="gpu_mid_current">RTX 3060 / 3060 Ti / RTX 4060 / RX 6600 / RX 6600 XT / RX 7600</option>
-                            </optgroup>
-                            <optgroup label="Alta Performance & 2K">
-                                <option value="gpu_high">RTX 3070 / 3080 / RTX 4070 / 4070 Ti / RX 6700 XT / RX 7700 XT</option>
-                            </optgroup>
-                            <optgroup label="Linha Extrema & 4K">
-                                <option value="gpu_ultra">RTX 4080 / RTX 4090 / RX 7900 XTX</option>
-                            </optgroup>
-                        </select>
+                    <!-- MODO 2: Digitar Meu Setup Exato (Campos Livres com Autocomplete) -->
+                    <div id="calcCustomContainer" class="d-none">
+                        <div class="p-2 mb-3 rounded-3" style="background: rgba(0, 210, 255, 0.05); border: 1px dashed rgba(0, 210, 255, 0.3);">
+                            <small class="text-cyan d-block" style="font-size: 0.74rem;">
+                                <i class="bi bi-lightbulb-fill me-1"></i> Digite o nome exato das suas peças. O sistema ajusta a potência com base no modelo!
+                            </small>
+                        </div>
+
+                        <!-- Processador Personalizado -->
+                        <div class="mb-3">
+                            <label class="form-label text-white small fw-bold mb-1" for="calcCustomCpuInput">
+                                <i class="bi bi-cpu-fill text-cyan me-1"></i> Digite seu Processador (CPU):
+                            </label>
+                            <input type="text" id="calcCustomCpuInput" class="form-control form-control-sm" list="cpuDatalist" placeholder="Ex: Ryzen 5 5600, i5 10400F, i7 13700K, Xeon E5 2670..." value="AMD Ryzen 5 5600">
+                            <datalist id="cpuDatalist">
+                                <option value="AMD Ryzen 7 7800X3D"></option>
+                                <option value="AMD Ryzen 7 5700X3D"></option>
+                                <option value="AMD Ryzen 7 5800X3D"></option>
+                                <option value="AMD Ryzen 5 7600"></option>
+                                <option value="AMD Ryzen 5 5600"></option>
+                                <option value="AMD Ryzen 5 5600X"></option>
+                                <option value="AMD Ryzen 5 5600G"></option>
+                                <option value="AMD Ryzen 5 5500"></option>
+                                <option value="AMD Ryzen 7 5700X"></option>
+                                <option value="AMD Ryzen 5 3600"></option>
+                                <option value="AMD Ryzen 5 2600"></option>
+                                <option value="AMD Ryzen 5 1600 AF"></option>
+                                <option value="AMD Ryzen 3 3200G"></option>
+                                <option value="AMD Ryzen 3 2200G"></option>
+                                <option value="Intel Core i5-12400F"></option>
+                                <option value="Intel Core i5-13400F"></option>
+                                <option value="Intel Core i5-10400F"></option>
+                                <option value="Intel Core i5-9400F"></option>
+                                <option value="Intel Core i3-12100F"></option>
+                                <option value="Intel Core i3-10100F"></option>
+                                <option value="Intel Core i7-13700K"></option>
+                                <option value="Intel Core i7-12700K"></option>
+                                <option value="Intel Core i7-10700K"></option>
+                                <option value="Intel Core i7-8700K"></option>
+                                <option value="Intel Core i7-7700K"></option>
+                                <option value="Intel Core i5-8400"></option>
+                                <option value="Intel Core i5-7400"></option>
+                                <option value="Intel Core i5-3470"></option>
+                                <option value="Intel Xeon E5-2670 v3"></option>
+                                <option value="Intel Xeon E5-2620 v3"></option>
+                            </datalist>
+                        </div>
+
+                        <!-- Placa de Vídeo Personalizada -->
+                        <div class="mb-3">
+                            <label class="form-label text-white small fw-bold mb-1" for="calcCustomGpuInput">
+                                <i class="bi bi-gpu-card text-cyan me-1"></i> Digite sua Placa de Vídeo (GPU):
+                            </label>
+                            <input type="text" id="calcCustomGpuInput" class="form-control form-control-sm" list="gpuDatalist" placeholder="Ex: RTX 3060, GTX 1660 Super, RX 6600, GTX 1050 Ti..." value="NVIDIA GeForce RTX 3060 12GB">
+                            <datalist id="gpuDatalist">
+                                <option value="NVIDIA GeForce RTX 4090"></option>
+                                <option value="NVIDIA GeForce RTX 4080"></option>
+                                <option value="NVIDIA GeForce RTX 4070 Super"></option>
+                                <option value="NVIDIA GeForce RTX 4070"></option>
+                                <option value="NVIDIA GeForce RTX 4060 Ti"></option>
+                                <option value="NVIDIA GeForce RTX 4060"></option>
+                                <option value="NVIDIA GeForce RTX 3080"></option>
+                                <option value="NVIDIA GeForce RTX 3070 Ti"></option>
+                                <option value="NVIDIA GeForce RTX 3070"></option>
+                                <option value="NVIDIA GeForce RTX 3060 Ti"></option>
+                                <option value="NVIDIA GeForce RTX 3060 12GB"></option>
+                                <option value="NVIDIA GeForce RTX 3050"></option>
+                                <option value="NVIDIA GeForce RTX 2060 Super"></option>
+                                <option value="NVIDIA GeForce RTX 2060"></option>
+                                <option value="NVIDIA GeForce GTX 1660 Super"></option>
+                                <option value="NVIDIA GeForce GTX 1660 Ti"></option>
+                                <option value="NVIDIA GeForce GTX 1660"></option>
+                                <option value="NVIDIA GeForce GTX 1650 Super"></option>
+                                <option value="NVIDIA GeForce GTX 1650"></option>
+                                <option value="NVIDIA GeForce GTX 1060 6GB"></option>
+                                <option value="NVIDIA GeForce GTX 1050 Ti"></option>
+                                <option value="NVIDIA GeForce GTX 750 Ti"></option>
+                                <option value="AMD Radeon RX 7900 XTX"></option>
+                                <option value="AMD Radeon RX 7800 XT"></option>
+                                <option value="AMD Radeon RX 7700 XT"></option>
+                                <option value="AMD Radeon RX 7600"></option>
+                                <option value="AMD Radeon RX 6750 XT"></option>
+                                <option value="AMD Radeon RX 6700 XT"></option>
+                                <option value="AMD Radeon RX 6600 XT"></option>
+                                <option value="AMD Radeon RX 6600"></option>
+                                <option value="AMD Radeon RX 590"></option>
+                                <option value="AMD Radeon RX 580 8GB"></option>
+                                <option value="AMD Radeon RX 570"></option>
+                                <option value="AMD Radeon Vega 7 Graphics"></option>
+                                <option value="AMD Radeon Vega 8 Graphics"></option>
+                                <option value="Intel Iris Xe Graphics"></option>
+                                <option value="Intel UHD Graphics 630"></option>
+                            </datalist>
+                        </div>
                     </div>
 
                     <!-- 4. Memória RAM e Armazenamento -->
@@ -904,10 +1035,14 @@
                                 <i class="bi bi-memory text-cyan me-1"></i> Memória RAM:
                             </label>
                             <select id="calcRam" class="form-select form-select-sm">
-                                <option value="ram_8_single">8 GB Single Channel (1 pente - Stutter)</option>
-                                <option value="ram_8_dual">8 GB Dual Channel (2x4GB)</option>
+                                <option value="ram_4_single">4 GB (Muito baixo - Stutter extremo)</option>
+                                <option value="ram_8_single">8 GB Single Channel (1 pente de 8GB)</option>
+                                <option value="ram_8_dual">8 GB Dual Channel (2 pentes de 4GB)</option>
+                                <option value="ram_12_mixed">12 GB (1x8GB + 1x4GB misturado)</option>
+                                <option value="ram_16_single">16 GB Single Channel (1 pente de 16GB)</option>
                                 <option value="ram_16_dual" selected>16 GB Dual Channel (2x8GB - Padrão)</option>
                                 <option value="ram_32_dual">32 GB Dual Channel (2x16GB - Ideal)</option>
+                                <option value="ram_64_dual">64 GB High-End Dual/Quad Channel</option>
                             </select>
                         </div>
                         <div class="col-sm-6">
@@ -922,7 +1057,29 @@
                         </div>
                     </div>
 
-                    <!-- 5. Pack de Otimização -->
+                    <!-- 5. Campo de Precisão Exata: FPS Atual Real (Opcional) -->
+                    <div class="mb-3 p-2 rounded-3" style="background: rgba(0, 102, 255, 0.05); border: 1px solid rgba(0, 102, 255, 0.25);">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <label class="form-label text-white small fw-bold mb-0" for="calcCustomFps">
+                                <i class="bi bi-bullseye text-warning me-1"></i> Quer cálculo exato? Digite seu FPS atual no jogo:
+                            </label>
+                            <span class="badge bg-secondary bg-opacity-50 text-white" style="font-size: 0.65rem;">Opcional</span>
+                        </div>
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text bg-transparent border-secondary border-opacity-50 text-secondary">
+                                <i class="bi bi-speedometer"></i>
+                            </span>
+                            <input type="number" id="calcCustomFps" class="form-control border-secondary border-opacity-50 text-white" placeholder="Ex: 95 (deixe vazio para calcular pelo PC automaticamente)" min="10" max="1000">
+                            <button type="button" class="btn btn-outline-secondary btn-sm" id="btnClearCustomFps" title="Limpar e recalcular automaticamente">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+                        <small class="text-secondary d-block mt-1" style="font-size: 0.72rem;">
+                            <i class="bi bi-info-circle text-cyan me-1"></i> Se você já sabe seu FPS médio nesse jogo, digite aqui para obter o ganho exato na sua tela!
+                        </small>
+                    </div>
+
+                    <!-- 6. Pack de Otimização -->
                     <div class="mb-1">
                         <label class="form-label text-white small fw-bold mb-1" for="calcPack">
                             <i class="bi bi-box-seam-fill text-warning me-1"></i> Escolha o Pack:

@@ -3040,3 +3040,24 @@ body.theme-dark .cart-coupon-applied { color: #34d399; }
   .cart-item-side .text-end { text-align: left !important; }
   .cart-step-dot { width: 36px; height: 36px; font-size: 0.9rem; }
 }
+
+
+/* --------------------------------------------------------------------------
+   CALCULADORA DE FPS - Modos Selecionar Lista / Digitar Setup Exato
+   -------------------------------------------------------------------------- */
+.btn-calc-mode {
+  border: 0;
+  border-radius: 8px;
+  transition: all 0.25s ease;
+  color: var(--text-secondary);
+  background: transparent;
+}
+.btn-calc-mode.active {
+  background: var(--grad-primary) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 15px rgba(0, 102, 255, 0.35);
+}
+.btn-calc-mode:hover:not(.active) {
+  color: var(--text-heading);
+  background: rgba(0, 102, 255, 0.08);
+}

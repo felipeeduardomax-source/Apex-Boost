@@ -500,6 +500,17 @@ function initFpsCalculator() {
     const storageSelect = document.getElementById('calcStorage');
     const packSelect = document.getElementById('calcPack');
 
+    const customCpuInput = document.getElementById('calcCustomCpuInput');
+    const customGpuInput = document.getElementById('calcCustomGpuInput');
+    const customFpsInput = document.getElementById('calcCustomFps');
+    const clearCustomFpsBtn = document.getElementById('btnClearCustomFps');
+
+    const btnModeQuick = document.getElementById('btnModeQuick');
+    const btnModeCustom = document.getElementById('btnModeCustom');
+    const quickContainer = document.getElementById('calcQuickContainer');
+    const customContainer = document.getElementById('calcCustomContainer');
+    const btnDetectSetup = document.getElementById('btnDetectMyPc');
+
     const beforeFpsEl = document.getElementById('calcBeforeFps');
     const afterFpsEl = document.getElementById('calcAfterFps');
     const percentEl = document.getElementById('calcPercentBoost');
@@ -512,6 +523,103 @@ function initFpsCalculator() {
     const ctaBtn = document.getElementById('calcCtaBtn');
 
     if (!gameSelect || !beforeFpsEl) return;
+
+    let activeCalcMode = 'quick'; // 'quick' ou 'custom'
+
+    // Alternador de Modo: Seleção Rápida vs Digitar Meu Setup Exato
+    function setCalcMode(mode) {
+        activeCalcMode = mode;
+        if (mode === 'custom') {
+            if (quickContainer) quickContainer.classList.add('d-none');
+            if (customContainer) customContainer.classList.remove('d-none');
+            if (btnModeCustom) {
+                btnModeCustom.classList.add('active');
+                btnModeCustom.classList.remove('text-secondary');
+            }
+            if (btnModeQuick) {
+                btnModeQuick.classList.remove('active');
+                btnModeQuick.classList.add('text-secondary');
+            }
+        } else {
+            if (quickContainer) quickContainer.classList.remove('d-none');
+            if (customContainer) customContainer.classList.add('d-none');
+            if (btnModeQuick) {
+                btnModeQuick.classList.add('active');
+                btnModeQuick.classList.remove('text-secondary');
+            }
+            if (btnModeCustom) {
+                btnModeCustom.classList.remove('active');
+                btnModeCustom.classList.add('text-secondary');
+            }
+        }
+        if (typeof ApexSound !== 'undefined' && ApexSound.playClick) {
+            ApexSound.playClick();
+        }
+        updateCalculations();
+    }
+
+    if (btnModeQuick) btnModeQuick.addEventListener('click', () => setCalcMode('quick'));
+    if (btnModeCustom) btnModeCustom.addEventListener('click', () => setCalcMode('custom'));
+
+    // Botão para limpar o FPS personalizado e voltar ao automático
+    if (clearCustomFpsBtn && customFpsInput) {
+        clearCustomFpsBtn.addEventListener('click', () => {
+            customFpsInput.value = '';
+            if (typeof ApexSound !== 'undefined' && ApexSound.playClick) {
+                ApexSound.playClick();
+            }
+            updateCalculations();
+        });
+    }
+
+    // Botão de Detecção Automática do PC do Usuário
+    if (btnDetectSetup) {
+        btnDetectSetup.addEventListener('click', () => {
+            let detectedGpu = 'NVIDIA GeForce RTX 3060';
+            try {
+                const canvas = document.createElement('canvas');
+                const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+                if (gl) {
+                    const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+                    if (debugInfo) {
+                        const raw = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
+                        const angleMatch = raw.match(/ANGLE \([^,]+,\s*([^,]+)/i);
+                        if (angleMatch && angleMatch[1]) {
+                            detectedGpu = angleMatch[1].replace(/Direct3D.*/i, '').trim();
+                        } else {
+                            detectedGpu = raw.replace(/Direct3D.*/i, '').replace(/vs_\d+_\d+.*/i, '').trim();
+                        }
+                    }
+                }
+            } catch (e) {}
+
+            const threads = navigator.hardwareConcurrency || 8;
+            let detectedCpu = `AMD Ryzen / Intel Core (${threads} Threads Lógicas)`;
+            if (threads >= 16) detectedCpu = `Processador de Alto Desempenho (${threads} Threads)`;
+            else if (threads >= 12) detectedCpu = `Processador Gamer (${threads} Threads)`;
+            else if (threads >= 6) detectedCpu = `Processador Multi-Core (${threads} Threads)`;
+
+            // Preenche os campos personalizados
+            if (customGpuInput) customGpuInput.value = detectedGpu;
+            if (customCpuInput) customCpuInput.value = detectedCpu;
+
+            // Seletor de RAM aproximado se disponível pela API
+            if (ramSelect && navigator.deviceMemory) {
+                const mem = navigator.deviceMemory;
+                if (mem >= 32) ramSelect.value = 'ram_32_dual';
+                else if (mem >= 16) ramSelect.value = 'ram_16_dual';
+                else if (mem >= 8) ramSelect.value = 'ram_8_dual';
+            }
+
+            // Alterna para o modo customizado para mostrar as peças detectadas
+            setCalcMode('custom');
+
+            if (typeof ApexSound !== 'undefined' && ApexSound.playSuccess) {
+                ApexSound.playSuccess();
+            }
+            showQuickAlert(`Setup detectado com sucesso: ${detectedGpu}!`, 'success');
+        });
+    }
 
     // 1. Dados de Benchmark Base dos Jogos (Padrão 1080p Competitivo)
     const gameData = {
@@ -591,48 +699,132 @@ function initFpsCalculator() {
 
     // 2. Multiplicadores de Potência do Processador (CPU)
     const cpuData = {
-        'cpu_entry': {
-            mult: 0.62,
-            bloatPenalty: 0.28,
-            name: 'Core i3 / Ryzen 3',
-            type: 'entry'
-        },
-        'cpu_mid_old': {
-            mult: 0.95,
-            bloatPenalty: 0.20,
-            name: 'Core i5 antigo / Ryzen 5 3600',
-            type: 'mid_old'
-        },
-        'cpu_mid_modern': {
-            mult: 1.35,
-            bloatPenalty: 0.14,
-            name: 'Core i5 12400F+ / Ryzen 5 5600+',
-            type: 'mid_modern'
-        },
-        'cpu_high': {
-            mult: 1.78,
-            bloatPenalty: 0.10,
-            name: 'Core i7/i9 / Ryzen 7 7800X3D',
-            type: 'high'
-        }
+        'cpu_ryzen_x3d': { mult: 1.95, bloatPenalty: 0.08, name: 'Ryzen 3D V-Cache (5700X3D/7800X3D)', type: 'high' },
+        'cpu_ryzen_7000': { mult: 1.65, bloatPenalty: 0.10, name: 'Ryzen 7000 (7600/7700X)', type: 'high' },
+        'cpu_ryzen_5600': { mult: 1.38, bloatPenalty: 0.14, name: 'Ryzen 5 5600 / 5600X / 5500', type: 'mid_modern' },
+        'cpu_ryzen_3600': { mult: 1.10, bloatPenalty: 0.18, name: 'Ryzen 5 3600 / 2600 / 1600 AF', type: 'mid_old' },
+        'cpu_ryzen_entry': { mult: 0.78, bloatPenalty: 0.24, name: 'Ryzen 3 3200G / 2200G / Athlon', type: 'entry' },
+        'cpu_intel_ultra': { mult: 1.85, bloatPenalty: 0.08, name: 'Core i7/i9 (12700K a 14900K)', type: 'high' },
+        'cpu_intel_modern': { mult: 1.45, bloatPenalty: 0.12, name: 'Core i5 (12400F a 14600K)', type: 'mid_modern' },
+        'cpu_intel_12100': { mult: 1.20, bloatPenalty: 0.16, name: 'Core i3 12100F / 13100F', type: 'mid_modern' },
+        'cpu_intel_mid_old': { mult: 1.05, bloatPenalty: 0.19, name: 'Core i5 (8400 a 11400F)', type: 'mid_old' },
+        'cpu_intel_7700': { mult: 1.25, bloatPenalty: 0.15, name: 'Core i7 (7700K a 10700K)', type: 'mid_old' },
+        'cpu_intel_old_i3': { mult: 0.82, bloatPenalty: 0.22, name: 'Core i3 (8100 a 10100F)', type: 'entry' },
+        'cpu_xeon': { mult: 0.92, bloatPenalty: 0.22, name: 'Intel Xeon E5 Kit', type: 'mid_old' },
+        'cpu_intel_vintage': { mult: 0.72, bloatPenalty: 0.26, name: 'Core i5 antigo (2500 a 7400)', type: 'entry' },
+        'cpu_entry': { mult: 0.58, bloatPenalty: 0.30, name: 'Core i3 antigo / Celeron / Pentium', type: 'entry' }
     };
+
+    // Parser Inteligente para Processador Customizado Digitado
+    function parseCustomCpu(text) {
+        const t = (text || '').toLowerCase().trim();
+        if (!t) return cpuData['cpu_ryzen_5600'];
+        
+        if (t.includes('x3d') || t.includes('7800x3d') || t.includes('5800x3d') || t.includes('5700x3d') || t.includes('9800x3d')) {
+            return { mult: 1.95, bloatPenalty: 0.08, name: text, type: 'high' };
+        }
+        if (t.includes('14900') || t.includes('13900') || t.includes('14700') || t.includes('13700') || t.includes('12900') || t.includes('7950') || t.includes('7900') || t.includes('5950') || t.includes('5900')) {
+            return { mult: 1.85, bloatPenalty: 0.08, name: text, type: 'high' };
+        }
+        if (t.includes('7600') || t.includes('7500f') || t.includes('7700') || t.includes('9600') || t.includes('9700')) {
+            return { mult: 1.65, bloatPenalty: 0.10, name: text, type: 'high' };
+        }
+        if (t.includes('14600') || t.includes('13600') || t.includes('12600') || t.includes('12700') || t.includes('5800x') || t.includes('5700x')) {
+            return { mult: 1.55, bloatPenalty: 0.11, name: text, type: 'high' };
+        }
+        if (t.includes('12400') || t.includes('13400') || t.includes('14400') || t.includes('5600') || t.includes('5500')) {
+            return { mult: 1.38, bloatPenalty: 0.14, name: text, type: 'mid_modern' };
+        }
+        if (t.includes('12100') || t.includes('13100') || t.includes('14100') || t.includes('11400') || t.includes('11600') || t.includes('10700') || t.includes('9700') || t.includes('8700')) {
+            return { mult: 1.22, bloatPenalty: 0.16, name: text, type: 'mid_modern' };
+        }
+        if (t.includes('3600') || t.includes('2600') || t.includes('10400') || t.includes('9400') || t.includes('8400') || t.includes('1600 af')) {
+            return { mult: 1.08, bloatPenalty: 0.18, name: text, type: 'mid_old' };
+        }
+        if (t.includes('xeon') || t.includes('2670') || t.includes('2650') || t.includes('2640') || t.includes('2620')) {
+            return { mult: 0.92, bloatPenalty: 0.22, name: text, type: 'mid_old' };
+        }
+        if (t.includes('10100') || t.includes('9100') || t.includes('8100') || t.includes('7700') || t.includes('6700') || t.includes('4790') || t.includes('3770')) {
+            return { mult: 0.88, bloatPenalty: 0.22, name: text, type: 'mid_old' };
+        }
+        if (t.includes('3200g') || t.includes('2200g') || t.includes('3100') || t.includes('3300') || t.includes('7400') || t.includes('6400') || t.includes('4590') || t.includes('3470') || t.includes('2500')) {
+            return { mult: 0.75, bloatPenalty: 0.25, name: text, type: 'entry' };
+        }
+        if (t.includes('fx') || t.includes('athlon') || t.includes('pentium') || t.includes('celeron') || t.includes('core 2')) {
+            return { mult: 0.55, bloatPenalty: 0.30, name: text, type: 'entry' };
+        }
+        // Heurísticas genéricas
+        if (t.includes('i9') || t.includes('ryzen 9')) return { mult: 1.80, bloatPenalty: 0.08, name: text, type: 'high' };
+        if (t.includes('i7') || t.includes('ryzen 7')) return { mult: 1.50, bloatPenalty: 0.12, name: text, type: 'high' };
+        if (t.includes('i5') || t.includes('ryzen 5')) return { mult: 1.25, bloatPenalty: 0.15, name: text, type: 'mid_modern' };
+        if (t.includes('i3') || t.includes('ryzen 3')) return { mult: 0.90, bloatPenalty: 0.20, name: text, type: 'entry' };
+        
+        return { mult: 1.10, bloatPenalty: 0.18, name: text, type: 'mid_old' };
+    }
 
     // 3. Multiplicadores de Potência da Placa de Vídeo (GPU)
     const gpuData = {
-        'gpu_integrated': { mult: 0.38, name: 'Gráficos Integrados', tier: 1 },
-        'gpu_entry': { mult: 0.68, name: 'GTX 1050 / 1650', tier: 2 },
-        'gpu_mid_prev': { mult: 1.00, name: 'GTX 1660 / RTX 2060 / RX 580', tier: 3 },
-        'gpu_mid_current': { mult: 1.48, name: 'RTX 3060 / 4060 / RX 6600', tier: 4 },
-        'gpu_high': { mult: 2.10, name: 'RTX 3080 / 4070 / RX 7700 XT', tier: 5 },
-        'gpu_ultra': { mult: 2.85, name: 'RTX 4080 / 4090 / RX 7900 XTX', tier: 6 }
+        'gpu_rtx_4080': { mult: 3.10, name: 'RTX 4080 / RTX 4090', tier: 6 },
+        'gpu_rtx_4070': { mult: 2.40, name: 'RTX 4070 / RTX 3080', tier: 5 },
+        'gpu_rtx_3060ti': { mult: 1.95, name: 'RTX 4060 / RTX 3060 Ti', tier: 4 },
+        'gpu_rtx_3060': { mult: 1.58, name: 'RTX 3060 12GB / RTX 2060 Super', tier: 4 },
+        'gpu_gtx_1660': { mult: 1.15, name: 'GTX 1660 / 1660 Super', tier: 3 },
+        'gpu_gtx_1060': { mult: 0.95, name: 'GTX 1060 6GB / GTX 1650 Super', tier: 3 },
+        'gpu_gtx_1650': { mult: 0.78, name: 'GTX 1650 / GTX 1050 Ti', tier: 2 },
+        'gpu_gtx_entry': { mult: 0.50, name: 'GT 1030 / GTX 750 Ti', tier: 2 },
+        'gpu_rx_7000': { mult: 2.65, name: 'RX 7800 XT / RX 7900 XTX', tier: 6 },
+        'gpu_rx_6700': { mult: 2.05, name: 'RX 6700 XT / RX 7700 XT', tier: 5 },
+        'gpu_rx_6600': { mult: 1.52, name: 'RX 6600 / RX 7600', tier: 4 },
+        'gpu_rx_580': { mult: 0.95, name: 'RX 580 8GB / RX 590', tier: 3 },
+        'gpu_rx_550': { mult: 0.52, name: 'RX 550 / RX 560', tier: 2 },
+        'gpu_vega': { mult: 0.42, name: 'AMD Radeon Vega Graphics', tier: 1 },
+        'gpu_iris': { mult: 0.45, name: 'Intel Iris Xe Graphics', tier: 1 },
+        'gpu_uhd': { mult: 0.35, name: 'Intel UHD Graphics 630/730/770', tier: 1 },
+        'gpu_integrated': { mult: 0.22, name: 'Gráficos Integrados Básicos', tier: 1 }
     };
+
+    // Parser Inteligente para Placa de Vídeo Customizada Digitada
+    function parseCustomGpu(text) {
+        const t = (text || '').toLowerCase().trim();
+        if (!t) return gpuData['gpu_rtx_3060'];
+        
+        if (t.includes('4090')) return { mult: 3.30, name: text, tier: 6 };
+        if (t.includes('4080') || t.includes('7900 xtx') || t.includes('7900 xt')) return { mult: 2.85, name: text, tier: 6 };
+        if (t.includes('4070 ti') || t.includes('4070 super') || t.includes('3090') || t.includes('7900 gre') || t.includes('7800 xt')) return { mult: 2.50, name: text, tier: 5 };
+        if (t.includes('4070') || t.includes('3080')) return { mult: 2.30, name: text, tier: 5 };
+        if (t.includes('3070 ti') || t.includes('3070') || t.includes('4060 ti') || t.includes('6750 xt') || t.includes('6700 xt') || t.includes('7700 xt')) return { mult: 2.00, name: text, tier: 4 };
+        if (t.includes('4060') || t.includes('3060 ti') || t.includes('2080') || t.includes('7600')) return { mult: 1.75, name: text, tier: 4 };
+        if (t.includes('3060') || t.includes('2060 super') || t.includes('2070') || t.includes('6650 xt') || t.includes('6600 xt')) return { mult: 1.58, name: text, tier: 4 };
+        if (t.includes('6600') || t.includes('2060') || t.includes('3050') || t.includes('1080 ti') || t.includes('1080') || t.includes('5600 xt')) return { mult: 1.35, name: text, tier: 3 };
+        if (t.includes('1660 ti') || t.includes('1660 super') || t.includes('1660') || t.includes('1070 ti') || t.includes('1070') || t.includes('590')) return { mult: 1.15, name: text, tier: 3 };
+        if (t.includes('1650 super') || t.includes('1060') || t.includes('580') || t.includes('5500 xt') || t.includes('6500 xt')) return { mult: 0.95, name: text, tier: 3 };
+        if (t.includes('1650') || t.includes('1050 ti') || t.includes('570') || t.includes('970') || t.includes('960')) return { mult: 0.78, name: text, tier: 2 };
+        if (t.includes('1050') || t.includes('750 ti') || t.includes('950') || t.includes('560') || t.includes('550') || t.includes('1030')) return { mult: 0.52, name: text, tier: 2 };
+        if (t.includes('680m') || t.includes('780m')) return { mult: 0.65, name: text, tier: 2 };
+        if (t.includes('vega') || t.includes('iris') || t.includes('radeon graphics')) return { mult: 0.42, name: text, tier: 1 };
+        if (t.includes('uhd') || t.includes('hd graphics') || t.includes('integrated') || t.includes('integrada')) return { mult: 0.28, name: text, tier: 1 };
+        
+        // Heurísticas genéricas
+        if (t.includes('rtx 40')) return { mult: 2.20, name: text, tier: 5 };
+        if (t.includes('rtx 30')) return { mult: 1.80, name: text, tier: 4 };
+        if (t.includes('rtx 20')) return { mult: 1.40, name: text, tier: 3 };
+        if (t.includes('gtx 16') || t.includes('gtx 10')) return { mult: 0.95, name: text, tier: 3 };
+        if (t.includes('rx 7') || t.includes('rx 6')) return { mult: 1.70, name: text, tier: 4 };
+        if (t.includes('rx 5')) return { mult: 0.90, name: text, tier: 3 };
+        
+        return { mult: 1.00, name: text, tier: 3 };
+    }
 
     // 4. Modificadores de Memória RAM (Largura de banda e estabilidade de frametime)
     const ramData = {
+        'ram_4_single': { mult: 0.68, lowPenalty: 0.55, latAdd: 14, isSingle: true },
         'ram_8_single': { mult: 0.82, lowPenalty: 0.42, latAdd: 8, isSingle: true },
         'ram_8_dual': { mult: 0.92, lowPenalty: 0.18, latAdd: 4, isSingle: false },
+        'ram_12_mixed': { mult: 0.95, lowPenalty: 0.12, latAdd: 2, isSingle: false },
+        'ram_16_single': { mult: 0.88, lowPenalty: 0.28, latAdd: 5, isSingle: true },
         'ram_16_dual': { mult: 1.00, lowPenalty: 0.00, latAdd: 0, isSingle: false },
-        'ram_32_dual': { mult: 1.06, lowPenalty: -0.06, latAdd: -1, isSingle: false }
+        'ram_32_dual': { mult: 1.06, lowPenalty: -0.06, latAdd: -1, isSingle: false },
+        'ram_64_dual': { mult: 1.08, lowPenalty: -0.08, latAdd: -2, isSingle: false }
     };
 
     // 5. Modificadores de Armazenamento (I/O e carregamento de texturas)
@@ -685,36 +877,54 @@ function initFpsCalculator() {
     function updateCalculations() {
         const gameKey = gameSelect ? gameSelect.value : 'cs2';
         const resKey = resSelect ? resSelect.value : '1080p_comp';
-        const cpuKey = cpuSelect ? cpuSelect.value : 'cpu_mid_old';
-        const gpuKey = gpuSelect ? gpuSelect.value : 'gpu_mid_prev';
         const ramKey = ramSelect ? ramSelect.value : 'ram_16_dual';
         const storageKey = storageSelect ? storageSelect.value : 'storage_nvme';
         const packKey = packSelect ? packSelect.value : 'ultra';
 
         const game = gameData[gameKey] || gameData['cs2'];
-        const cpu = cpuData[cpuKey] || cpuData['cpu_mid_old'];
-        const gpu = gpuData[gpuKey] || gpuData['gpu_mid_prev'];
         const ram = ramData[ramKey] || ramData['ram_16_dual'];
         const storage = storageData[storageKey] || storageData['storage_nvme'];
         const resMult = resData[resKey] || 1.15;
         const pack = packBoost[packKey] || packBoost['ultra'];
 
-        // Cálculo de Potência Efetiva do Hardware combinando CPU e GPU com peso do jogo
-        const effectiveHw = (cpu.mult * game.cpuWeight) + (gpu.mult * game.gpuWeight);
-        
-        // Penalidade por desequilíbrio severo (Gargalo de CPU ou GPU)
-        const diff = Math.abs(cpu.mult - gpu.mult);
-        const bottleneckPenalty = diff > 0.7 ? 0.90 : 1.0;
+        // Resolução de CPU e GPU dependendo do modo ativo
+        let cpu, gpu;
+        if (activeCalcMode === 'custom') {
+            cpu = parseCustomCpu(customCpuInput ? customCpuInput.value : '');
+            gpu = parseCustomGpu(customGpuInput ? customGpuInput.value : '');
+        } else {
+            const cpuKey = cpuSelect ? cpuSelect.value : 'cpu_ryzen_5600';
+            const gpuKey = gpuSelect ? gpuSelect.value : 'gpu_rtx_3060';
+            cpu = cpuData[cpuKey] || cpuData['cpu_ryzen_5600'];
+            gpu = gpuData[gpuKey] || gpuData['gpu_rtx_3060'];
+        }
 
-        // FPS Base Padrão do Windows
-        let baseFps = Math.round(game.baseFps * effectiveHw * resMult * ram.mult * storage.mult * bottleneckPenalty);
-        baseFps = Math.max(28, baseFps);
-
-        // Otimização Apex Boost: recuperação de bloatware + alívios específicos
+        // Fator de alívio de bloatware e otimização
         let recoveryFactor = 1.0;
-        if (ram.isSingle) recoveryFactor += 0.07;        // Standby RAM cleaner salva canal único
+        if (ram.isSingle) recoveryFactor += 0.08;        // Standby RAM cleaner salva canal único
         if (storage.isHdd) recoveryFactor += 0.05;       // Remoção de telemetria alivia fila do HD
-        if (cpu.bloatPenalty > 0.18) recoveryFactor += 0.04; // Core unparking ajuda CPUs de entrada
+        if (cpu.bloatPenalty > 0.16) recoveryFactor += 0.05; // Core unparking ajuda CPUs sobrecarregadas
+
+        // Verifica se o usuário informou um FPS atual exato
+        let baseFps;
+        let isUserExactFps = false;
+        const rawCustomFps = customFpsInput ? parseInt(customFpsInput.value, 10) : NaN;
+
+        if (!isNaN(rawCustomFps) && rawCustomFps >= 10 && rawCustomFps <= 1200) {
+            baseFps = rawCustomFps;
+            isUserExactFps = true;
+        } else {
+            // Cálculo de Potência Efetiva do Hardware combinando CPU e GPU com peso do jogo
+            const effectiveHw = (cpu.mult * game.cpuWeight) + (gpu.mult * game.gpuWeight);
+            
+            // Penalidade por desequilíbrio severo (Gargalo de CPU ou GPU)
+            const diff = Math.abs(cpu.mult - gpu.mult);
+            const bottleneckPenalty = diff > 0.7 ? 0.90 : 1.0;
+
+            // FPS Base Padrão do Windows
+            baseFps = Math.round(game.baseFps * effectiveHw * resMult * ram.mult * storage.mult * bottleneckPenalty);
+            baseFps = Math.max(25, baseFps);
+        }
 
         const boostedFps = Math.round(baseFps * pack.mult * recoveryFactor);
         const diffFps = boostedFps - baseFps;
@@ -732,6 +942,13 @@ function initFpsCalculator() {
         animateNumber(beforeFpsEl, parseInt(beforeFpsEl.textContent) || baseFps, baseFps);
         animateNumber(afterFpsEl, parseInt(afterFpsEl.textContent) || boostedFps, boostedFps);
 
+        // Atualiza legenda sob o FPS base
+        const beforeSubEl = beforeFpsEl.parentElement.querySelector('small');
+        if (beforeSubEl) {
+            beforeSubEl.textContent = isUserExactFps ? 'Seu FPS real informado' : 'Windows sem tweak';
+            beforeSubEl.className = isUserExactFps ? 'text-warning d-block mt-1' : 'text-muted d-block mt-1';
+        }
+
         if (percentEl) {
             percentEl.textContent = `+${percentIncrease}% FPS`;
         }
@@ -746,7 +963,7 @@ function initFpsCalculator() {
         }
 
         // Diagnóstico inteligente do setup em tempo real
-        updateDiagnosis(cpuKey, gpuKey, ramKey, storageKey, gameKey, pack.name);
+        updateDiagnosis(cpu, gpu, ramKey, storageKey, gameKey, pack.name, isUserExactFps);
 
         // Atualiza link do CTA para direcionar ao pack correspondente
         if (ctaBtn) {
@@ -754,29 +971,36 @@ function initFpsCalculator() {
         }
     }
 
-    function updateDiagnosis(cpuKey, gpuKey, ramKey, storageKey, gameKey, packName) {
+    function updateDiagnosis(cpu, gpu, ramKey, storageKey, gameKey, packName, isUserExactFps) {
         if (!diagTitleEl || !diagDescEl) return;
 
-        if (ramKey === 'ram_8_single') {
+        if (isUserExactFps) {
+            if (diagIconEl) diagIconEl.className = 'bi bi-bullseye text-warning';
+            diagTitleEl.textContent = 'Cálculo Baseado no seu FPS Real:';
+            diagDescEl.textContent = `Aplicamos as curvas exatas do ${packName} diretamente sobre o seu desempenho medido no jogo. Você terá um salto imediato de estabilidade e fluidez!`;
+            return;
+        }
+
+        if (ramKey === 'ram_8_single' || ramKey === 'ram_4_single' || ramKey === 'ram_16_single') {
             if (diagIconEl) diagIconEl.className = 'bi bi-exclamation-triangle-fill text-warning';
-            diagTitleEl.textContent = 'Gargalo Crítico de Memória Detectado:';
-            diagDescEl.textContent = 'Sua memória em Single Channel (1 pente) corta a largura de banda pela metade, gerando engasgos severos em tiroteios. O ' + packName + ' ativa a limpeza contínua de Standby RAM e paginação acelerada, curando 100% desse lag.';
+            diagTitleEl.textContent = 'Gargalo de Memória (Single Channel):';
+            diagDescEl.textContent = 'Sua memória em 1 pente corta a largura de banda pela metade, causando micro-travamentos em tiroteios. O ' + packName + ' ativa o Standby List Cleaner e paginação otimizada, eliminando esse stutter!';
         } else if (storageKey === 'storage_hdd') {
             if (diagIconEl) diagIconEl.className = 'bi bi-hdd-fill text-warning';
-            diagTitleEl.textContent = 'Gargalo de I/O em Disco Detectado:';
-            diagDescEl.textContent = 'O HD mecânico causa travamentos súbitos ao carregar texturas em tempo real. O ' + packName + ' desativa telemetria pesada, indexação e SysMain, mantendo seu disco 100% focado no jogo.';
-        } else if (cpuKey === 'cpu_entry') {
+            diagTitleEl.textContent = 'Gargalo de Disco (HD Mecânico):';
+            diagDescEl.textContent = 'O HD causa engasgos ao carregar texturas em tempo real. O ' + packName + ' desativa telemetria agressiva e serviços de indexação, liberando a leitura para o jogo.';
+        } else if (cpu.type === 'entry') {
             if (diagIconEl) diagIconEl.className = 'bi bi-lightning-charge-fill text-cyan';
             diagTitleEl.textContent = 'CPU Sobrecarregada pelo Windows:';
-            diagDescEl.textContent = 'Processadores com menos núcleos sofrem com os 150+ processos ocultos da Microsoft. O ' + packName + ' desativa bloatwares de segundo plano e ativa o plano Apex Ultimate Performance, liberando até 60% mais fôlego para o seu jogo!';
-        } else if (gpuKey === 'gpu_ultra' || gpuKey === 'gpu_high') {
+            diagDescEl.textContent = 'Processadores de entrada perdem até 35% de quadros com os 150+ processos ocultos do Windows. O ' + packName + ' desativa os bloatwares e acorda os núcleos com CPU Core Unparking!';
+        } else if (gpu.tier >= 5 || cpu.type === 'high') {
             if (diagIconEl) diagIconEl.className = 'bi bi-speedometer2 text-success';
-            diagTitleEl.textContent = 'Setup de Alto Desempenho Desbloqueado:';
-            diagDescEl.textContent = 'Sua máquina é uma máquina gamer de respeito! O Windows padrão trava sua latência de timer em 1.000ms. O ' + packName + ' força 0.500ms de timer resolution e modo MSI na GPU, reduzindo o frametime para resposta de mira cirúrgica!';
+            diagTitleEl.textContent = 'Setup Gamer de Alto Nível:';
+            diagDescEl.textContent = `Seu computador (${cpu.name} + ${gpu.name}) tem enorme poder! O Windows de fábrica trava os timers em 15.6ms. O ${packName} reduz para 0.500ms cravados, oferecendo mira cirúrgica sem atraso!`;
         } else {
             if (diagIconEl) diagIconEl.className = 'bi bi-check-circle-fill text-cyan';
-            diagTitleEl.textContent = 'Potencial Oculto do Setup Identificado:';
-            diagDescEl.textContent = 'Seu setup tem excelente sinergia, mas o Windows de fábrica retém até 50+ FPS com serviços vampiros e bufferings lentos. O ' + packName + ' destrava a potência máxima dos seus componentes!';
+            diagTitleEl.textContent = 'Sinergia de Setup Identificada:';
+            diagDescEl.textContent = `Com ${cpu.name} e ${gpu.name}, o Windows retém dezenas de FPS por serviços vampiros e bufferings lentos. O ${packName} destrava a capacidade total da sua máquina!`;
         }
     }
 
@@ -802,9 +1026,11 @@ function initFpsCalculator() {
         }, 22);
     }
 
-    // Escuta alterações em tempo real em todos os 7 seletores
-    const selectors = [gameSelect, resSelect, cpuSelect, gpuSelect, ramSelect, storageSelect, packSelect];
-    selectors.forEach(sel => {
+    // Escuta alterações em todos os campos e seletores
+    const listeners = [
+        gameSelect, resSelect, cpuSelect, gpuSelect, ramSelect, storageSelect, packSelect
+    ];
+    listeners.forEach(sel => {
         if (sel) {
             sel.addEventListener('change', () => {
                 if (typeof ApexSound !== 'undefined' && ApexSound.playClick) {
@@ -814,6 +1040,17 @@ function initFpsCalculator() {
             });
         }
     });
+
+    // Inputs customizados com input/keyup em tempo real
+    if (customCpuInput) {
+        customCpuInput.addEventListener('input', () => updateCalculations());
+    }
+    if (customGpuInput) {
+        customGpuInput.addEventListener('input', () => updateCalculations());
+    }
+    if (customFpsInput) {
+        customFpsInput.addEventListener('input', () => updateCalculations());
+    }
 
     updateCalculations();
 }
